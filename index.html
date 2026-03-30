@@ -315,6 +315,65 @@ body.light .ltbl tr:nth-child(even) td{background:rgba(0,0,0,.02)}
 .obtn:active{transform:scale(.96)}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(min-width:640px){header,#fb{padding-left:24px;padding-right:24px}#chat{padding:24px}#ia{padding:14px 24px;padding-bottom:max(14px,env(safe-area-inset-bottom))}.bwrap{max-width:76%}}
+/* ══ CDSS WARD DASHBOARD STYLES ══ */
+#cdss-view { display: none; flex: 1; flex-direction: column; overflow: hidden; position: relative; background: var(--bg); z-index: 5; }
+.cdss-dash { flex: 1; overflow-y: auto; padding: 20px; touch-action: pan-y; }
+.cdss-dash::-webkit-scrollbar { width: 3px; }
+.cdss-dash::-webkit-scrollbar-thumb { background: var(--b2); border-radius: 4px; }
+.dash-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.dash-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--b); padding-bottom: 10px; }
+.d-tab { background: none; border: none; color: var(--t2); font-weight: 600; font-size: .9rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: all .2s; }
+.d-tab.active { color: var(--blue); background: var(--bdim); }
+
+/* Patient Cards */
+.pat-card { background: var(--card); border: 1px solid var(--b); border-radius: 12px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: transform 0.2s; border-left: 4px solid var(--blue); display: block; text-decoration: none; }
+.pat-card.closed { border-left-color: var(--t2); opacity: 0.7; }
+.pat-card:active { transform: scale(0.98); }
+.pc-head { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
+.pc-name { font-weight: 700; font-size: 1.1rem; color: var(--text); }
+.pc-badge { background: var(--bdim); color: var(--blue); padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.pc-details { font-size: 0.85rem; color: var(--t2); display: flex; gap: 12px; flex-wrap: wrap; line-height: 1.4; }
+
+/* Wizard & Patient File Overlay */
+.cdss-wiz { position: absolute; inset: 0; background: var(--bg); z-index: 50; display: none; flex-direction: column; animation: msgIn .3s var(--spring) both; }
+.cdss-wiz.open { display: flex; }
+.wiz-hdr { padding: 16px 20px; background: var(--sf); border-bottom: 1px solid var(--b); display: flex; align-items: center; justify-content: space-between; z-index: 10; }
+.wiz-body { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 90px; }
+.wiz-footer { padding: 16px 20px; background: var(--sf); border-top: 1px solid var(--b); position: absolute; bottom: 0; left: 0; right: 0; z-index: 10; display: flex; gap: 10px; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+
+/* Form Elements inside Ward */
+.sect-title { font-weight: 700; color: var(--blue); margin: 24px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--b); display: flex; align-items: center; gap: 8px; font-size: 1rem; }
+.sect-title:first-child { margin-top: 0; }
+.fgrid { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+.fg { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 130px; margin-bottom: 12px; }
+.finp { width: 100%; background: var(--ibg); border: 1.5px solid var(--b2); color: var(--text); border-radius: 12px; padding: 12px 14px; font-family: var(--ff); font-size: .9rem; outline: none; transition: all .2s; }
+.finp:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--bdim); background: var(--card); }
+textarea.finp { resize: vertical; min-height: 70px; }
+.lb-box { background: rgba(0,0,0,0.15); border: 1px dashed var(--b2); padding: 16px; border-radius: 12px; margin-bottom: 12px; }
+.tx-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; margin-bottom: 8px; }
+@media(max-width: 600px) { .tx-row { grid-template-columns: 1fr; border-bottom:1px solid var(--b); padding-bottom:12px; margin-bottom: 12px;} }
+
+/* Fixed Output & PDF Formatting */
+.btn-block { flex: 1; background: var(--grad); color: #fff; border: none; padding: 14px; border-radius: 12px; font-weight: 700; font-size: .95rem; cursor: pointer; box-shadow: 0 4px 14px rgba(14,165,233,.25); display: flex; align-items: center; justify-content: center; gap: 8px; transition: all .2s; }
+.btn-block:active { transform: scale(.97); }
+.btn-block.sec { background: var(--card2); border: 1px solid var(--b2); box-shadow: none; color: var(--text); }
+.cdss-report { background: var(--card); border: 1px solid var(--b); border-radius: 12px; padding: 20px; margin-bottom: 20px; font-size: 0.88rem; line-height: 1.6; }
+.rep-hdr { border-bottom: 2px solid var(--blue); padding-bottom: 8px; margin-bottom: 12px; font-weight: 700; font-size: 1.05rem; color: var(--blue); }
+.rep-tbl { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.8rem; }
+.rep-tbl th { background: var(--bdim); color: var(--blue); padding: 8px; text-align: left; border: 1px solid var(--b); font-weight: 700; }
+.rep-tbl td { padding: 8px; border: 1px solid var(--b); }
+
+/* Print Magic for PDF Export */
+@media print {
+  body { background: #fff !important; color: #000 !important; }
+  #tw, header, #sb, #ia, #fb, .wiz-hdr, .wiz-footer, .btn-block, .ms { display: none !important; }
+  .cdss-wiz, .mbody { position: static !important; overflow: visible !important; display: block !important; padding: 0 !important; }
+  .cdss-report { border: none !important; box-shadow: none !important; background: #fff !important; color: #000 !important; padding: 0 !important; margin-bottom: 40px !important; page-break-inside: avoid; }
+  .rep-hdr { color: #000 !important; border-bottom: 2px solid #000 !important; }
+  .rep-tbl th { background: #eee !important; color: #000 !important; border-color: #aaa !important; }
+  .rep-tbl td { border-color: #aaa !important; }
+  .ctag, .asum, .abody { color: #000 !important; }
+}
 </style>
 </head>
 <body>
@@ -379,8 +438,9 @@ body.light .ltbl tr:nth-child(even) td{background:rgba(0,0,0,.02)}
       <div class="lmark" onclick="toggleSB();hap(10);"><span class="ms md fill">cardiology</span></div>
       <div><div class="ltitle">PharmAI</div><div class="lsub">Clinical Assistant</div></div>
       <div class="hright">
-        <button class="hbtn" onclick="openM('sm');hap(10);" title="Settings"><span class="ms sm">settings</span></button>
-        <button class="hbtn" onclick="openM('tm');hap(10);" title="Tools"><span class="ms sm">calculate</span></button>
+        <button class="hbtn" id="navToggle" onclick="toggleAppMode();hap(10);" title="Ward Dashboard"><span class="ms sm" id="navIcon">local_hospital</span></button>
+       
+        <button class="hbtn" onclick="openM('sm');hap(10);" title="Settings"><span class="ms sm">settings</span></button>  
         <div class="pc" id="hpc" onclick="toggleSB();hap(10);">?</div>
       </div>
     </header>
@@ -401,6 +461,142 @@ body.light .ltbl tr:nth-child(even) td{background:rgba(0,0,0,.02)}
       <div class="tw counsel" id="t-counsel" onclick="toggleF('counsel')"><div class="tico"><span class="ms xs">chat_bubble</span></div><div class="tsw"></div><span class="tlbl">Counseling</span></div>
     </div>
     <div id="chat"></div>
+    <div id="chat"></div>
+    
+    <div id="cdss-view">
+      
+      <div class="cdss-dash" id="cdss-dash">
+        <div class="dash-hdr">
+          <div style="font-weight:700; font-size:1.1rem;">Ward Patients</div>
+          <button class="bkbtn exp" style="width:auto; min-height:36px; padding:0 16px; margin:0;" onclick="openCDSSWiz('admit');hap(10);"><span class="ms xs">person_add</span> Admit</button>
+        </div>
+        <div class="dash-tabs">
+          <button class="d-tab active" id="tab-active" onclick="switchWardTab('active')">Active Cases</button>
+          <button class="d-tab" id="tab-closed" onclick="switchWardTab('closed')">Closed Cases</button>
+        </div>
+        <div id="pt-list-container">
+          <div style="text-align:center; padding:40px 20px; color:var(--muted); font-size:0.9rem;">No active patients on the ward.</div>
+        </div>
+      </div>
+
+      <div class="cdss-wiz" id="cdss-file">
+        <div class="wiz-hdr">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button class="hbtn" onclick="closeCDSSFile();hap(10);" style="margin-left:-10px;"><span class="ms sm">arrow_back</span></button>
+            <div>
+              <div style="font-weight:700;" id="f-pt-name">Patient Name</div>
+              <div style="font-size:0.75rem; color:var(--blue);" id="f-pt-bed">Bed / ID</div>
+            </div>
+          </div>
+          <button class="hbtn" onclick="window.print();" title="Export PDF"><span class="ms sm">picture_as_pdf</span></button>
+        </div>
+        <div class="wiz-body" id="pt-timeline" style="padding-bottom:120px;">
+           </div>
+        <div class="wiz-footer" id="file-actions">
+          <button class="btn-block sec" onclick="openCDSSWiz('progress');hap(10);"><span class="ms sm">edit_note</span> Add Progress</button>
+          <button class="btn-block" onclick="openDischargeModal();hap(10);" style="background:var(--danger); box-shadow:none;"><span class="ms sm">logout</span> Close Case</button>
+        </div>
+      </div>
+
+      <div class="cdss-wiz" id="cdss-form">
+        <div class="wiz-hdr">
+          <div style="display:flex; align-items:center; gap:10px; font-weight:700;" id="wiz-title"><span class="ms md">person_add</span> Admit Patient</div>
+          <button class="hbtn" onclick="closeCDSSWiz();hap(10);"><span class="ms sm">close</span></button>
+        </div>
+        <div class="wiz-body">
+          
+          <div id="sec-demo">
+            <div class="sect-title"><span class="ms sm">badge</span> Demographics</div>
+            <div class="fgrid">
+              <div class="fg"><span class="flbl">Name / Initials</span><input type="text" id="w-name" class="finp"></div>
+              <div class="fg"><span class="flbl">Case ID / Bed</span><input type="text" id="w-id" class="finp"></div>
+            </div>
+            <div class="fgrid">
+              <div class="fg"><span class="flbl">Age</span><input type="number" id="w-age" class="finp"></div>
+              <div class="fg"><span class="flbl">Sex</span><select id="w-sex" class="finp"><option>M</option><option>F</option></select></div>
+              <div class="fg"><span class="flbl">Wt (kg)</span><input type="number" id="w-wt" class="finp"></div>
+            </div>
+          </div>
+
+          <div id="sec-hist">
+            <div class="sect-title"><span class="ms sm">history_edu</span> Clinical History</div>
+            <div class="fg"><span class="flbl">Chief Complaints / Primary Dx</span><textarea id="w-cc" class="finp"></textarea></div>
+            <div class="fg"><span class="flbl">Past Medical History (PMH)</span><textarea id="w-pmh" class="finp"></textarea></div>
+            <div class="fgrid">
+              <div class="fg"><span class="flbl">Allergies</span><input type="text" id="w-alg" class="finp" placeholder="NKDA"></div>
+            </div>
+            <div class="fgrid">
+              <div class="fg"><span class="flbl">Social History</span><textarea id="w-soc" class="finp" placeholder="Tobacco, alcohol..."></textarea></div>
+              <div class="fg"><span class="flbl">Family History</span><textarea id="w-fam" class="finp"></textarea></div>
+            </div>
+          </div>
+
+          <div class="sect-title"><span class="ms sm">favorite</span> <span id="lbl-vitals">Baseline Vitals</span></div>
+          <div class="fgrid">
+            <div class="fg"><span class="flbl">BP (mmHg)</span><input type="text" id="v-bp" class="finp" placeholder="120/80"></div>
+            <div class="fg"><span class="flbl">HR (bpm)</span><input type="number" id="v-hr" class="finp"></div>
+            <div class="fg"><span class="flbl">RR (/min)</span><input type="number" id="v-rr" class="finp"></div>
+          </div>
+          <div class="fgrid">
+            <div class="fg"><span class="flbl">Temp (°F)</span><input type="number" step="0.1" id="v-temp" class="finp"></div>
+            <div class="fg"><span class="flbl">SpO2 (%)</span><input type="number" id="v-spo2" class="finp"></div>
+          </div>
+          <div class="fgrid">
+            <div class="fg"><span class="flbl">CNS Exam</span><input type="text" id="v-cns" class="finp" placeholder="Conscious, oriented..."></div>
+            <div class="fg"><span class="flbl">Respiratory Exam</span><input type="text" id="v-resp" class="finp" placeholder="Clear air entry B/L..."></div>
+          </div>
+
+          <div id="sec-fresh" style="display:none;">
+            <div class="sect-title" style="color:var(--warn)"><span class="ms sm">assignment_late</span> New Clinical Updates</div>
+            <div class="fg"><span class="flbl">Fresh Complaints / Day Updates</span><textarea id="w-fresh" class="finp" placeholder="e.g., Developed mild fever overnight..."></textarea></div>
+          </div>
+
+          <div class="sect-title"><span class="ms sm">science</span> Labs & Diagnostics</div>
+          <div class="fgrid" style="background:rgba(245,158,11,0.05); padding:10px; border-radius:10px; border:1px solid var(--wdim);">
+            <div class="fg"><span class="flbl" style="color:var(--warn)">SCr (mg/dL)</span><input type="number" step="0.1" id="l-scr" class="finp"></div>
+            <div class="fg"><span class="flbl" style="color:var(--warn)">AST (U/L)</span><input type="number" id="l-ast" class="finp"></div>
+            <div class="fg"><span class="flbl" style="color:var(--warn)">ALT (U/L)</span><input type="number" id="l-alt" class="finp"></div>
+            <div class="fg"><span class="flbl" style="color:var(--warn)">Bilirubin</span><input type="number" step="0.1" id="l-bil" class="finp"></div>
+          </div>
+
+          <div class="lb-box">
+            <span class="flbl" style="margin-bottom:8px;">Add Specific Lab Panel Values</span>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <select id="lab-sys" class="finp" style="flex:1; min-width:140px;" onchange="updLabParams()">
+                <option value="">-- Select Category --</option>
+                <option value="hemato">🩸 Hematology</option>
+                <option value="biochem">🧪 Biochemistry / Lytes</option>
+                <option value="cardio">🫀 Cardio / Coag</option>
+              </select>
+              <select id="lab-param" class="finp" style="flex:1; min-width:140px;"><option value="">-- Parameter --</option></select>
+              <input type="text" id="lab-val" class="finp" style="width:80px;" placeholder="Value">
+              <button class="hbtn" style="background:var(--blue); color:#fff;" onclick="addLabTag()"><span class="ms sm">add</span></button>
+            </div>
+            <div class="rx-list" id="lab-tags" style="margin-top:12px; margin-bottom:0;"></div>
+          </div>
+          <div class="fg"><span class="flbl">Urine Microscopy</span><input type="text" id="l-urine" class="finp" placeholder="Pus cells, RBCs..."></div>
+          <div class="fg"><span class="flbl">Others / Imaging</span><textarea id="l-img" class="finp" placeholder="CXR, USG, ECG findings..."></textarea></div>
+
+          <div class="sect-title"><span class="ms sm">medication</span> Current Treatment</div>
+          <div class="lb-box">
+            <div class="tx-row">
+              <input type="text" id="tx-drug" class="finp" placeholder="Drug Name">
+              <input type="text" id="tx-dose" class="finp" placeholder="Dose">
+              <input type="text" id="tx-freq" class="finp" placeholder="Freq (OD, BD)">
+              <input type="text" id="tx-route" class="finp" placeholder="Route (PO, IV)">
+              <button class="hbtn" style="background:var(--blue); color:#fff;" onclick="addTxTag()"><span class="ms sm">add</span></button>
+            </div>
+            <div class="rx-list" id="tx-tags" style="flex-direction:column; margin-bottom:0;"></div>
+          </div>
+
+        </div>
+        <div class="wiz-footer">
+          <button class="btn-block" id="btn-gen-plan" onclick="genCarePlan()"><span class="ms sm">memory</span> Analyze & Generate</button>
+        </div>
+      </div>
+
+    </div>
+    
     <div id="ia">
       <div class="irow">
         <button class="iibtn" onclick="openCam();hap(10);" title="Scan"><span class="ms md">photo_camera</span></button>
@@ -982,6 +1178,184 @@ async function openCam(){document.getElementById('cm').classList.add('open');try
 function closeCam(){const s=vid().srcObject;if(s)s.getTracks().forEach(t=>t.stop());vid().srcObject=null;document.getElementById('cm').classList.remove('open');}
 async function capScan(){const btn=document.getElementById('snapbtn');btn.disabled=true;btn.innerHTML='<span class="ms md" style="animation:spin 1s linear infinite">progress_activity</span> Extracting...';const c=document.getElementById('canvas'),v=vid();c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);try{const r=await Tesseract.recognize(c,'eng');const txt=r.data.text.trim();if(txt&&txt.length>3){closeCam();document.getElementById('ocredit').value=txt;openM('opm');}else{toast('No text detected. Try better lighting.','warn');}}catch(e){toast('OCR failed. Please try again.','err');}btn.disabled=false;btn.innerHTML='<span class="ms md">document_scanner</span> Capture &amp; Extract';}
 function confirmOCR(){const t=document.getElementById('ocredit').value.trim();if(!t)return;insertQ(t);closeM('opm');}
+/* ══ CDSS WARD LOGIC ══ */
+let isWardMode = false;
+let wardPatients = JSON.parse(localStorage.getItem('pharmai_ward') || '[]');
+let activeTab = 'active';
+let cdssTempLabs = [];
+let cdssTempTx = [];
+
+// 1. App Navigation Toggle
+function toggleAppMode() {
+  isWardMode = !isWardMode;
+  const chatView = document.getElementById('chat');
+  const iaView = document.getElementById('ia');
+  const wardView = document.getElementById('cdss-view');
+  const navIcon = document.getElementById('navIcon');
+
+  if (isWardMode) {
+    chatView.style.display = 'none';
+    iaView.style.display = 'none';
+    wardView.style.display = 'flex';
+    navIcon.textContent = 'chat'; // Changes icon to chat so user knows how to go back
+    renderWardList();
+  } else {
+    chatView.style.display = 'flex';
+    iaView.style.display = 'flex';
+    wardView.style.display = 'none';
+    navIcon.textContent = 'local_hospital';
+    scrollD(); // Scroll chat to bottom
+  }
+}
+
+// 2. Dashboard List Management
+function switchWardTab(tab) {
+  activeTab = tab;
+  document.getElementById('tab-active').classList.toggle('active', tab === 'active');
+  document.getElementById('tab-closed').classList.toggle('active', tab === 'closed');
+  hap(10);
+  renderWardList();
+}
+
+function renderWardList() {
+  const container = document.getElementById('pt-list-container');
+  const filtered = wardPatients.filter(p => p.status === activeTab);
+  
+  if (filtered.length === 0) {
+    container.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--muted); font-size:0.9rem;">No ${activeTab} patients on the ward.</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(p => `
+    <div class="pat-card ${p.status}" onclick="openCDSSFile('${p.id}');hap(10);">
+      <div class="pc-head">
+        <div class="pc-name">${esc(p.name)}</div>
+        <div class="pc-badge">${esc(p.bedId)}</div>
+      </div>
+      <div class="pc-details">
+        <span>${p.age}y ${p.sex}</span>
+        <span>${p.weight} kg</span>
+        <span>CC: ${esc(p.cc.substring(0, 30))}...</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// 3. Wizard & Form Management
+function openCDSSWiz(mode) {
+  document.getElementById('cdss-form').classList.add('open');
+  
+  // Reset Temp Arrays
+  cdssTempLabs = [];
+  cdssTempTx = [];
+  renderCDSSLabs();
+  renderCDSSTx();
+
+  if (mode === 'admit') {
+    document.getElementById('wiz-title').innerHTML = '<span class="ms md">person_add</span> Admit Patient';
+    document.getElementById('sec-demo').style.display = 'block';
+    document.getElementById('sec-hist').style.display = 'block';
+    document.getElementById('sec-fresh').style.display = 'none';
+    document.getElementById('lbl-vitals').textContent = 'Baseline Vitals';
+    document.getElementById('btn-gen-plan').innerHTML = '<span class="ms sm">memory</span> Generate Baseline Plan';
+  } else if (mode === 'progress') {
+    document.getElementById('wiz-title').innerHTML = '<span class="ms md">edit_note</span> Add Daily Progress';
+    document.getElementById('sec-demo').style.display = 'none'; // Hide static info
+    document.getElementById('sec-hist').style.display = 'none'; // Hide static info
+    document.getElementById('sec-fresh').style.display = 'block';
+    document.getElementById('lbl-vitals').textContent = 'Updated Vitals';
+    document.getElementById('btn-gen-plan').innerHTML = '<span class="ms sm">memory</span> Generate Progress Plan';
+  }
+}
+
+function closeCDSSWiz() {
+  document.getElementById('cdss-form').classList.remove('open');
+}
+
+// 4. Lab Dropdowns with Baked-In Units
+const cdssLabOpts = {
+  hemato: ['Hb (g/dL)', 'RBC (millions/µL)', 'WBC (cells/mm³)', 'Platelets (lakhs/µL)', 'MCV (fL)', 'MCH (pg)', 'MCHC (g/dL)', 'PCV/HCT (%)', 'ESR (mm/hr)', 'Neutrophils (%)', 'Lymphocytes (%)', 'INR', 'aPTT (sec)'],
+  biochem: ['Na+ (mEq/L)', 'K+ (mEq/L)', 'Cl- (mEq/L)', 'HCO3- (mEq/L)', 'BUN (mg/dL)', 'Ca2+ (mg/dL)', 'Mg2+ (mg/dL)', 'PO4 (mg/dL)', 'Uric Acid (mg/dL)', 'Albumin (g/dL)', 'Globulin (g/dL)', 'Total Protein (g/dL)', 'RBS (mg/dL)', 'FBS (mg/dL)', 'HbA1c (%)'],
+  cardio: ['Troponin (ng/mL)', 'BNP (pg/mL)', 'PT (sec)']
+};
+
+function updLabParams() {
+  const sys = document.getElementById('lab-sys').value;
+  const paramSelect = document.getElementById('lab-param');
+  paramSelect.innerHTML = '<option value="">-- Parameter --</option>';
+  if (sys && cdssLabOpts[sys]) {
+    cdssLabOpts[sys].forEach(p => {
+      paramSelect.innerHTML += `<option value="${p}">${p}</option>`;
+    });
+  }
+}
+
+// 5. Tag Builders (Labs & Tx)
+function addLabTag() {
+  const param = document.getElementById('lab-param').value;
+  const val = document.getElementById('lab-val').value;
+  if (!param || !val) { toast('Select a parameter and enter a value.', 'warn'); return; }
+  cdssTempLabs.push({ param, val });
+  document.getElementById('lab-val').value = '';
+  renderCDSSLabs();
+  hap(10);
+}
+
+function renderCDSSLabs() {
+  const cont = document.getElementById('lab-tags');
+  cont.innerHTML = cdssTempLabs.map((l, i) => `<div class="rx-tag">${l.param}: <b>${esc(l.val)}</b> <button class="rx-del" onclick="remLabTag(${i});hap(10);"><span class="ms xs">close</span></button></div>`).join('');
+}
+function remLabTag(i) { cdssTempLabs.splice(i, 1); renderCDSSLabs(); }
+
+function addTxTag() {
+  const drug = document.getElementById('tx-drug').value;
+  const dose = document.getElementById('tx-dose').value;
+  const freq = document.getElementById('tx-freq').value;
+  const route = document.getElementById('tx-route').value;
+  if (!drug) { toast('Drug name is required.', 'warn'); return; }
+  cdssTempTx.push({ drug, dose, freq, route });
+  document.getElementById('tx-drug').value = ''; document.getElementById('tx-dose').value = '';
+  document.getElementById('tx-freq').value = ''; document.getElementById('tx-route').value = '';
+  renderCDSSTx();
+  hap(10);
+}
+
+function renderCDSSTx() {
+  const cont = document.getElementById('tx-tags');
+  cont.innerHTML = cdssTempTx.map((t, i) => `<div class="rx-tag" style="justify-content:space-between; width:100%;">${esc(t.drug)} - ${esc(t.dose)} ${esc(t.freq)} (${esc(t.route)}) <button class="rx-del" onclick="remTxTag(${i});hap(10);"><span class="ms xs">close</span></button></div>`).join('');
+}
+function remTxTag(i) { cdssTempTx.splice(i, 1); renderCDSSTx(); }
+
+// 6. Data Bundling (Prep for AI)
+function genCarePlan() {
+  // Grab all inputs
+  const payload = {
+    isUpdate: document.getElementById('sec-fresh').style.display === 'block',
+    demographics: {
+      name: document.getElementById('w-name').value, id: document.getElementById('w-id').value,
+      age: document.getElementById('w-age').value, sex: document.getElementById('w-sex').value, wt: document.getElementById('w-wt').value
+    },
+    history: {
+      cc: document.getElementById('w-cc').value, pmh: document.getElementById('w-pmh').value,
+      alg: document.getElementById('w-alg').value, soc: document.getElementById('w-soc').value, fam: document.getElementById('w-fam').value
+    },
+    updates: { fresh: document.getElementById('w-fresh').value },
+    vitals: {
+      bp: document.getElementById('v-bp').value, hr: document.getElementById('v-hr').value, rr: document.getElementById('v-rr').value,
+      temp: document.getElementById('v-temp').value, spo2: document.getElementById('v-spo2').value,
+      cns: document.getElementById('v-cns').value, resp: document.getElementById('v-resp').value
+    },
+    labs: {
+      anchors: { scr: document.getElementById('l-scr').value, ast: document.getElementById('l-ast').value, alt: document.getElementById('l-alt').value, bil: document.getElementById('l-bil').value },
+      specifics: cdssTempLabs, urine: document.getElementById('l-urine').value, img: document.getElementById('l-img').value
+    },
+    treatment: cdssTempTx
+  };
+
+  console.log("PAYLOAD READY FOR GROQ:", payload);
+  toast('Data bundled! Ready for AI Analysis.', 'ok');
+  
+  }
 </script>
 </body>
 </html>
