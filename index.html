@@ -784,7 +784,42 @@ textarea.finp { resize: vertical; min-height: 70px; }
     </div>
   </div>
 </div>
-
+<div class="mov" id="discharge-modal" onclick="handleOC(event,'discharge-modal')">
+  <div class="msh">
+    <div class="mhdr"><div class="mtitle"><span class="ms md">logout</span> Close Case</div><button class="mclose" onclick="closeM('discharge-modal');"><span class="ms sm">close</span></button></div>
+    <div class="mbody">
+      <div class="fg"><span class="flbl">Outcome</span>
+        <select id="dc-outcome" class="finp" onchange="document.getElementById('dc-meds-sec').style.display = this.value === 'discharge' ? 'block' : 'none';">
+          <option value="discharge">Routine Discharge (Generate Patient Card)</option>
+          <option value="dama">DAMA (Discharge Against Medical Advice)</option>
+          <option value="lost">Transferred / Incomplete Follow-up</option>
+        </select>
+      </div>
+      
+      <div id="dc-meds-sec">
+        <div class="sect-title"><span class="ms sm">medication</span> Discharge Medications</div>
+        <p style="font-size:0.8rem; color:var(--t2); margin-bottom:12px;">Generate a layman-friendly Patient Counseling Card.</p>
+        <div class="rx-row">
+          <input type="text" id="dc-rx-inp" class="rx-inp" placeholder="e.g. Amoxicillin 500mg TDS x 5 days" onkeypress="if(event.key==='Enter')addDcRx()">
+          <button class="rx-add" onclick="addDcRx()"><span class="ms sm">add</span></button>
+        </div>
+        <div class="rx-list" id="dc-rx-list"></div>
+        
+        <div class="fg" style="margin-top:16px;">
+          <span class="flbl">Patient Language</span>
+          <select id="dc-lang" class="finp">
+            <option value="English">English</option>
+            <option value="Hindi">Hindi (हिंदी)</option>
+            <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="fg"><span class="flbl">Final Clinical Notes (Optional)</span><textarea id="dc-notes" class="finp"></textarea></div>
+      <button class="btn-block" style="margin-top:20px;" onclick="processDischarge()"><span class="ms sm">check_circle</span> Finalize & Close Case</button>
+    </div>
+  </div>
+</div>
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
@@ -1328,36 +1363,157 @@ function renderCDSSTx() {
 }
 function remTxTag(i) { cdssTempTx.splice(i, 1); renderCDSSTx(); }
 
-// 6. Data Bundling (Prep for AI)
-function genCarePlan() {
-  // Grab all inputs
+// 6. AI Engine, Saving, & Data Bundling
+let activeCaseId = null;
+let dcRxList = [];
+
+function openCDSSFile(id) {
+  activeCaseId = id;
+  const pt = wardPatients.find(p => p.id === id);
+  if(!pt) return;
+  document.getElementById('cdss-dash').style.display = 'none';
+  document.getElementById('cdss-file').classList.add('open');
+  document.getElementById('f-pt-name').textContent = pt.name;
+  document.getElementById('f-pt-bed').textContent = pt.bedId;
+  document.getElementById('pt-timeline').innerHTML = pt.htmlTimeline || '<div style="color:var(--muted); text-align:center; padding:20px;">No AI reports generated yet.</div>';
+  document.getElementById('file-actions').style.display = pt.status === 'closed' ? 'none' : 'flex';
+}
+
+function closeCDSSFile() {
+  activeCaseId = null;
+  document.getElementById('cdss-file').classList.remove('open');
+  document.getElementById('cdss-dash').style.display = 'block';
+  renderWardList();
+}
+
+function openDischargeModal() {
+  dcRxList = [];
+  document.getElementById('dc-rx-list').innerHTML = '';
+  document.getElementById('discharge-modal').classList.add('open');
+}
+
+function addDcRx() {
+  const v = document.getElementById('dc-rx-inp').value.trim();
+  if(!v) return;
+  dcRxList.push(v);
+  document.getElementById('dc-rx-inp').value = '';
+  document.getElementById('dc-rx-list').innerHTML = dcRxList.map((r,i) => `<div class="rx-tag">${esc(r)}<button class="rx-del" onclick="dcRxList.splice(${i},1); document.getElementById('dc-rx-list').children[${i}].remove();"><span class="ms xs">close</span></button></div>`).join('');
+}
+
+async function processDischarge() {
+  const outcome = document.getElementById('dc-outcome').value;
+  const notes = document.getElementById('dc-notes').value;
+  closeM('discharge-modal');
+  
+  let pt = wardPatients.find(p => p.id === activeCaseId);
+  pt.status = 'closed';
+  
+  if(outcome === 'discharge' && dcRxList.length > 0) {
+    const lang = document.getElementById('dc-lang').value;
+    const payload = { discharge_medications: dcRxList, clinical_notes: notes };
+    await callCDSSAI(payload, 'discharge', lang);
+  } else {
+    pt.htmlTimeline += `<div class="cdss-report" style="border-left:4px solid var(--t2)"><div class="rep-hdr">Case Closed: ${outcome.toUpperCase()}</div><p>${esc(notes)}</p></div>`;
+    saveWardData();
+    closeCDSSFile();
+  }
+}
+
+async function genCarePlan() {
   const payload = {
     isUpdate: document.getElementById('sec-fresh').style.display === 'block',
-    demographics: {
-      name: document.getElementById('w-name').value, id: document.getElementById('w-id').value,
-      age: document.getElementById('w-age').value, sex: document.getElementById('w-sex').value, wt: document.getElementById('w-wt').value
-    },
-    history: {
-      cc: document.getElementById('w-cc').value, pmh: document.getElementById('w-pmh').value,
-      alg: document.getElementById('w-alg').value, soc: document.getElementById('w-soc').value, fam: document.getElementById('w-fam').value
-    },
+    demographics: { name: document.getElementById('w-name').value, id: document.getElementById('w-id').value, age: document.getElementById('w-age').value, sex: document.getElementById('w-sex').value, wt: document.getElementById('w-wt').value },
+    history: { cc: document.getElementById('w-cc').value, pmh: document.getElementById('w-pmh').value, alg: document.getElementById('w-alg').value },
     updates: { fresh: document.getElementById('w-fresh').value },
-    vitals: {
-      bp: document.getElementById('v-bp').value, hr: document.getElementById('v-hr').value, rr: document.getElementById('v-rr').value,
-      temp: document.getElementById('v-temp').value, spo2: document.getElementById('v-spo2').value,
-      cns: document.getElementById('v-cns').value, resp: document.getElementById('v-resp').value
-    },
-    labs: {
-      anchors: { scr: document.getElementById('l-scr').value, ast: document.getElementById('l-ast').value, alt: document.getElementById('l-alt').value, bil: document.getElementById('l-bil').value },
-      specifics: cdssTempLabs, urine: document.getElementById('l-urine').value, img: document.getElementById('l-img').value
-    },
+    labs: { anchors: { scr: document.getElementById('l-scr').value, ast: document.getElementById('l-ast').value, alt: document.getElementById('l-alt').value, bil: document.getElementById('l-bil').value }, specifics: cdssTempLabs },
     treatment: cdssTempTx
   };
 
-  console.log("PAYLOAD READY FOR GROQ:", payload);
-  toast('Data bundled! Ready for AI Analysis.', 'ok');
+  closeCDSSWiz();
   
+  // ---> THIS IS THE MISSING SAVE LOGIC <---
+  if(!payload.isUpdate && !activeCaseId) {
+    activeCaseId = 'PT-' + Date.now();
+    wardPatients.unshift({ 
+      id: activeCaseId, 
+      status: 'active', 
+      name: payload.demographics.name || 'Unknown', 
+      bedId: payload.demographics.id || 'TBD', 
+      age: payload.demographics.age, 
+      sex: payload.demographics.sex, 
+      weight: payload.demographics.wt, 
+      cc: payload.history.cc || 'No complaints listed', 
+      htmlTimeline: '' 
+    });
+    saveWardData(); // Save to local storage
   }
+  openCDSSFile(activeCaseId);
+  
+  await callCDSSAI(payload, payload.isUpdate ? 'progress' : 'baseline');
+}
+
+async function callCDSSAI(payload, mode, lang = 'English') {
+  if(!groqKey) { toast('API key not configured.', 'err'); return; }
+  
+  let sysPrompt = "";
+  if (mode === 'baseline' || mode === 'progress') {
+    sysPrompt = `You are PharmAI, a Senior Clinical Pharmacist. Review the patient data. Output ONLY JSON:
+{"missing_data": ["List any pending labs needed for organ clearance"], "critical_alerts": ["Severe interactions/warnings"], "clinical_correlations": ["Symptom-drug correlations"], "care_plan": [{"drug": "Name", "dose": "Dose", "monitoring": "What to monitor", "rationale": "Why"}]}`;
+  } else if (mode === 'discharge') {
+    sysPrompt = `You are a Patient Educator. Translate the discharge medications into a 5th-grade reading level. Output ONLY JSON in ${lang} language:
+{"title": "Discharge Instructions", "diagnosis_simple": "Layman explanation of treatment", "lifestyle_tips": ["tip1", "tip2"], "medications": [{"name": "Medicine", "purpose": "What it does", "schedule": "When to take", "warnings": "Watch out for"}]}`;
+  }
+
+  const loaderId = 'load-' + Date.now();
+  document.getElementById('pt-timeline').innerHTML = `<div id="${loaderId}" class="cdss-report"><span class="ms sm" style="animation:spin 1s linear infinite">progress_activity</span> AI is analyzing clinical data...</div>` + document.getElementById('pt-timeline').innerHTML;
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
+      body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: JSON.stringify(payload) }], temperature: 0.2, response_format: { type: 'json_object' } })
+    });
+    const data = await res.json();
+    const result = JSON.parse(data.choices[0].message.content);
+    
+    document.getElementById(loaderId).remove();
+    let html = '';
+    
+    if(mode === 'discharge') {
+      html = `<div class="cdss-report" style="border-left:4px solid var(--ok); background:rgba(16,185,129,0.05);">
+        <div class="rep-hdr" style="color:var(--ok)"><span class="ms sm">home</span> ${result.title} (${lang})</div>
+        <p><strong>Overview:</strong> ${result.diagnosis_simple}</p>
+        <table class="rep-tbl"><tr><th>Medicine</th><th>Purpose</th><th>Schedule</th><th>Warnings</th></tr>
+        ${result.medications.map(m => `<tr><td><strong>${m.name}</strong></td><td>${m.purpose}</td><td>${m.schedule}</td><td>${m.warnings}</td></tr>`).join('')}</table>
+        <p><strong>Tips:</strong><ul>${result.lifestyle_tips.map(t => `<li>${t}</li>`).join('')}</ul></p>
+      </div>`;
+    } else {
+      const isMissing = result.missing_data && result.missing_data.length > 0;
+      const isCritical = result.critical_alerts && result.critical_alerts.length > 0;
+      html = `<div class="cdss-report">
+        <div class="rep-hdr">${mode === 'baseline' ? 'Admission Baseline Care Plan' : 'Daily Progress Update'} - ${ts()}</div>
+        ${isMissing ? `<div class="aalert warn" style="margin:0 0 10px 0"><span class="ms xs">warning</span><div><strong>Pending Data:</strong><ul style="margin:5px 0 0 20px">${result.missing_data.map(m=>`<li>${m}</li>`).join('')}</ul></div></div>` : ''}
+        ${isCritical ? `<div class="aalert dng" style="margin:0 0 10px 0"><span class="ms xs">gpp_bad</span><div><strong>Critical Alerts:</strong><ul style="margin:5px 0 0 20px">${result.critical_alerts.map(m=>`<li>${m}</li>`).join('')}</ul></div></div>` : ''}
+        ${result.clinical_correlations && result.clinical_correlations.length > 0 ? `<p style="font-size:0.8rem; color:var(--blue);"><strong>Correlations:</strong> ${result.clinical_correlations.join('. ')}</p>` : ''}
+        <table class="rep-tbl"><tr><th>Drug</th><th>Dose</th><th>Monitoring</th><th>Rationale</th></tr>
+        ${result.care_plan.map(c => `<tr><td><strong>${c.drug}</strong></td><td>${c.dose}</td><td>${c.monitoring}</td><td>${c.rationale}</td></tr>`).join('')}</table>
+      </div>`;
+    }
+
+    const pt = wardPatients.find(p => p.id === activeCaseId);
+    pt.htmlTimeline = html + pt.htmlTimeline;
+    saveWardData();
+    document.getElementById('pt-timeline').innerHTML = pt.htmlTimeline;
+    if(mode === 'discharge') closeCDSSFile();
+
+  } catch(e) {
+    document.getElementById(loaderId).innerHTML = `<span style="color:var(--danger)"><span class="ms sm">error</span> Analysis failed. Check API Key.</span>`;
+  }
+}
+
+function saveWardData() {
+  localStorage.setItem('pharmai_ward', JSON.stringify(wardPatients));
+  renderWardList(); // Refresh the list so the new patient appears!
+}
 </script>
 </body>
 </html>
