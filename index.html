@@ -15,6 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet"/>
   <script src="https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js"></script>
 <style>
+/* ══ BASE STYLES & TYPOGRAPHY ══ */
 .ms{font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;direction:ltr;-webkit-font-feature-settings:"liga";font-feature-settings:"liga";-webkit-font-smoothing:antialiased;font-variation-settings:"FILL" 0,"wght" 400,"GRAD" 0,"opsz" 24;vertical-align:middle;flex-shrink:0}
 .ms.fill{font-variation-settings:"FILL" 1,"wght" 400,"GRAD" 0,"opsz" 24}
 .ms.xs{font-size:14px}.ms.sm{font-size:18px}.ms.md{font-size:22px}.ms.lg{font-size:26px}.ms.xl{font-size:34px}.ms.xxl{font-size:44px}
@@ -68,7 +69,6 @@ button,input,textarea,select{font-family:var(--ff)}
 @keyframes blinkC{0%,100%{border-color:transparent}50%{border-color:var(--blue)}}
 .spl-sub{font-size:.75rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;opacity:0;animation:fadeIn .4s var(--ease) .85s both}
 @keyframes fadeIn{to{opacity:1}}
-/* AUTH loading overlay */
 #auth-loading{position:fixed;inset:0;z-index:9998;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
 .auth-spinner{width:44px;height:44px;border:3px solid var(--b2);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite}
 #lp{display:flex;align-items:center;justify-content:center;min-height:100dvh;width:100vw;padding:24px;position:relative;overflow:hidden}
@@ -289,32 +289,7 @@ header{display:flex;align-items:center;gap:8px;padding:max(env(safe-area-inset-t
 .ltbl tr:nth-child(even) td{background:rgba(255,255,255,.02)}
 body.light .ltbl tr:nth-child(even) td{background:rgba(0,0,0,.02)}
 .lsh td{background:var(--card2)!important;color:var(--t2);font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;padding:7px 12px}
-#cm{position:fixed;inset:0;background:#000;z-index:2000;display:none;flex-direction:column}
-#cm.open{display:flex;animation:msgIn .35s var(--spring) both}
-.camhdr{display:flex;align-items:center;justify-content:space-between;padding:max(env(safe-area-inset-top),20px) 20px 14px;background:linear-gradient(to bottom,rgba(0,0,0,.8),transparent);position:absolute;top:0;width:100%;z-index:10;color:#fff}
-.camhdr h3{font-size:1.05rem;font-weight:700}
-.camcls{width:40px;height:40px;min-width:40px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border:none;border-radius:50%;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.camcls:active{transform:scale(.88)}
-.camvp{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
-#video{width:100%;height:100%;object-fit:cover}
-.cambox{position:absolute;width:85%;max-width:360px;height:140px;border:2px solid var(--blue);border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.6);animation:scanP 2s ease-in-out infinite}
-@keyframes scanP{0%,100%{border-color:var(--blue)}50%{border-color:var(--indigo)}}
-.scanl{position:absolute;width:100%;height:2px;background:var(--grad);top:0;animation:scanM 2s linear infinite}
-@keyframes scanM{0%{transform:translateY(0)}100%{transform:translateY(140px)}}
-.camft{padding:24px 20px;padding-bottom:max(24px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;background:var(--bg);border-top:1px solid var(--b)}
-#snapbtn{width:100%;min-height:54px;border:none;border-radius:999px;background:var(--grad);color:#fff;font-weight:700;font-size:.95rem;font-family:var(--ff);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .25s var(--spring);box-shadow:0 4px 16px rgba(14,165,233,.25)}
-#snapbtn:active{transform:scale(.97)}#snapbtn:disabled{opacity:.5;filter:grayscale(1)}
-#canvas{display:none}
-#opm .msh{border-radius:24px;max-width:420px}
-#ocredit{width:100%;height:120px;background:var(--ibg);border:1.5px solid var(--b2);border-radius:16px;color:var(--text);padding:14px;font-family:var(--fm);font-size:.85rem;resize:none;margin-bottom:14px;outline:none;transition:border-color .25s}
-#ocredit:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--bdim)}
-.oacts{display:flex;gap:10px}
-.obtn{flex:1;min-height:44px;border-radius:999px;font-size:.88rem;font-weight:700;font-family:var(--ff);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .25s var(--spring)}
-.obtn.pri{background:var(--grad);border:none;color:#fff;box-shadow:0 4px 14px rgba(14,165,233,.25)}
-.obtn.sec{background:var(--card2);border:1.5px solid var(--b2);color:var(--t2)}
-.obtn:active{transform:scale(.96)}
-@keyframes spin{to{transform:rotate(360deg)}}
-@media(min-width:640px){header,#fb{padding-left:24px;padding-right:24px}#chat{padding:24px}#ia{padding:14px 24px;padding-bottom:max(14px,env(safe-area-inset-bottom))}.bwrap{max-width:76%}}
+
 /* ══ CDSS WARD DASHBOARD STYLES ══ */
 #cdss-view { display: none; flex: 1; flex-direction: column; overflow: hidden; position: relative; background: var(--bg); z-index: 5; }
 .cdss-dash { flex: 1; overflow-y: auto; padding: 20px; touch-action: pan-y; }
@@ -363,16 +338,34 @@ textarea.finp { resize: vertical; min-height: 70px; }
 .rep-tbl th { background: var(--bdim); color: var(--blue); padding: 8px; text-align: left; border: 1px solid var(--b); font-weight: 700; }
 .rep-tbl td { padding: 8px; border: 1px solid var(--b); }
 
-/* Print Magic for PDF Export */
+/* Print Magic for PDF Export - Fixed Pagination */
 @media print {
-  body { background: #fff !important; color: #000 !important; }
-  #tw, header, #sb, #ia, #fb, .wiz-hdr, .wiz-footer, .btn-block, .ms { display: none !important; }
-  .cdss-wiz, .mbody { position: static !important; overflow: visible !important; display: block !important; padding: 0 !important; }
-  .cdss-report { border: none !important; box-shadow: none !important; background: #fff !important; color: #000 !important; padding: 0 !important; margin-bottom: 40px !important; page-break-inside: avoid; }
+  html, body, #ap, .mac, #cdss-view, .cdss-wiz, .wiz-body {
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+    display: block !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+  #tw, header, #sb, #ia, #fb, .wiz-hdr, .wiz-footer, .btn-block, .ms, #cdss-dash, #cdss-form, #splash, #lp, #cm, .mov { 
+    display: none !important; 
+  }
+  #cdss-file { display: block !important; }
+  #pt-timeline { padding: 0 !important; margin: 0 !important; }
+  .cdss-report { 
+    border: none !important; box-shadow: none !important; background: #fff !important; 
+    color: #000 !important; padding: 0 !important; margin-bottom: 40px !important; 
+    page-break-inside: avoid; 
+  }
   .rep-hdr { color: #000 !important; border-bottom: 2px solid #000 !important; }
+  .rep-tbl { page-break-inside: auto; }
+  .rep-tbl tr { page-break-inside: avoid; page-break-after: auto; }
   .rep-tbl th { background: #eee !important; color: #000 !important; border-color: #aaa !important; }
   .rep-tbl td { border-color: #aaa !important; }
   .ctag, .asum, .abody { color: #000 !important; }
+  * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
 }
 </style>
 </head>
@@ -435,11 +428,8 @@ textarea.finp { resize: vertical; min-height: 70px; }
       <div><div class="ltitle">PharmAI</div><div class="lsub">Clinical Assistant</div></div>
       <div class="hright">
         <button class="hbtn" id="navToggle" onclick="toggleAppMode();hap(10);" title="Ward Dashboard"><span class="ms sm" id="navIcon">local_hospital</span></button>
-        
         <button class="hbtn" onclick="openM('tm');hap(10);" title="Tools"><span class="ms sm">calculate</span></button>
-       
         <button class="hbtn" onclick="openM('sm');hap(10);" title="Settings"><span class="ms sm">settings</span></button>  
-        
         <div class="pc" id="hpc" onclick="toggleSB();hap(10);">?</div>
       </div>
     </header>
@@ -488,8 +478,7 @@ textarea.finp { resize: vertical; min-height: 70px; }
           </div>
           <button class="hbtn" onclick="window.print();" title="Export PDF"><span class="ms sm">picture_as_pdf</span></button>
         </div>
-        <div class="wiz-body" id="pt-timeline" style="padding-bottom:120px;">
-           </div>
+        <div class="wiz-body" id="pt-timeline" style="padding-bottom:120px;"></div>
         <div class="wiz-footer" id="file-actions">
           <button class="btn-block sec" onclick="openCDSSWiz('progress');hap(10);"><span class="ms sm">edit_note</span> Add Progress</button>
           <button class="btn-block" onclick="openDischargeModal();hap(10);" style="background:var(--danger); box-shadow:none;"><span class="ms sm">logout</span> Close Case</button>
@@ -529,7 +518,7 @@ textarea.finp { resize: vertical; min-height: 70px; }
             <div class="fg"><span class="flbl" style="color:var(--blue)">Primary Diagnosis *</span><input type="text" id="w-dx" class="finp" placeholder="Main reason for admission"></div>
             <div class="fg"><span class="flbl">Chief Complaints</span><textarea id="w-cc" class="finp" placeholder="Symptoms..."></textarea></div>
             <div class="fg"><span class="flbl">Past Medical History (PMH)</span><textarea id="w-pmh" class="finp"></textarea></div>
-            <div class="fg"><span class="flbl">Past Medication History</span><textarea id="w-pmx" class="finp" placeholder="Drugs taken prior to admission..."></textarea></div>
+            <div class="fg"><span class="flbl">Past Medication History (PMx)</span><textarea id="w-pmx" class="finp" placeholder="Drugs taken prior to admission..."></textarea></div>
             <div class="fgrid">
               <div class="fg"><span class="flbl" style="color:var(--danger)">Allergies</span><input type="text" id="w-alg" class="finp" placeholder="NKDA"></div>
             </div>
@@ -787,6 +776,7 @@ textarea.finp { resize: vertical; min-height: 70px; }
     </div>
   </div>
 </div>
+
 <div class="mov" id="discharge-modal" onclick="handleOC(event,'discharge-modal')">
   <div class="msh">
     <div class="mhdr"><div class="mtitle"><span class="ms md">logout</span> Close Case</div><button class="mclose" onclick="closeM('discharge-modal');"><span class="ms sm">close</span></button></div>
@@ -800,6 +790,7 @@ textarea.finp { resize: vertical; min-height: 70px; }
       </div>
       
       <div class="fg" style="margin-top:12px;"><span class="flbl">Date of Discharge (DOD)</span><input type="date" id="dc-dod" class="finp"></div>
+      
       <div id="dc-meds-sec">
         <div class="sect-title"><span class="ms sm">medication</span> Discharge Medications</div>
         <p style="font-size:0.8rem; color:var(--t2); margin-bottom:12px;">Generate a layman-friendly Patient Counseling Card.</p>
@@ -820,10 +811,11 @@ textarea.finp { resize: vertical; min-height: 70px; }
       </div>
       
       <div class="fg"><span class="flbl">Final Clinical Notes (Optional)</span><textarea id="dc-notes" class="finp"></textarea></div>
-      <button class="btn-block" style="margin-top:20px;" onclick="processDischarge()"><span class="ms sm">check_circle</span> Finalize & Close Case</button>
+      <button class="btn-block" id="btn-process-dc" style="margin-top:20px;" onclick="processDischarge()"><span class="ms sm">check_circle</span> Finalize & Close Case</button>
     </div>
   </div>
 </div>
+
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
@@ -845,10 +837,8 @@ const F={preg:false,peds:false,geri:false,counsel:false};
 let S={haptic:true,theme:'auto'};
 let _pendingFBUser=null;
 
-/* ══ HAPTIC ══ */
+/* ══ HAPTIC & TOAST ══ */
 function hap(ms){if(!S.haptic)return;if('vibrate'in navigator)navigator.vibrate(ms);}
-
-/* ══ TOAST ══ */
 function toast(msg,type='info',dur=3000){const w=document.getElementById('tw');const el=document.createElement('div');el.className=`toast ${type}`;const ic={ok:'check_circle',warn:'warning',err:'error',info:'info'};el.innerHTML=`<span class="ms xs">${ic[type]||'info'}</span><span>${msg}</span>`;w.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),350);},dur);}
 
 /* ══ THEME / SETTINGS ══ */
@@ -878,13 +868,10 @@ window.addEventListener('DOMContentLoaded',()=>{
     if(btn.classList.contains('cpy-btn'))cpyTxt(decodeURIComponent(txt),btn);
   });
 
-  /* Central auth state listener */
   auth.onAuthStateChanged(async(fbUser)=>{
     const loading_el=document.getElementById('auth-loading');
     if(fbUser){
-      /* Check if user has a display name set */
       if(!fbUser.displayName){
-        /* New user - needs name */
         _pendingFBUser=fbUser;
         loading_el.style.display='none';
         document.getElementById('lp').style.display='flex';
@@ -893,7 +880,6 @@ window.addEventListener('DOMContentLoaded',()=>{
         setTimeout(()=>document.getElementById('display-name').focus(),300);
         return;
       }
-      /* Returning user - enter app directly */
       loading_el.style.display='none';
       await enterApp(fbUser);
     } else {
@@ -963,7 +949,6 @@ async function saveName(){
 async function enterApp(fbUser){
   user=fbUser.uid;
   uName=fbUser.displayName||(fbUser.email?fbUser.email.split('@')[0]:'User');
-  /* Fetch Groq key from Firestore config */
   try{
     const cfg=await db.collection('config').doc('keys').get();
     if(cfg.exists)groqKey=cfg.data().groq||'';}catch(e){groqKey=localStorage.getItem('pgroq')||'';}
@@ -978,6 +963,7 @@ async function enterApp(fbUser){
   document.getElementById('sui').textContent=uName+' · '+provider;
   applyUI();
   await loadSettingsFromFirestore();
+  await loadWardData(); // Load Ward Patients from Firestore
   await loadSessions();
   newChat();
 }
@@ -996,9 +982,7 @@ async function doLogout(){
 async function deleteAccount(){
   if(!confirm('Permanently delete your account and all data? This cannot be undone.'))return;
   try{
-    if(user){
-      await db.collection('users').doc(user).delete().catch(()=>{});
-    }
+    if(user){ await db.collection('users').doc(user).delete().catch(()=>{}); }
     const fbUser=auth.currentUser;
     if(fbUser)await fbUser.delete();
     toast('Account deleted.','info');
@@ -1147,7 +1131,7 @@ function remTyp(){const t=document.getElementById('typ');if(t)t.remove();}
 function appendAI(p){
   const CM={'Side Effects':{c:'se',i:'bolt',l:'Side Effects'},'Dosage':{c:'dos',i:'medication',l:'Dosage'},'Drug Interaction':{c:'int',i:'monitor_heart',l:'Drug Interaction'},'Contraindication':{c:'con',i:'block',l:'Contraindication'},'Mechanism of Action':{c:'mec',i:'biotech',l:'Mechanism of Action'},'General Information':{c:'gen',i:'info',l:'General Information'}};
   const cat=CM[p.category]||{c:'gen',i:'info',l:p.category||'Response'};
-  const badges=[F.preg?'<span class="fb2 preg">Pregnancy</span>':'',,F.peds?'<span class="fb2 peds">Pediatric</span>':'',F.geri?'<span class="fb2 geri">Geriatric</span>':'',F.counsel?'<span class="fb2 cmode">Counseling</span>':'',,].filter(Boolean).join('');
+  const badges=[F.preg?'<span class="fb2 preg">Pregnancy</span>':'', F.peds?'<span class="fb2 peds">Pediatric</span>':'', F.geri?'<span class="fb2 geri">Geriatric</span>':'', F.counsel?'<span class="fb2 cmode">Counseling</span>':''].filter(Boolean).join('');
   const wH=p.warning?`<div class="aalert warn"><span class="ms xs" style="flex-shrink:0">warning</span><span>${p.warning}</span></div>`:'';
   const dH=p.danger?`<div class="aalert dng"><span class="ms xs" style="flex-shrink:0">gpp_bad</span><span>${p.danger}</span></div>`:'';
   const kH=p.keyPoints?.length?`<div class="kpw"><div class="aslbl"><span class="ms xs">checklist</span> Key Points</div>${p.keyPoints.map(k=>`<div class="kpi"><div class="kpd"></div><span>${k}</span></div>`).join('')}</div>`:'';
@@ -1220,37 +1204,41 @@ function closeCam(){const s=vid().srcObject;if(s)s.getTracks().forEach(t=>t.stop
 async function capScan(){const btn=document.getElementById('snapbtn');btn.disabled=true;btn.innerHTML='<span class="ms md" style="animation:spin 1s linear infinite">progress_activity</span> Extracting...';const c=document.getElementById('canvas'),v=vid();c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);try{const r=await Tesseract.recognize(c,'eng');const txt=r.data.text.trim();if(txt&&txt.length>3){closeCam();document.getElementById('ocredit').value=txt;openM('opm');}else{toast('No text detected. Try better lighting.','warn');}}catch(e){toast('OCR failed. Please try again.','err');}btn.disabled=false;btn.innerHTML='<span class="ms md">document_scanner</span> Capture &amp; Extract';}
 function confirmOCR(){const t=document.getElementById('ocredit').value.trim();if(!t)return;insertQ(t);closeM('opm');}
 
-/* ══ CDSS HELPER FUNCTIONS ══ */
-function calcBMI() {
-  const w = parseFloat(document.getElementById('w-wt').value);
-  const h = parseFloat(document.getElementById('w-ht').value);
-  const bmiEl = document.getElementById('w-bmi');
-  if (w && h) {
-    const hm = h / 100;
-    const bmi = (w / (hm * hm)).toFixed(1);
-    bmiEl.textContent = bmi + ' kg/m²';
-    bmiEl.style.color = (bmi < 18.5 || bmi >= 25) ? 'var(--warn)' : 'var(--ok)';
-  } else {
-    bmiEl.textContent = '--';
-    bmiEl.style.color = 'var(--t2)';
-  }
-}
-
-function togglePreg() {
-  const sex = document.getElementById('w-sex').value;
-  const pregBox = document.getElementById('w-preg-fg');
-  if(pregBox) pregBox.style.display = sex === 'F' ? 'flex' : 'none';
-}
-
-
-/* ══ CDSS WARD LOGIC ══ */
+/* ══ WARD DASHBOARD & CDSS LOGIC ══ */
 let isWardMode = false;
-let wardPatients = JSON.parse(localStorage.getItem('pharmai_ward') || '[]');
+let wardPatients = [];
 let activeTab = 'active';
 let cdssTempLabs = [];
 let cdssTempTx = [];
+let currentWardMode = 'admit'; // Robust mode flag
 
-// 1. App Navigation Toggle
+// Load Ward Data on Startup
+async function loadWardData() {
+  const localData = localStorage.getItem('pharmai_ward');
+  if (localData) { wardPatients = JSON.parse(localData); }
+  
+  if (user) {
+    try {
+      const d = await db.collection('users').doc(user).get();
+      if (d.exists && d.data().wardPatients) {
+        wardPatients = d.data().wardPatients;
+        localStorage.setItem('pharmai_ward', JSON.stringify(wardPatients));
+      }
+    } catch(e) { console.warn("Failed to load ward from Firestore", e); }
+  }
+  renderWardList();
+}
+
+async function saveWardData() {
+  localStorage.setItem('pharmai_ward', JSON.stringify(wardPatients));
+  if (user) {
+    try {
+      await db.collection('users').doc(user).set({ wardPatients: wardPatients }, { merge: true });
+    } catch(e) { console.warn("Failed to sync ward to Firestore", e); }
+  }
+  renderWardList();
+}
+
 function toggleAppMode() {
   isWardMode = !isWardMode;
   const chatView = document.getElementById('chat');
@@ -1273,7 +1261,6 @@ function toggleAppMode() {
   }
 }
 
-// 2. Dashboard List Management
 function switchWardTab(tab) {
   activeTab = tab;
   document.getElementById('tab-active').classList.toggle('active', tab === 'active');
@@ -1306,13 +1293,48 @@ function renderWardList() {
   `).join('');
 }
 
-// 3. Wizard & Form Management
+function clearCDSSForm() {
+  const inputs = document.querySelectorAll('#cdss-form .finp');
+  inputs.forEach(inp => {
+    if (inp.tagName === 'SELECT') inp.selectedIndex = 0;
+    else inp.value = '';
+  });
+  document.getElementById('w-bmi').textContent = '--';
+  document.getElementById('w-bmi').style.color = 'var(--t2)';
+  document.getElementById('w-preg-fg').style.display = 'none';
+  cdssTempLabs = [];
+  cdssTempTx = [];
+  renderCDSSLabs();
+  renderCDSSTx();
+}
+
+function calcBMI() {
+  const w = parseFloat(document.getElementById('w-wt').value);
+  const h = parseFloat(document.getElementById('w-ht').value);
+  const bmiEl = document.getElementById('w-bmi');
+  if (w && h) {
+    const hm = h / 100;
+    const bmi = (w / (hm * hm)).toFixed(1);
+    bmiEl.textContent = bmi + ' kg/m²';
+    bmiEl.style.color = (bmi < 18.5 || bmi >= 25) ? 'var(--warn)' : 'var(--ok)';
+  } else {
+    bmiEl.textContent = '--';
+    bmiEl.style.color = 'var(--t2)';
+  }
+}
+
+function togglePreg() {
+  const sex = document.getElementById('w-sex').value;
+  const pregBox = document.getElementById('w-preg-fg');
+  if(pregBox) pregBox.style.display = sex === 'F' ? 'flex' : 'none';
+}
+
 function openCDSSWiz(mode) {
+  currentWardMode = mode;
   document.getElementById('cdss-form').classList.add('open');
   
   if (mode === 'admit') {
-    cdssTempLabs = [];
-    cdssTempTx = [];
+    clearCDSSForm();
     document.getElementById('wiz-title').innerHTML = '<span class="ms md">person_add</span> Admit Patient';
     document.getElementById('sec-demo').style.display = 'block';
     document.getElementById('sec-hist').style.display = 'block';
@@ -1320,8 +1342,12 @@ function openCDSSWiz(mode) {
     document.getElementById('lbl-vitals').textContent = 'Baseline Vitals';
     document.getElementById('btn-gen-plan').innerHTML = '<span class="ms sm">memory</span> Analyze & Generate';
   } else if (mode === 'progress') {
-    cdssTempLabs = []; 
-    // PRE-LOAD EXISTING TREATMENTS FOR PROGRESS UPDATE
+    if (!activeCaseId) {
+      toast('No active patient selected.', 'err');
+      closeCDSSWiz();
+      return;
+    }
+    clearCDSSForm();
     const pt = wardPatients.find(p => p.id === activeCaseId);
     cdssTempTx = pt && pt.currentTx ? JSON.parse(JSON.stringify(pt.currentTx)) : [];
     
@@ -1331,17 +1357,14 @@ function openCDSSWiz(mode) {
     document.getElementById('sec-fresh').style.display = 'block';
     document.getElementById('lbl-vitals').textContent = 'Updated Vitals';
     document.getElementById('btn-gen-plan').innerHTML = '<span class="ms sm">memory</span> Generate Progress Plan';
+    renderCDSSTx();
   }
-  
-  renderCDSSLabs();
-  renderCDSSTx();
 }
 
 function closeCDSSWiz() {
   document.getElementById('cdss-form').classList.remove('open');
 }
 
-// 4. Lab Dropdowns with Baked-In Units
 const cdssLabOpts = {
   hemato: ['Hb (g/dL)', 'RBC (millions/µL)', 'WBC (cells/mm³)', 'Platelets (lakhs/µL)', 'MCV (fL)', 'MCH (pg)', 'MCHC (g/dL)', 'PCV/HCT (%)', 'ESR (mm/hr)', 'Neutrophils (%)', 'Lymphocytes (%)', 'INR', 'aPTT (sec)'],
   biochem: ['Na+ (mEq/L)', 'K+ (mEq/L)', 'Cl- (mEq/L)', 'HCO3- (mEq/L)', 'BUN (mg/dL)', 'Ca2+ (mg/dL)', 'Mg2+ (mg/dL)', 'PO4 (mg/dL)', 'Uric Acid (mg/dL)', 'Albumin (g/dL)', 'Globulin (g/dL)', 'Total Protein (g/dL)', 'RBS (mg/dL)', 'FBS (mg/dL)', 'HbA1c (%)'],
@@ -1359,7 +1382,6 @@ function updLabParams() {
   }
 }
 
-// 5. Tag Builders (Labs & Tx)
 function addLabTag() {
   const param = document.getElementById('lab-param').value;
   const val = document.getElementById('lab-val').value;
@@ -1389,7 +1411,6 @@ function addTxTag() {
   hap(10);
 }
 
-// Edit existing treatment
 function editTxTag(i) {
   const t = cdssTempTx[i];
   document.getElementById('tx-drug').value = t.drug || '';
@@ -1405,7 +1426,7 @@ function renderCDSSTx() {
 }
 function remTxTag(i) { cdssTempTx.splice(i, 1); renderCDSSTx(); }
 
-// 6. AI Engine, Saving, & Data Bundling
+// ══ AI ENGINE & BUNDLING ══
 let activeCaseId = null;
 let dcRxList = [];
 
@@ -1430,45 +1451,64 @@ function closeCDSSFile() {
 
 function openDischargeModal() {
   dcRxList = [];
-  document.getElementById('dc-rx-list').innerHTML = '';
+  renderDcRx();
   document.getElementById('discharge-modal').classList.add('open');
 }
 
+function renderDcRx() {
+  document.getElementById('dc-rx-list').innerHTML = dcRxList.map((r,i) => `<div class="rx-tag">${esc(r)}<button class="rx-del" onclick="remDcRx(${i})"><span class="ms xs">close</span></button></div>`).join('');
+}
+function remDcRx(i) {
+  dcRxList.splice(i, 1);
+  renderDcRx();
+}
 function addDcRx() {
   const v = document.getElementById('dc-rx-inp').value.trim();
   if(!v) return;
   dcRxList.push(v);
   document.getElementById('dc-rx-inp').value = '';
-  document.getElementById('dc-rx-list').innerHTML = dcRxList.map((r,i) => `<div class="rx-tag">${esc(r)}<button class="rx-del" onclick="dcRxList.splice(${i},1); document.getElementById('dc-rx-list').children[${i}].remove();"><span class="ms xs">close</span></button></div>`).join('');
+  renderDcRx();
 }
 
 async function processDischarge() {
   const outcome = document.getElementById('dc-outcome').value;
   const notes = document.getElementById('dc-notes').value;
   const dod = document.getElementById('dc-dod') ? document.getElementById('dc-dod').value : '';
-  closeM('discharge-modal');
   
-  let pt = wardPatients.find(p => p.id === activeCaseId);
-  pt.status = 'closed';
+  const btn = document.getElementById('btn-process-dc');
+  const ogText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="ms sm" style="animation:spin 1s linear infinite">progress_activity</span> Finalizing...';
   
-  if(outcome === 'discharge' && dcRxList.length > 0) {
-    const lang = document.getElementById('dc-lang').value;
-    const payload = { discharge_medications: dcRxList, clinical_notes: notes, dod: dod };
-    await callCDSSAI(payload, 'discharge', lang);
-  } else {
-    pt.htmlTimeline += `<div class="cdss-report" style="border-left:4px solid var(--t2)">
-      <div class="rep-hdr">Case Closed: ${outcome.toUpperCase()} ${dod ? `<span style="float:right; color:var(--text); font-size:0.85rem;">DOD: ${dod}</span>` : ''}</div>
-      <p>${esc(notes)}</p>
-    </div>`;
-    saveWardData();
+  try {
+    let pt = wardPatients.find(p => p.id === activeCaseId);
+    if(pt) pt.status = 'closed';
+    
+    if(outcome === 'discharge' && dcRxList.length > 0) {
+      const lang = document.getElementById('dc-lang').value;
+      const payload = { discharge_medications: dcRxList, clinical_notes: notes, dod: dod };
+      await callCDSSAI(payload, 'discharge', lang);
+    } else {
+      if(pt) {
+        pt.htmlTimeline = pt.htmlTimeline || '';
+        pt.htmlTimeline += `<div class="cdss-report" style="border-left:4px solid var(--t2)">
+          <div class="rep-hdr">Case Closed: ${outcome.toUpperCase()} ${dod ? `<span style="float:right; color:var(--text); font-size:0.85rem;">DOD: ${dod}</span>` : ''}</div>
+          <p>${esc(notes)}</p>
+        </div>`;
+      }
+      await saveWardData();
+    }
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = ogText;
+    closeM('discharge-modal');
     closeCDSSFile();
   }
 }
 
 async function genCarePlan() {
-  const isUpdate = document.getElementById('sec-fresh').style.display === 'block';
+  const isUpdate = (currentWardMode === 'progress');
   let pt = activeCaseId ? wardPatients.find(p => p.id === activeCaseId) : null;
-
   const currentDOA = document.getElementById('w-doa') ? document.getElementById('w-doa').value : '';
 
   const payload = {
@@ -1504,37 +1544,36 @@ async function genCarePlan() {
     payload.labs.calculated_CrCl = crcl.toFixed(1) + " mL/min";
   }
 
-  if(isUpdate && pt && pt.demo && pt.demo.doa) {
-    payload.demographics.doa = pt.demo.doa;
-  }
+  if(isUpdate && pt && pt.demo && pt.demo.doa) { payload.demographics.doa = pt.demo.doa; }
 
-  closeCDSSWiz();
-  
-  if(!isUpdate && !activeCaseId) {
-    activeCaseId = 'PT-' + Date.now();
-    pt = { 
-      id: activeCaseId, 
-      status: 'active', 
-      name: payload.demographics.name || 'Unknown', 
-      bedId: payload.demographics.id || 'TBD', 
-      age: payload.demographics.age, 
-      sex: payload.demographics.sex, 
-      weight: payload.demographics.wt, 
-      cc: payload.history.dx || payload.history.cc || 'No complaints', 
-      htmlTimeline: '',
-      currentTx: cdssTempTx,
-      demo: payload.demographics,
-      hist: payload.history
-    };
-    wardPatients.unshift(pt);
-  } else if (pt) {
-    pt.currentTx = cdssTempTx;
+  const btn = document.getElementById('btn-gen-plan');
+  const ogText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="ms sm" style="animation:spin 1s linear infinite">progress_activity</span> Analyzing...';
+
+  try {
+    if(!isUpdate && !activeCaseId) {
+      activeCaseId = 'PT-' + Date.now();
+      pt = { 
+        id: activeCaseId, status: 'active', 
+        name: payload.demographics.name || 'Unknown', bedId: payload.demographics.id || 'TBD', 
+        age: payload.demographics.age, sex: payload.demographics.sex, weight: payload.demographics.wt, 
+        cc: payload.history.dx || payload.history.cc || 'No complaints', 
+        htmlTimeline: '', currentTx: cdssTempTx, demo: payload.demographics, hist: payload.history
+      };
+      wardPatients.unshift(pt);
+    } else if (pt) {
+      pt.currentTx = cdssTempTx;
+    }
+    
+    await saveWardData(); 
+    closeCDSSWiz();
+    openCDSSFile(activeCaseId);
+    await callCDSSAI(payload, isUpdate ? 'progress' : 'baseline');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = ogText;
   }
-  
-  saveWardData(); 
-  openCDSSFile(activeCaseId);
-  
-  await callCDSSAI(payload, isUpdate ? 'progress' : 'baseline');
 }
 
 async function callCDSSAI(payload, mode, lang = 'English') {
@@ -1546,43 +1585,59 @@ async function callCDSSAI(payload, mode, lang = 'English') {
     
 CRITICAL DATA FIDELITY (MANDATORY):
 1. NEVER alter the patient's biological sex or age.
-2. NEVER alter, round, or summarize lab units (e.g., Platelets 145,000 stays 145,000).
+2. NEVER alter, round, or summarize lab units.
 
 UNIVERSAL CLINICAL RULES (EXECUTE IN ORDER):
-1. CUMULATIVE TOXICITY: Count ALL active agents affecting a single biomarker (e.g., Potassium, QTc, CNS depression, Bleeding). IF multiple agents stack risk AND baseline lab/state is abnormal, trigger "Critical Cumulative Toxicity" (Severity: Hard Stop).
-2. RENAL/HEPATIC HARD STOPS: Use the provided calculated CrCl. Cross-reference EVERY drug against this CrCl. IF CrCl is below a drug's absolute threshold (e.g., Metformin at CrCl < 30), Action = ABSOLUTE CONTRAINDICATION / HARD STOP. Do NOT suggest dose adjustment for hard stops.
-3. PHARMACOKINETICS (CYP450/P-gp): Scan for enzyme inhibitors/inducers, especially interacting with narrow therapeutic index drugs (e.g., Warfarin + Bactrim).
-4. DRUG-DISEASE CONTRAINDICATIONS: Cross-reference all medications against active PMH and Diagnoses. (e.g., NSAIDs + Heart Failure/AKI = Hard Stop).
+1. CUMULATIVE TOXICITY: Count ALL active agents affecting a single biomarker. IF multiple agents stack risk AND the baseline lab/vitals/state is abnormal, trigger "Critical Cumulative Toxicity" (Severity: Hard Stop). Evaluate hemodynamic stability using the provided vitals.
+2. RENAL/HEPATIC HARD STOPS: Use the provided calculated CrCl. Cross-reference EVERY drug against this CrCl. IF CrCl is below a drug's absolute manufacturer threshold, Action = ABSOLUTE CONTRAINDICATION / HARD STOP. Do NOT suggest dose adjustment for hard stops.
+3. PHARMACOKINETICS (CYP450/P-gp): Scan for enzyme inhibitors/inducers interacting with narrow therapeutic index drugs.
+4. DRUG-DISEASE CONTRAINDICATIONS: Cross-reference all medications against active PMH and Diagnoses. Flag any drug that exacerbates an underlying disease state as a Hard Stop.
 5. ALLERGIES: Categorize known allergies strictly as "Contraindication".
 
 Output ONLY valid JSON matching this exact structure:
 {
-  "patient_demographics_history": "Exact demographics (preserve gender), DOA, diagnosis, chief complaints, social history, and PMH. Highlight Red Flags.",
-  "baseline_vitals_labs": "Exact baseline vitals and labs (preserve exact units). Explicitly state the calculated CrCl.",
+  "patient_demographics_history": "Exact demographics, DOA, diagnosis, chief complaints, social history, and PMH. Highlight Red Flags.",
+  "baseline_vitals_labs": "Exact baseline vitals and labs. Explicitly state the calculated CrCl and evaluate hemodynamic stability.",
   "current_therapy": [
     { "drug": "Name", "dose": "Dose", "freq": "Freq", "indication": "Inferred Indication", "moa": "Brief MOA", "monitoring": "Params", "side_effects": "Key SEs" }
   ],
   "clinical_correlations": ["Correlate symptoms/labs with medications."],
   "drug_related_problems": [
-    { "category": "Contraindication | Cumulative Toxicity | Interaction | Untreated Indication | No Indication | Dosing Error", "issue": "Specific description of the mechanism or cumulative risk", "severity": "Hard Stop | High | Moderate | Low", "actionable_solution": "Precise intervention (e.g., Discontinue immediately, Reduce dose by 50%)" }
+    { "category": "Contraindication | Cumulative Toxicity | Interaction | Untreated Indication | No Indication | Dosing Error", "issue": "Specific description of the mechanism or cumulative risk", "severity": "Hard Stop | High | Moderate | Low", "actionable_solution": "Precise intervention" }
   ],
   "pharmacist_interventions": ["Specific steps addressing the DRPs."],
-  "references": ["Cite specific guidelines (e.g., KDIGO, ACC/AHA, Beers, IDSA)"]
+  "references": ["Cite specific guidelines"]
 }`;
   } else if (mode === 'discharge') {
-    sysPrompt = `You are a Patient Educator and Geriatric Care Specialist. Generate a comprehensive discharge counseling card.
+    sysPrompt = `You are an elite Patient Educator and Geriatric Care Specialist. Generate a highly specific, actionable discharge counseling card.
     
 CRITICAL DIRECTIVES:
-1. Translate all medical jargon to a 5th-grade reading level in ${lang}.
-2. CONTEXTUALIZE: You MUST incorporate warnings based on the patient's Social History (e.g., specific dietary restrictions like Cranberry juice + Warfarin) and geriatric protocols.
-3. DO NOT RETURN EMPTY FIELDS. Ensure every array has at least one highly relevant item.
-4. OUTPUT STRICT JSON ONLY. DO NOT WRAP IN MARKDOWN.
+1. 5TH-GRADE READING LEVEL: Use short, direct sentences in ${lang}. Use active voice (e.g., "Take this with food").
+2. HYPER-SPECIFIC ADVICE: Do not use generic warnings. Specify EXACTLY how to take the drug (e.g., "Sit upright for 30 minutes").
+3. CONTEXTUALIZE: You MUST explicitly address any lifestyle/dietary factors mentioned in the patient's Social History.
+4. RED FLAGS: Clearly list severe symptoms tied to these specific drugs that require immediate medical attention.
+5. OUTPUT STRICT JSON ONLY. DO NOT WRAP IN MARKDOWN.
 
-{"title": "Discharge Instructions", "diagnosis_simple": "Layman explanation of treatment", "lifestyle_tips": ["Include diet/social history specific tips", "Geriatric safety tip"], "medications": [{"name": "Medicine", "purpose": "What it does", "schedule": "When/how to take", "warnings": "Watch out for + diet warnings"}]}`;
+Output ONLY valid JSON matching this exact structure:
+{
+  "title": "Discharge Instructions",
+  "diagnosis_simple": "A clear layman explanation of why they were in the hospital and the current plan.",
+  "medications": [
+    { "name": "Medicine Name", "purpose": "Why you are taking this", "schedule": "Exact time/instructions", "warnings": "Specific side effects or diet interactions" }
+  ],
+  "lifestyle_and_diet": [
+    "Actionable, patient-specific diet/lifestyle rule #1",
+    "Actionable, patient-specific diet/lifestyle rule #2"
+  ],
+  "when_to_call_doctor": [
+    "Specific red flag symptom #1",
+    "Specific red flag symptom #2"
+  ]
+}`;
   }
 
   const loaderId = 'load-' + Date.now();
-  document.getElementById('pt-timeline').innerHTML = `<div id="${loaderId}" class="cdss-report"><span class="ms sm" style="animation:spin 1s linear infinite">progress_activity</span> PharmAI is performing a CMR...</div>` + document.getElementById('pt-timeline').innerHTML;
+  document.getElementById('pt-timeline').innerHTML = `<div id="${loaderId}" class="cdss-report"><span class="ms sm" style="animation:spin 1s linear infinite">progress_activity</span> ${mode === 'discharge' ? 'Generating Patient Instructions...' : 'PharmAI is performing a CMR...'}</div>` + document.getElementById('pt-timeline').innerHTML;
 
   try {
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -1604,12 +1659,23 @@ CRITICAL DIRECTIVES:
     if(mode === 'discharge') {
       html = `<div class="cdss-report" style="border-left:4px solid var(--ok); background:rgba(16,185,129,0.05);">
         <div class="rep-hdr" style="color:var(--ok)"><span class="ms sm">home</span> ${result.title} (${lang}) ${dodDisplay}</div>
-        <p><strong>Overview:</strong> ${result.diagnosis_simple}</p>
-        <div style="width:100%; overflow-x:auto;">
-          <table class="rep-tbl" style="min-width: 500px;"><tr><th>Medicine</th><th>Purpose</th><th>Schedule</th><th>Warnings</th></tr>
+        <p style="margin-bottom:15px; line-height:1.6;"><strong>Overview:</strong> ${result.diagnosis_simple}</p>
+        
+        <div style="font-weight:700; color:var(--ok); margin-bottom:8px;"><span class="ms sm">medication</span> Your Medications</div>
+        <div style="width:100%; overflow-x:auto; margin-bottom:15px; border-radius:8px; border:1px solid var(--b);">
+          <table class="rep-tbl" style="min-width: 600px; margin:0;"><tr><th>Medicine</th><th>Purpose</th><th>How to Take</th><th>Specific Warnings</th></tr>
           ${(result.medications||[]).map(m => `<tr><td><strong>${m.name||'-'}</strong></td><td>${m.purpose||'-'}</td><td>${m.schedule||'-'}</td><td>${m.warnings||'-'}</td></tr>`).join('')}</table>
         </div>
-        <p><strong>Tips:</strong><ul>${(result.lifestyle_tips||[]).map(t => `<li>${t}</li>`).join('')}</ul></p>
+        
+        <div style="margin-top:15px;">
+          <div style="font-weight:700; color:var(--blue); margin-bottom:8px;"><span class="ms sm">restaurant_menu</span> Diet & Lifestyle</div>
+          <ul style="font-size:0.85rem; margin-left:20px; margin-bottom:15px;">${(result.lifestyle_and_diet||[]).map(t => `<li>${t}</li>`).join('')}</ul>
+        </div>
+
+        <div style="margin-top:15px; padding-top:15px; border-top: 1px solid var(--b);">
+          <div style="font-weight:700; color:var(--danger); margin-bottom:8px;"><span class="ms sm">warning</span> When to Call the Doctor</div>
+          <ul style="font-size:0.85rem; margin-left:20px;">${(result.when_to_call_doctor||[]).map(w => `<li>${w}</li>`).join('')}</ul>
+        </div>
       </div>`;
     } else {
       
@@ -1670,19 +1736,15 @@ CRITICAL DIRECTIVES:
     }
 
     const pt = wardPatients.find(p => p.id === activeCaseId);
+    pt.htmlTimeline = pt.htmlTimeline || '';
     pt.htmlTimeline = html + pt.htmlTimeline;
     saveWardData();
     document.getElementById('pt-timeline').innerHTML = pt.htmlTimeline;
-    if(mode === 'discharge') closeCDSSFile();
 
   } catch(e) {
     document.getElementById(loaderId).innerHTML = `<div class="aalert dng"><span class="ms sm">error</span><div><strong>Analysis Failed</strong><br>The AI returned improperly formatted data. Please try generating the plan again.</div></div>`;
     console.error("JSON Parsing Error: ", e);
   }
-}
-function saveWardData() {
-  localStorage.setItem('pharmai_ward', JSON.stringify(wardPatients));
-  renderWardList();
 }
 </script>
 </body>
