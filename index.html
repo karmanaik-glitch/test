@@ -1262,14 +1262,14 @@ function toggleAppMode() {
     chatView.style.display = 'none';
     iaView.style.display = 'none';
     wardView.style.display = 'flex';
-    navIcon.textContent = 'chat'; // Changes icon to chat so user knows how to go back
+    navIcon.textContent = 'chat'; 
     renderWardList();
   } else {
     chatView.style.display = 'flex';
     iaView.style.display = 'flex';
     wardView.style.display = 'none';
     navIcon.textContent = 'local_hospital';
-    scrollD(); // Scroll chat to bottom
+    scrollD(); 
   }
 }
 
@@ -1326,8 +1326,8 @@ function openCDSSWiz(mode) {
     cdssTempTx = pt && pt.currentTx ? JSON.parse(JSON.stringify(pt.currentTx)) : [];
     
     document.getElementById('wiz-title').innerHTML = '<span class="ms md">edit_note</span> Add Daily Progress';
-    document.getElementById('sec-demo').style.display = 'none'; // Hide static info
-    document.getElementById('sec-hist').style.display = 'none'; // Hide static info
+    document.getElementById('sec-demo').style.display = 'none'; 
+    document.getElementById('sec-hist').style.display = 'none'; 
     document.getElementById('sec-fresh').style.display = 'block';
     document.getElementById('lbl-vitals').textContent = 'Updated Vitals';
     document.getElementById('btn-gen-plan').innerHTML = '<span class="ms sm">memory</span> Generate Progress Plan';
@@ -1389,7 +1389,7 @@ function addTxTag() {
   hap(10);
 }
 
-// Added provision to easily edit an existing treatment
+// Edit existing treatment
 function editTxTag(i) {
   const t = cdssTempTx[i];
   document.getElementById('tx-drug').value = t.drug || '';
@@ -1469,7 +1469,6 @@ async function genCarePlan() {
   const isUpdate = document.getElementById('sec-fresh').style.display === 'block';
   let pt = activeCaseId ? wardPatients.find(p => p.id === activeCaseId) : null;
 
-  // Make sure we actively grab the DOA from the input if it's there
   const currentDOA = document.getElementById('w-doa') ? document.getElementById('w-doa').value : '';
 
   const payload = {
@@ -1494,7 +1493,17 @@ async function genCarePlan() {
     treatment: cdssTempTx
   };
 
-  // If this is an update, we still want to attach the original DOA to the payload so the renderer can see it
+  // Auto-Calculate CrCl internally so the AI doesn't have to guess or do math
+  let age = parseFloat(payload.demographics.age);
+  let wt = parseFloat(payload.demographics.wt);
+  let scr = parseFloat(payload.labs.anchors.scr);
+  let sex = payload.demographics.sex;
+  if (!isNaN(age) && !isNaN(wt) && !isNaN(scr) && scr > 0) {
+    let crcl = ((140 - age) * wt) / (72 * scr);
+    if (sex === 'F') crcl *= 0.85;
+    payload.labs.calculated_CrCl = crcl.toFixed(1) + " mL/min";
+  }
+
   if(isUpdate && pt && pt.demo && pt.demo.doa) {
     payload.demographics.doa = pt.demo.doa;
   }
@@ -1533,40 +1542,43 @@ async function callCDSSAI(payload, mode, lang = 'English') {
   
   let sysPrompt = "";
   if (mode === 'baseline' || mode === 'progress') {
-    sysPrompt = `You are PharmAI, an elite Senior Clinical Pharmacist and Polypharmacy Expert. Perform a rigorous, multi-layered Comprehensive Medication Review (CMR).
+    sysPrompt = `You are PharmAI, an elite Senior Clinical Pharmacist. Perform a rigorous, multi-variable Comprehensive Medication Review (CMR).
     
-CRITICAL CLINICAL DIRECTIVES (MANDATORY):
-1. CUMULATIVE POLYPHARMACY: Do not evaluate drugs in isolation. Calculate additive pharmacodynamic effects (e.g., multiple K+-sparing agents + baseline hyperkalemia = fatal risk).
-2. MULTI-VARIABLE HARD STOPS: Cross-reference drugs against BOTH renal/hepatic anchors AND acute biomarkers. (e.g., Metformin + elevated Lactic Acid or CrCl < 30 = ABSOLUTE CONTRAINDICATION / HARD STOP).
-3. DRUG-DISEASE TOXICITY: Cross-reference orders against active PMH and acute lab trends. (e.g., NSAIDs are strictly contraindicated in HFrEF/elevated BNP or AKI/elevated SCr).
-4. COMPLEX PK & DIETARY: Evaluate CYP450 enzyme interactions and Drug-Food interactions based on Social History.
+CRITICAL DATA FIDELITY (MANDATORY):
+1. NEVER alter the patient's biological sex or age.
+2. NEVER alter, round, or summarize lab units (e.g., Platelets 145,000 stays 145,000).
+
+UNIVERSAL CLINICAL RULES (EXECUTE IN ORDER):
+1. CUMULATIVE TOXICITY: Count ALL active agents affecting a single biomarker (e.g., Potassium, QTc, CNS depression, Bleeding). IF multiple agents stack risk AND baseline lab/state is abnormal, trigger "Critical Cumulative Toxicity" (Severity: Hard Stop).
+2. RENAL/HEPATIC HARD STOPS: Use the provided calculated CrCl. Cross-reference EVERY drug against this CrCl. IF CrCl is below a drug's absolute threshold (e.g., Metformin at CrCl < 30), Action = ABSOLUTE CONTRAINDICATION / HARD STOP. Do NOT suggest dose adjustment for hard stops.
+3. PHARMACOKINETICS (CYP450/P-gp): Scan for enzyme inhibitors/inducers, especially interacting with narrow therapeutic index drugs (e.g., Warfarin + Bactrim).
+4. DRUG-DISEASE CONTRAINDICATIONS: Cross-reference all medications against active PMH and Diagnoses. (e.g., NSAIDs + Heart Failure/AKI = Hard Stop).
 5. ALLERGIES: Categorize known allergies strictly as "Contraindication".
-6. OUTPUT STRICT JSON ONLY. DO NOT WRAP IN MARKDOWN CODE BLOCKS.
 
 Output ONLY valid JSON matching this exact structure:
 {
-  "patient_demographics_history": "Summary of demographics, primary diagnosis, chief complaints, social history, and past medical/medication history. Highlight Red Flags.",
-  "baseline_vitals_labs": "Summary of baseline vitals and abnormal lab findings (calculate and note estimated CrCl if SCr is provided).",
+  "patient_demographics_history": "Exact demographics (preserve gender), DOA, diagnosis, chief complaints, social history, and PMH. Highlight Red Flags.",
+  "baseline_vitals_labs": "Exact baseline vitals and labs (preserve exact units). Explicitly state the calculated CrCl.",
   "current_therapy": [
     { "drug": "Name", "dose": "Dose", "freq": "Freq", "indication": "Inferred Indication", "moa": "Brief MOA", "monitoring": "Params", "side_effects": "Key SEs" }
   ],
-  "clinical_correlations": ["Explicitly correlate chief complaints, signs/symptoms, and labs with the current medications."],
+  "clinical_correlations": ["Correlate symptoms/labs with medications."],
   "drug_related_problems": [
-    { "category": "Contraindication | Cumulative Toxicity | Interaction | Untreated Indication | No Indication | Dosing Error", "issue": "Specific description including synergistic risks", "severity": "Hard Stop | High | Moderate | Low", "actionable_solution": "Precise intervention" }
+    { "category": "Contraindication | Cumulative Toxicity | Interaction | Untreated Indication | No Indication | Dosing Error", "issue": "Specific description of the mechanism or cumulative risk", "severity": "Hard Stop | High | Moderate | Low", "actionable_solution": "Precise intervention (e.g., Discontinue immediately, Reduce dose by 50%)" }
   ],
-  "pharmacist_interventions": ["Specific steps addressing the DRPs and optimizing the plan."],
-  "references": ["Cite specific guidelines (e.g., ACC/AHA HF guidelines, KDIGO, Beers Criteria)"]
+  "pharmacist_interventions": ["Specific steps addressing the DRPs."],
+  "references": ["Cite specific guidelines (e.g., KDIGO, ACC/AHA, Beers, IDSA)"]
 }`;
   } else if (mode === 'discharge') {
     sysPrompt = `You are a Patient Educator and Geriatric Care Specialist. Generate a comprehensive discharge counseling card.
     
 CRITICAL DIRECTIVES:
 1. Translate all medical jargon to a 5th-grade reading level in ${lang}.
-2. CONTEXTUALIZE: You MUST incorporate warnings based on the patient's Social History (e.g., specific dietary restrictions) and geriatric protocols.
+2. CONTEXTUALIZE: You MUST incorporate warnings based on the patient's Social History (e.g., specific dietary restrictions like Cranberry juice + Warfarin) and geriatric protocols.
 3. DO NOT RETURN EMPTY FIELDS. Ensure every array has at least one highly relevant item.
 4. OUTPUT STRICT JSON ONLY. DO NOT WRAP IN MARKDOWN.
 
-{"title": "Discharge Instructions", "diagnosis_simple": "Layman explanation of treatment", "lifestyle_tips": ["Include diet/social history specific tips", "Geriatric safety tip"], "medications": [{"name": "Medicine", "purpose": "What it does", "schedule": "When/how to take (posture/food)", "warnings": "Watch out for + diet warnings"}]}`;
+{"title": "Discharge Instructions", "diagnosis_simple": "Layman explanation of treatment", "lifestyle_tips": ["Include diet/social history specific tips", "Geriatric safety tip"], "medications": [{"name": "Medicine", "purpose": "What it does", "schedule": "When/how to take", "warnings": "Watch out for + diet warnings"}]}`;
   }
 
   const loaderId = 'load-' + Date.now();
@@ -1586,7 +1598,6 @@ CRITICAL DIRECTIVES:
     document.getElementById(loaderId).remove();
     let html = '';
     
-    // --> EXPLICITLY EXTRACT DATES FOR THE HEADER <--
     const dodDisplay = payload.dod ? `<span style="float:right; color:var(--text); font-size:0.85rem; font-weight:600;">DOD: ${payload.dod}</span>` : '';
     const doaDisplay = payload.demographics && payload.demographics.doa ? `<span style="float:right; color:var(--text); font-size:0.85rem; font-weight:600;">DOA: ${payload.demographics.doa}</span>` : '';
 
