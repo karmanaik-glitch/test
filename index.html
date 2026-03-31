@@ -506,6 +506,7 @@ textarea.finp { resize: vertical; min-height: 70px; }
           <div id="sec-demo">
             <div class="sect-title"><span class="ms sm">badge</span> Demographics</div>
             <div class="fgrid">
+              <div class="fg"><span class="flbl">DOA</span><input type="date" id="w-doa" class="finp"></div>
               <div class="fg"><span class="flbl">Name / Initials</span><input type="text" id="w-name" class="finp"></div>
               <div class="fg"><span class="flbl">Case ID / Bed</span><input type="text" id="w-id" class="finp"></div>
             </div>
@@ -798,6 +799,7 @@ textarea.finp { resize: vertical; min-height: 70px; }
         </select>
       </div>
       
+      <div class="fg" style="margin-top:12px;"><span class="flbl">Date of Discharge (DOD)</span><input type="date" id="dc-dod" class="finp"></div>
       <div id="dc-meds-sec">
         <div class="sect-title"><span class="ms sm">medication</span> Discharge Medications</div>
         <p style="font-size:0.8rem; color:var(--t2); margin-bottom:12px;">Generate a layman-friendly Patient Counseling Card.</p>
@@ -1443,6 +1445,7 @@ function addDcRx() {
 async function processDischarge() {
   const outcome = document.getElementById('dc-outcome').value;
   const notes = document.getElementById('dc-notes').value;
+  const dod = document.getElementById('dc-dod') ? document.getElementById('dc-dod').value : '';
   closeM('discharge-modal');
   
   let pt = wardPatients.find(p => p.id === activeCaseId);
@@ -1450,10 +1453,10 @@ async function processDischarge() {
   
   if(outcome === 'discharge' && dcRxList.length > 0) {
     const lang = document.getElementById('dc-lang').value;
-    const payload = { discharge_medications: dcRxList, clinical_notes: notes };
+    const payload = { discharge_medications: dcRxList, clinical_notes: notes, dod: dod };
     await callCDSSAI(payload, 'discharge', lang);
   } else {
-    pt.htmlTimeline += `<div class="cdss-report" style="border-left:4px solid var(--t2)"><div class="rep-hdr">Case Closed: ${outcome.toUpperCase()}</div><p>${esc(notes)}</p></div>`;
+    pt.htmlTimeline += `<div class="cdss-report" style="border-left:4px solid var(--t2)"><div class="rep-hdr">Case Closed: ${outcome.toUpperCase()} ${dod ? `(DOD: ${dod})` : ''}</div><p>${esc(notes)}</p></div>`;
     saveWardData();
     closeCDSSFile();
   }
@@ -1463,18 +1466,20 @@ async function genCarePlan() {
   const isUpdate = document.getElementById('sec-fresh').style.display === 'block';
   let pt = activeCaseId ? wardPatients.find(p => p.id === activeCaseId) : null;
 
-  // Smart Data Merging: In progress updates, we secretly pass the original history to the AI
   const payload = {
     isUpdate: isUpdate,
     demographics: isUpdate && pt && pt.demo ? pt.demo : { 
+      doa: document.getElementById('w-doa') ? document.getElementById('w-doa').value : '',
       name: document.getElementById('w-name').value, id: document.getElementById('w-id').value, 
       age: document.getElementById('w-age').value, sex: document.getElementById('w-sex').value, 
       wt: document.getElementById('w-wt').value, ht: document.getElementById('w-ht') ? document.getElementById('w-ht').value : '', 
       preg: document.getElementById('w-preg') ? document.getElementById('w-preg').value : ''
     },
     history: isUpdate && pt && pt.hist ? pt.hist : { 
-      dx: document.getElementById('w-dx') ? document.getElementById('w-dx').value : '', cc: document.getElementById('w-cc').value, 
-      pmh: document.getElementById('w-pmh').value, pmx: document.getElementById('w-pmx') ? document.getElementById('w-pmx').value : '', 
+      dx: document.getElementById('w-dx') ? document.getElementById('w-dx').value : '', 
+      cc: document.getElementById('w-cc').value, 
+      pmh: document.getElementById('w-pmh').value, 
+      pmx: document.getElementById('w-pmx') ? document.getElementById('w-pmx').value : '', 
       alg: document.getElementById('w-alg').value, soc: document.getElementById('w-soc').value, fam: document.getElementById('w-fam').value 
     },
     updates: { fresh: document.getElementById('w-fresh').value },
@@ -1485,7 +1490,6 @@ async function genCarePlan() {
 
   closeCDSSWiz();
   
-  // Save or Create Patient Data
   if(!isUpdate && !activeCaseId) {
     activeCaseId = 'PT-' + Date.now();
     pt = { 
@@ -1498,13 +1502,12 @@ async function genCarePlan() {
       weight: payload.demographics.wt, 
       cc: payload.history.dx || payload.history.cc || 'No complaints', 
       htmlTimeline: '',
-      currentTx: cdssTempTx, // Save baseline treatments
+      currentTx: cdssTempTx,
       demo: payload.demographics,
       hist: payload.history
     };
     wardPatients.unshift(pt);
   } else if (pt) {
-    // Update the saved treatment list for the next progress note
     pt.currentTx = cdssTempTx;
   }
   
@@ -1514,6 +1517,7 @@ async function genCarePlan() {
   await callCDSSAI(payload, isUpdate ? 'progress' : 'baseline');
 }
 
+// ---> HERE IS THE callCDSSAI FUNCTION <---
 async function callCDSSAI(payload, mode, lang = 'English') {
   if(!groqKey) { toast('API key not configured.', 'err'); return; }
   
@@ -1528,7 +1532,7 @@ CRITICAL INSTRUCTIONS:
 
 Output ONLY valid JSON matching this exact structure:
 {
-  "patient_demographics_history": "Summary of demographics, chief complaints, and past medical/medication history. Highlight any important history or red flags.",
+  "patient_demographics_history": "Summary of demographics, DOA, primary diagnosis, chief complaints, and past medical/medication history. Highlight any red flags (Pregnancy/Allergies).",
   "baseline_vitals_labs": "Summary of the baseline vitals and abnormal lab findings.",
   "current_therapy": [
     { "drug": "Name", "dose": "Dose", "freq": "Freq", "indication": "Inferred Indication", "moa": "Brief MOA", "monitoring": "Params", "side_effects": "Key SEs" }
@@ -1555,7 +1559,6 @@ Output ONLY valid JSON matching this exact structure:
     });
     const data = await res.json();
     
-    // JSON Cleaner (Prevents Markdown crashing)
     let rawContent = data.choices[0].message.content.trim();
     rawContent = rawContent.replace(/^```json/gi, '').replace(/^```/gi, '').replace(/```$/g, '').trim();
     const result = JSON.parse(rawContent);
@@ -1598,7 +1601,7 @@ Output ONLY valid JSON matching this exact structure:
         `<div style="font-size:0.85rem; color:var(--blue); margin-bottom:12px; padding:10px; background:rgba(14,165,233,0.1); border-radius:8px;"><strong>Clinical Correlations:</strong><ul style="margin:5px 0 0 20px;">${result.clinical_correlations.map(c=>`<li>${c}</li>`).join('')}</ul></div>` : '';
 
       html = `<div class="cdss-report">
-        <div class="rep-hdr">${mode === 'baseline' ? 'Admission CMR Report' : 'Daily Progress CMR'} - ${ts()}</div>
+        <div class="rep-hdr">${mode === 'baseline' ? 'Admission CMR Report' : 'Daily Progress CMR'} - ${new Date().toLocaleDateString()} at ${ts()}</div>
         
         <div style="font-size:0.85rem; color:var(--text); margin-bottom:12px; line-height: 1.5;">
           <strong>Demographics & History:</strong> ${result.patient_demographics_history || 'Not provided.'}<br><br>
