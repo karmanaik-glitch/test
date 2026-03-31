@@ -1460,38 +1460,43 @@ async function callCDSSAI(payload, mode, lang = 'English') {
     sysPrompt = `You are PharmAI, an expert Senior Clinical Pharmacist. Perform a rigorous Comprehensive Medication Review (CMR).
     
 CRITICAL INSTRUCTIONS:
-1. You MUST evaluate the data for Drug-Drug interactions, untreated indications, drugs without indications, and subtherapeutic/toxic dosing (adjusting for provided SCr/AST/ALT).
-2. References MUST be strictly from authorized medical literature (PubMed, AHFS, FDA, ACC/AHA, KDIGO, IDSA, etc.). Do not use unauthorized sites.
-3. Infer the Indication and MOA for the current therapy based on the patient's PMH and Chief Complaints.
+1. OUTPUT RAW JSON ONLY. DO NOT WRAP IN MARKDOWN CODE BLOCKS.
+2. Evaluate for Drug-Drug interactions, untreated indications, drugs without indications, subtherapeutic/toxic dosing (adjust for SCr/AST/ALT), and rationality of therapy.
+3. References MUST be strictly from primary medical literature (PubMed, AHFS, FDA, ACC/AHA, KDIGO).
 
 Output ONLY valid JSON matching this exact structure:
 {
-  "patient_foundation": "Concise summary of demographics, presenting complaints, relevant history (highlighting red flags like ESRD/Pregnancy), and baseline vitals/labs.",
+  "patient_demographics_history": "Summary of demographics, chief complaints, and past medical/medication history. Highlight any important history or red flags.",
+  "baseline_vitals_labs": "Summary of the baseline vitals and abnormal lab findings.",
   "current_therapy": [
     { "drug": "Name", "dose": "Dose", "freq": "Freq", "indication": "Inferred Indication", "moa": "Brief MOA", "monitoring": "Params", "side_effects": "Key SEs" }
   ],
-  "clinical_correlations": ["Connect symptoms/labs directly to the medications (e.g., 'Cough secondary to Lisinopril')."],
+  "clinical_correlations": ["Explicitly correlate chief complaints, signs/symptoms, and labs with the current medications."],
   "drug_related_problems": [
-    { "category": "Interaction | Untreated Indication | No Indication | Dosing Error | Adverse Effect | Irrational Therapy", "issue": "Detailed description", "severity": "High | Moderate | Low", "actionable_solution": "Precise clinical intervention" }
+    { "category": "Interaction | Untreated Indication | No Indication | Dosing Error | Rationality", "issue": "Specific description", "severity": "High | Moderate | Low", "actionable_solution": "Precise intervention" }
   ],
-  "pharmacist_interventions": ["High-level clinical recommendations for the attending physician."],
+  "pharmacist_interventions": ["Specific steps addressing the DRPs and optimizing the plan."],
   "references": ["Cite specific guidelines or primary literature"]
 }`;
   } else if (mode === 'discharge') {
-    sysPrompt = `You are a Patient Educator. Translate the discharge medications into a 5th-grade reading level. Output ONLY JSON in ${lang} language:
+    sysPrompt = `You are a Patient Educator. Translate the discharge medications into a 5th-grade reading level. OUTPUT RAW JSON ONLY IN ${lang}.
 {"title": "Discharge Instructions", "diagnosis_simple": "Layman explanation of treatment", "lifestyle_tips": ["tip1", "tip2"], "medications": [{"name": "Medicine", "purpose": "What it does", "schedule": "When to take", "warnings": "Watch out for"}]}`;
   }
 
   const loaderId = 'load-' + Date.now();
-  document.getElementById('pt-timeline').innerHTML = `<div id="${loaderId}" class="cdss-report"><span class="ms sm" style="animation:spin 1s linear infinite">progress_activity</span> PharmAI is performing a Comprehensive Medication Review...</div>` + document.getElementById('pt-timeline').innerHTML;
+  document.getElementById('pt-timeline').innerHTML = `<div id="${loaderId}" class="cdss-report"><span class="ms sm" style="animation:spin 1s linear infinite">progress_activity</span> PharmAI is performing a CMR...</div>` + document.getElementById('pt-timeline').innerHTML;
 
   try {
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
-      body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: JSON.stringify(payload) }], temperature: 0.2, response_format: { type: 'json_object' } })
+      body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: JSON.stringify(payload) }], temperature: 0.1, response_format: { type: 'json_object' } })
     });
     const data = await res.json();
-    const result = JSON.parse(data.choices[0].message.content);
+    
+    // JSON Cleaner
+    let rawContent = data.choices[0].message.content.trim();
+    rawContent = rawContent.replace(/^```json/gi, '').replace(/^```/gi, '').replace(/```$/g, '').trim();
+    const result = JSON.parse(rawContent);
     
     document.getElementById(loaderId).remove();
     let html = '';
@@ -1502,54 +1507,61 @@ Output ONLY valid JSON matching this exact structure:
         <p><strong>Overview:</strong> ${result.diagnosis_simple}</p>
         <div style="width:100%; overflow-x:auto;">
           <table class="rep-tbl" style="min-width: 500px;"><tr><th>Medicine</th><th>Purpose</th><th>Schedule</th><th>Warnings</th></tr>
-          ${result.medications.map(m => `<tr><td><strong>${m.name}</strong></td><td>${m.purpose}</td><td>${m.schedule}</td><td>${m.warnings}</td></tr>`).join('')}</table>
+          ${(result.medications||[]).map(m => `<tr><td><strong>${m.name||'-'}</strong></td><td>${m.purpose||'-'}</td><td>${m.schedule||'-'}</td><td>${m.warnings||'-'}</td></tr>`).join('')}</table>
         </div>
-        <p><strong>Tips:</strong><ul>${result.lifestyle_tips.map(t => `<li>${t}</li>`).join('')}</ul></p>
+        <p><strong>Tips:</strong><ul>${(result.lifestyle_tips||[]).map(t => `<li>${t}</li>`).join('')}</ul></p>
       </div>`;
     } else {
-      const hasDRPs = result.drug_related_problems && result.drug_related_problems.length > 0;
       
+      const hasDRPs = Array.isArray(result.drug_related_problems) && result.drug_related_problems.length > 0;
       let drpHtml = '';
       if(hasDRPs) {
         drpHtml = `<div style="margin-top:15px; border-top: 1px solid var(--b); padding-top: 15px;">
-          <div style="color:var(--danger); font-weight:700; margin-bottom:8px;"><span class="ms sm">warning</span> Identified Drug-Related Problems (DRPs)</div>
+          <div style="color:var(--danger); font-weight:700; margin-bottom:8px;"><span class="ms sm">warning</span> Drug-Related Problems (DRPs)</div>
           ${result.drug_related_problems.map(drp => `
             <div class="aalert ${drp.severity === 'High' ? 'dng' : 'warn'}" style="margin-bottom:8px; flex-direction:column;">
-              <div style="font-weight:700; text-transform:uppercase; font-size:0.7rem;">${drp.category} [${drp.severity} RISK]</div>
-              <div style="margin:4px 0;"><strong>Issue:</strong> ${drp.issue}</div>
-              <div style="color:var(--text);"><strong>Intervention:</strong> ${drp.actionable_solution}</div>
+              <div style="font-weight:700; text-transform:uppercase; font-size:0.7rem;">${drp.category || 'Issue'} [${drp.severity || 'Unknown'} RISK]</div>
+              <div style="margin:4px 0; color:var(--text);"><strong>Issue:</strong> ${drp.issue || '-'}</div>
+              <div style="color:var(--text);"><strong>Intervention:</strong> ${drp.actionable_solution || '-'}</div>
             </div>
           `).join('')}
         </div>`;
       }
 
+      const currentTherapyHtml = Array.isArray(result.current_therapy) && result.current_therapy.length > 0 ? 
+        result.current_therapy.map(c => `<tr><td><strong>${c.drug || '-'}</strong></td><td>${c.dose || '-'}</td><td>${c.freq || '-'}</td><td>${c.indication || '-'}</td><td>${c.moa || '-'}</td><td>${c.monitoring || '-'}</td><td>${c.side_effects || '-'}</td></tr>`).join('') 
+        : '<tr><td colspan="7" style="text-align:center;">No current therapy active.</td></tr>';
+
+      const correlationsHtml = Array.isArray(result.clinical_correlations) && result.clinical_correlations.length > 0 ?
+        `<div style="font-size:0.85rem; color:var(--blue); margin-bottom:12px; padding:10px; background:rgba(14,165,233,0.1); border-radius:8px;"><strong>Clinical Correlations:</strong><ul style="margin:5px 0 0 20px;">${result.clinical_correlations.map(c=>`<li>${c}</li>`).join('')}</ul></div>` : '';
+
       html = `<div class="cdss-report">
-        <div class="rep-hdr">${mode === 'baseline' ? 'Admission CMR & Care Plan' : 'Daily Progress CMR'} - ${ts()}</div>
+        <div class="rep-hdr">${mode === 'baseline' ? 'Admission CMR Report' : 'Daily Progress CMR'} - ${ts()}</div>
         
         <div style="font-size:0.85rem; color:var(--text); margin-bottom:12px; line-height: 1.5;">
-          <strong>Patient Foundation:</strong> ${result.patient_foundation}
+          <strong>Demographics & History:</strong> ${result.patient_demographics_history || 'Not provided.'}<br><br>
+          <strong>Baseline Vitals & Labs:</strong> ${result.baseline_vitals_labs || 'Not provided.'}
         </div>
 
         <div style="font-weight:700; color:var(--blue); margin-bottom:8px;"><span class="ms sm">medication</span> Current Therapy Assessment</div>
         
         <div style="width:100%; overflow-x:auto; margin-bottom:15px; border-radius:8px; border:1px solid var(--b);">
           <table class="rep-tbl" style="min-width: 800px; margin:0;">
-            <tr><th>Drug</th><th>Dose/Freq</th><th>Indication</th><th>MOA</th><th>Monitoring</th><th>Side Effects</th></tr>
-            ${result.current_therapy.map(c => `<tr><td><strong>${c.drug}</strong></td><td>${c.dose} ${c.freq}</td><td>${c.indication}</td><td>${c.moa}</td><td>${c.monitoring}</td><td>${c.side_effects}</td></tr>`).join('')}
+            <tr><th>Drug</th><th>Dose</th><th>Freq</th><th>Indication</th><th>MOA</th><th>Monitoring</th><th>Side Effects</th></tr>
+            ${currentTherapyHtml}
           </table>
         </div>
-
-        ${result.clinical_correlations && result.clinical_correlations.length > 0 ? `<div style="font-size:0.85rem; color:var(--blue); margin-bottom:12px; padding:10px; background:rgba(14,165,233,0.1); border-radius:8px;"><strong>Clinical Correlations:</strong><ul style="margin:5px 0 0 20px;">${result.clinical_correlations.map(c=>`<li>${c}</li>`).join('')}</ul></div>` : ''}
         
+        ${correlationsHtml}
         ${drpHtml}
 
         <div style="margin-top:15px; padding-top:15px; border-top: 1px solid var(--b);">
-           <div style="font-weight:700; color:var(--ok); margin-bottom:8px;"><span class="ms sm">check_circle</span> Pharmacist Interventions & Plan</div>
-           <ul style="font-size:0.85rem; margin-left:20px;">${result.pharmacist_interventions.map(i=>`<li>${i}</li>`).join('')}</ul>
+           <div style="font-weight:700; color:var(--ok); margin-bottom:8px;"><span class="ms sm">check_circle</span> Pharmacist Interventions</div>
+           <ul style="font-size:0.85rem; margin-left:20px;">${(result.pharmacist_interventions||['No interventions required at this time.']).map(i=>`<li>${i}</li>`).join('')}</ul>
         </div>
 
         <div style="margin-top:15px; font-size:0.7rem; color:var(--muted); border-top: 1px dashed var(--b); padding-top:10px;">
-          <strong>Evidence-Based References:</strong><br>${result.references.join('<br>')}
+          <strong>Evidence-Based References:</strong><br>${(result.references||[]).join('<br>')}
         </div>
       </div>`;
     }
@@ -1561,7 +1573,8 @@ Output ONLY valid JSON matching this exact structure:
     if(mode === 'discharge') closeCDSSFile();
 
   } catch(e) {
-    document.getElementById(loaderId).innerHTML = `<span style="color:var(--danger)"><span class="ms sm">error</span> CMR Analysis failed. Check API Key.</span>`;
+    document.getElementById(loaderId).innerHTML = `<div class="aalert dng"><span class="ms sm">error</span><div><strong>Analysis Failed</strong><br>The AI returned improperly formatted data. Please try generating the plan again.</div></div>`;
+    console.error("JSON Parsing Error: ", e);
   }
 }
 
