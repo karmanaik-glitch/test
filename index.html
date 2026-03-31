@@ -382,7 +382,6 @@ textarea.finp { resize: vertical; min-height: 70px; }
 <div id="splash"><div class="spl-logo"><span class="ms xxl fill">cardiology</span></div><div class="spl-text">PharmAI</div><div class="spl-sub">Clinical Assistant</div></div>
 <div id="auth-loading"><div class="auth-spinner"></div><div style="font-size:.8rem;color:var(--muted)">Checking session...</div></div>
 
-<!-- LOGIN PAGE -->
 <div id="lp" style="display:none">
   <div class="mesh"><div class="mb b1"></div><div class="mb b2"></div><div class="mb b3"></div></div>
   <div class="lcard">
@@ -390,7 +389,6 @@ textarea.finp { resize: vertical; min-height: 70px; }
     <h1>PharmAI</h1>
     <p class="sub">Advanced clinical drug intelligence.<br/>Sign in to continue.</p>
 
-    <!-- STEP 1: Auth -->
     <div id="auth-step">
       <div class="lfield email"><input type="email" id="uname" placeholder="Email address" autocomplete="email" oninput="clearErr()"/></div>
       <div class="lfield pass"><input type="password" id="ac" placeholder="Password (min 6 chars)" autocomplete="current-password" oninput="clearErr()"/></div>
@@ -416,7 +414,6 @@ textarea.finp { resize: vertical; min-height: 70px; }
       <div class="lfooter">Clinical reference only &mdash; not medical advice.</div>
     </div>
 
-    <!-- STEP 2: Name (new users only) -->
     <div id="name-step" style="display:none;text-align:center;">
       <div style="font-size:1.5rem;margin-bottom:8px;">&#128075;</div>
       <div style="font-size:1.1rem;font-weight:700;margin-bottom:6px;letter-spacing:-.02em;">Welcome to PharmAI!</div>
@@ -430,7 +427,6 @@ textarea.finp { resize: vertical; min-height: 70px; }
   </div>
 </div>
 
-<!-- APP -->
 <div id="ap">
   <div class="mac">
     <header>
@@ -515,17 +511,26 @@ textarea.finp { resize: vertical; min-height: 70px; }
             </div>
             <div class="fgrid">
               <div class="fg"><span class="flbl">Age</span><input type="number" id="w-age" class="finp"></div>
-              <div class="fg"><span class="flbl">Sex</span><select id="w-sex" class="finp"><option>M</option><option>F</option></select></div>
-              <div class="fg"><span class="flbl">Wt (kg)</span><input type="number" id="w-wt" class="finp"></div>
+              <div class="fg"><span class="flbl">Sex</span><select id="w-sex" class="finp" onchange="togglePreg()"><option value="M">M</option><option value="F">F</option></select></div>
+            </div>
+            <div class="fgrid">
+              <div class="fg"><span class="flbl">Wt (kg)</span><input type="number" id="w-wt" class="finp" oninput="calcBMI()"></div>
+              <div class="fg"><span class="flbl">Ht (cm)</span><input type="number" id="w-ht" class="finp" oninput="calcBMI()"></div>
+              <div class="fg" style="justify-content:center;"><span class="flbl">BMI</span><div id="w-bmi" style="font-weight:700; color:var(--t2);">--</div></div>
+            </div>
+            <div class="fgrid" id="w-preg-fg" style="display:none; margin-top:4px;">
+              <div class="fg"><span class="flbl" style="color:var(--preg)"><span class="ms xs">pregnant_woman</span> Pregnancy Status / History</span><input type="text" id="w-preg" class="finp" placeholder="e.g., G2P1, 14 weeks pregnant, N/A"></div>
             </div>
           </div>
 
           <div id="sec-hist">
             <div class="sect-title"><span class="ms sm">history_edu</span> Clinical History</div>
-            <div class="fg"><span class="flbl">Chief Complaints / Primary Dx</span><textarea id="w-cc" class="finp"></textarea></div>
+            <div class="fg"><span class="flbl" style="color:var(--blue)">Primary Diagnosis *</span><input type="text" id="w-dx" class="finp" placeholder="Main reason for admission"></div>
+            <div class="fg"><span class="flbl">Chief Complaints</span><textarea id="w-cc" class="finp" placeholder="Symptoms..."></textarea></div>
             <div class="fg"><span class="flbl">Past Medical History (PMH)</span><textarea id="w-pmh" class="finp"></textarea></div>
+            <div class="fg"><span class="flbl">Past Medication History</span><textarea id="w-pmx" class="finp" placeholder="Drugs taken prior to admission..."></textarea></div>
             <div class="fgrid">
-              <div class="fg"><span class="flbl">Allergies</span><input type="text" id="w-alg" class="finp" placeholder="NKDA"></div>
+              <div class="fg"><span class="flbl" style="color:var(--danger)">Allergies</span><input type="text" id="w-alg" class="finp" placeholder="NKDA"></div>
             </div>
             <div class="fgrid">
               <div class="fg"><span class="flbl">Social History</span><textarea id="w-soc" class="finp" placeholder="Tobacco, alcohol..."></textarea></div>
@@ -554,6 +559,7 @@ textarea.finp { resize: vertical; min-height: 70px; }
           </div>
 
           <div class="sect-title"><span class="ms sm">science</span> Labs & Diagnostics</div>
+          <span style="font-size:0.75rem; color:var(--muted); margin-bottom:8px; display:block;">(For Progress notes, leave anchors blank if unchanged)</span>
           <div class="fgrid" style="background:rgba(245,158,11,0.05); padding:10px; border-radius:10px; border:1px solid var(--wdim);">
             <div class="fg"><span class="flbl" style="color:var(--warn)">SCr (mg/dL)</span><input type="number" step="0.1" id="l-scr" class="finp"></div>
             <div class="fg"><span class="flbl" style="color:var(--warn)">AST (U/L)</span><input type="number" id="l-ast" class="finp"></div>
@@ -611,7 +617,6 @@ textarea.finp { resize: vertical; min-height: 70px; }
   </div>
 </div>
 
-<!-- SETTINGS -->
 <div class="mov" id="sm" onclick="handleOC(event,'sm')">
   <div class="msh">
     <div class="mhdr"><div class="mtitle"><span class="ms md">settings</span> Settings</div><button class="mclose" onclick="closeM('sm');"><span class="ms sm">close</span></button></div>
@@ -652,7 +657,6 @@ textarea.finp { resize: vertical; min-height: 70px; }
   </div>
 </div>
 
-<!-- TOOLS -->
 <div class="mov" id="tm" onclick="handleOC(event,'tm')">
   <div class="msh">
     <div class="mhdr"><div class="mtitle"><span class="ms md">stethoscope</span> Clinical Tools</div><button class="mclose" onclick="closeM('tm');"><span class="ms sm">close</span></button></div>
@@ -762,7 +766,6 @@ textarea.finp { resize: vertical; min-height: 70px; }
   </div>
 </div>
 
-<!-- CAMERA -->
 <div id="cm">
   <div class="camhdr"><h3>Scan Rx Label</h3><button class="camcls" onclick="closeCam();"><span class="ms sm">close</span></button></div>
   <div class="camvp"><video id="video" autoplay playsinline></video><div class="cambox"><div class="scanl"></div></div></div>
@@ -770,7 +773,6 @@ textarea.finp { resize: vertical; min-height: 70px; }
   <canvas id="canvas"></canvas>
 </div>
 
-<!-- OCR -->
 <div class="mov" id="opm" onclick="handleOC(event,'opm')">
   <div class="msh" style="border-radius:24px;max-width:420px">
     <div class="mhdr"><div class="mtitle"><span class="ms md">scan_text</span> Extracted Text</div><button class="mclose" onclick="closeM('opm');"><span class="ms sm">close</span></button></div>
@@ -1215,6 +1217,30 @@ async function openCam(){document.getElementById('cm').classList.add('open');try
 function closeCam(){const s=vid().srcObject;if(s)s.getTracks().forEach(t=>t.stop());vid().srcObject=null;document.getElementById('cm').classList.remove('open');}
 async function capScan(){const btn=document.getElementById('snapbtn');btn.disabled=true;btn.innerHTML='<span class="ms md" style="animation:spin 1s linear infinite">progress_activity</span> Extracting...';const c=document.getElementById('canvas'),v=vid();c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);try{const r=await Tesseract.recognize(c,'eng');const txt=r.data.text.trim();if(txt&&txt.length>3){closeCam();document.getElementById('ocredit').value=txt;openM('opm');}else{toast('No text detected. Try better lighting.','warn');}}catch(e){toast('OCR failed. Please try again.','err');}btn.disabled=false;btn.innerHTML='<span class="ms md">document_scanner</span> Capture &amp; Extract';}
 function confirmOCR(){const t=document.getElementById('ocredit').value.trim();if(!t)return;insertQ(t);closeM('opm');}
+
+/* ══ CDSS HELPER FUNCTIONS ══ */
+function calcBMI() {
+  const w = parseFloat(document.getElementById('w-wt').value);
+  const h = parseFloat(document.getElementById('w-ht').value);
+  const bmiEl = document.getElementById('w-bmi');
+  if (w && h) {
+    const hm = h / 100;
+    const bmi = (w / (hm * hm)).toFixed(1);
+    bmiEl.textContent = bmi + ' kg/m²';
+    bmiEl.style.color = (bmi < 18.5 || bmi >= 25) ? 'var(--warn)' : 'var(--ok)';
+  } else {
+    bmiEl.textContent = '--';
+    bmiEl.style.color = 'var(--t2)';
+  }
+}
+
+function togglePreg() {
+  const sex = document.getElementById('w-sex').value;
+  const pregBox = document.getElementById('w-preg-fg');
+  if(pregBox) pregBox.style.display = sex === 'F' ? 'flex' : 'none';
+}
+
+
 /* ══ CDSS WARD LOGIC ══ */
 let isWardMode = false;
 let wardPatients = JSON.parse(localStorage.getItem('pharmai_ward') || '[]');
@@ -1282,20 +1308,21 @@ function renderWardList() {
 function openCDSSWiz(mode) {
   document.getElementById('cdss-form').classList.add('open');
   
-  // Reset Temp Arrays
-  cdssTempLabs = [];
-  cdssTempTx = [];
-  renderCDSSLabs();
-  renderCDSSTx();
-
   if (mode === 'admit') {
+    cdssTempLabs = [];
+    cdssTempTx = [];
     document.getElementById('wiz-title').innerHTML = '<span class="ms md">person_add</span> Admit Patient';
     document.getElementById('sec-demo').style.display = 'block';
     document.getElementById('sec-hist').style.display = 'block';
     document.getElementById('sec-fresh').style.display = 'none';
     document.getElementById('lbl-vitals').textContent = 'Baseline Vitals';
-    document.getElementById('btn-gen-plan').innerHTML = '<span class="ms sm">memory</span> Generate Baseline Plan';
+    document.getElementById('btn-gen-plan').innerHTML = '<span class="ms sm">memory</span> Analyze & Generate';
   } else if (mode === 'progress') {
+    cdssTempLabs = []; 
+    // PRE-LOAD EXISTING TREATMENTS FOR PROGRESS UPDATE
+    const pt = wardPatients.find(p => p.id === activeCaseId);
+    cdssTempTx = pt && pt.currentTx ? JSON.parse(JSON.stringify(pt.currentTx)) : [];
+    
     document.getElementById('wiz-title').innerHTML = '<span class="ms md">edit_note</span> Add Daily Progress';
     document.getElementById('sec-demo').style.display = 'none'; // Hide static info
     document.getElementById('sec-hist').style.display = 'none'; // Hide static info
@@ -1303,6 +1330,9 @@ function openCDSSWiz(mode) {
     document.getElementById('lbl-vitals').textContent = 'Updated Vitals';
     document.getElementById('btn-gen-plan').innerHTML = '<span class="ms sm">memory</span> Generate Progress Plan';
   }
+  
+  renderCDSSLabs();
+  renderCDSSTx();
 }
 
 function closeCDSSWiz() {
@@ -1357,9 +1387,19 @@ function addTxTag() {
   hap(10);
 }
 
+// Added provision to easily edit an existing treatment
+function editTxTag(i) {
+  const t = cdssTempTx[i];
+  document.getElementById('tx-drug').value = t.drug || '';
+  document.getElementById('tx-dose').value = t.dose || '';
+  document.getElementById('tx-freq').value = t.freq || '';
+  document.getElementById('tx-route').value = t.route || '';
+  remTxTag(i);
+}
+
 function renderCDSSTx() {
   const cont = document.getElementById('tx-tags');
-  cont.innerHTML = cdssTempTx.map((t, i) => `<div class="rx-tag" style="justify-content:space-between; width:100%;">${esc(t.drug)} - ${esc(t.dose)} ${esc(t.freq)} (${esc(t.route)}) <button class="rx-del" onclick="remTxTag(${i});hap(10);"><span class="ms xs">close</span></button></div>`).join('');
+  cont.innerHTML = cdssTempTx.map((t, i) => `<div class="rx-tag" style="justify-content:space-between; width:100%;">${esc(t.drug)} - ${esc(t.dose)} ${esc(t.freq)} (${esc(t.route)}) <div><button class="rx-del" style="color:var(--blue); margin-right:8px;" onclick="editTxTag(${i});hap(10);"><span class="ms xs">edit</span></button><button class="rx-del" onclick="remTxTag(${i});hap(10);"><span class="ms xs">close</span></button></div></div>`).join('');
 }
 function remTxTag(i) { cdssTempTx.splice(i, 1); renderCDSSTx(); }
 
@@ -1420,10 +1460,23 @@ async function processDischarge() {
 }
 
 async function genCarePlan() {
+  const isUpdate = document.getElementById('sec-fresh').style.display === 'block';
+  let pt = activeCaseId ? wardPatients.find(p => p.id === activeCaseId) : null;
+
+  // Smart Data Merging: In progress updates, we secretly pass the original history to the AI
   const payload = {
-    isUpdate: document.getElementById('sec-fresh').style.display === 'block',
-    demographics: { name: document.getElementById('w-name').value, id: document.getElementById('w-id').value, age: document.getElementById('w-age').value, sex: document.getElementById('w-sex').value, wt: document.getElementById('w-wt').value },
-    history: { cc: document.getElementById('w-cc').value, pmh: document.getElementById('w-pmh').value, alg: document.getElementById('w-alg').value, soc: document.getElementById('w-soc').value, fam: document.getElementById('w-fam').value },
+    isUpdate: isUpdate,
+    demographics: isUpdate && pt && pt.demo ? pt.demo : { 
+      name: document.getElementById('w-name').value, id: document.getElementById('w-id').value, 
+      age: document.getElementById('w-age').value, sex: document.getElementById('w-sex').value, 
+      wt: document.getElementById('w-wt').value, ht: document.getElementById('w-ht') ? document.getElementById('w-ht').value : '', 
+      preg: document.getElementById('w-preg') ? document.getElementById('w-preg').value : ''
+    },
+    history: isUpdate && pt && pt.hist ? pt.hist : { 
+      dx: document.getElementById('w-dx') ? document.getElementById('w-dx').value : '', cc: document.getElementById('w-cc').value, 
+      pmh: document.getElementById('w-pmh').value, pmx: document.getElementById('w-pmx') ? document.getElementById('w-pmx').value : '', 
+      alg: document.getElementById('w-alg').value, soc: document.getElementById('w-soc').value, fam: document.getElementById('w-fam').value 
+    },
     updates: { fresh: document.getElementById('w-fresh').value },
     vitals: { bp: document.getElementById('v-bp').value, hr: document.getElementById('v-hr').value, rr: document.getElementById('v-rr').value, temp: document.getElementById('v-temp').value, spo2: document.getElementById('v-spo2').value, cns: document.getElementById('v-cns').value, resp: document.getElementById('v-resp').value },
     labs: { anchors: { scr: document.getElementById('l-scr').value, ast: document.getElementById('l-ast').value, alt: document.getElementById('l-alt').value, bil: document.getElementById('l-bil').value }, specifics: cdssTempLabs, urine: document.getElementById('l-urine').value, img: document.getElementById('l-img').value },
@@ -1432,9 +1485,10 @@ async function genCarePlan() {
 
   closeCDSSWiz();
   
-  if(!payload.isUpdate && !activeCaseId) {
+  // Save or Create Patient Data
+  if(!isUpdate && !activeCaseId) {
     activeCaseId = 'PT-' + Date.now();
-    wardPatients.unshift({ 
+    pt = { 
       id: activeCaseId, 
       status: 'active', 
       name: payload.demographics.name || 'Unknown', 
@@ -1442,14 +1496,22 @@ async function genCarePlan() {
       age: payload.demographics.age, 
       sex: payload.demographics.sex, 
       weight: payload.demographics.wt, 
-      cc: payload.history.cc || 'No complaints listed', 
-      htmlTimeline: '' 
-    });
-    saveWardData(); 
+      cc: payload.history.dx || payload.history.cc || 'No complaints', 
+      htmlTimeline: '',
+      currentTx: cdssTempTx, // Save baseline treatments
+      demo: payload.demographics,
+      hist: payload.history
+    };
+    wardPatients.unshift(pt);
+  } else if (pt) {
+    // Update the saved treatment list for the next progress note
+    pt.currentTx = cdssTempTx;
   }
+  
+  saveWardData(); 
   openCDSSFile(activeCaseId);
   
-  await callCDSSAI(payload, payload.isUpdate ? 'progress' : 'baseline');
+  await callCDSSAI(payload, isUpdate ? 'progress' : 'baseline');
 }
 
 async function callCDSSAI(payload, mode, lang = 'English') {
@@ -1493,7 +1555,7 @@ Output ONLY valid JSON matching this exact structure:
     });
     const data = await res.json();
     
-    // JSON Cleaner
+    // JSON Cleaner (Prevents Markdown crashing)
     let rawContent = data.choices[0].message.content.trim();
     rawContent = rawContent.replace(/^```json/gi, '').replace(/^```/gi, '').replace(/```$/g, '').trim();
     const result = JSON.parse(rawContent);
