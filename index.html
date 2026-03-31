@@ -1666,11 +1666,11 @@ CRITICAL DATA FIDELITY (MANDATORY):
 2. NEVER alter, round, or summarize lab units.
 
 UNIVERSAL CLINICAL RULES (EXECUTE IN ORDER):
-1. CUMULATIVE TOXICITY: Count ALL active agents affecting a single biomarker. IF multiple agents stack risk AND the baseline lab/vitals/state is abnormal, trigger "Critical Cumulative Toxicity" (Severity: Hard Stop). Evaluate hemodynamic stability using the provided vitals.
-2. RENAL/HEPATIC HARD STOPS: Use the provided calculated CrCl. Cross-reference EVERY drug against this CrCl. IF CrCl is below a drug's absolute manufacturer threshold, Action = ABSOLUTE CONTRAINDICATION / HARD STOP. Do NOT suggest dose adjustment for hard stops.
-3. PHARMACOKINETICS (CYP450/P-gp): Scan for enzyme inhibitors/inducers interacting with narrow therapeutic index drugs.
-4. DRUG-DISEASE CONTRAINDICATIONS: Cross-reference all medications against active PMH and Diagnoses. Flag any drug that exacerbates an underlying disease state as a Hard Stop.
-5. ALLERGIES: Categorize known allergies strictly as "Contraindication".
+1. BROADER SYNERGY & CUMULATIVE TOXICITY: Do not just check 1-to-1 pairs. Evaluate the ENTIRE regimen for additive, class-spanning systemic burdens. Explicitly calculate and flag: Anticholinergic burden, Serotonin Syndrome risk, combined CNS depression/fall risk, QTc prolongation cascades, and stacked bleeding risks (e.g., SSRI + NSAID + Anticoagulant). IF multiple agents stack risk, trigger "Polypharmacy / Cumulative Risk" (Severity: Critical or High).
+2. RENAL/HEPATIC CLEARANCE: Use the provided calculated CrCl. Cross-reference EVERY drug against this CrCl. IF CrCl is below a drug's absolute manufacturer threshold, categorize as "Contraindication" (Severity: Critical). Do NOT suggest dose adjustment for absolute contraindications.
+3. PHARMACOKINETICS (CYP450/P-gp): Scan for enzyme inhibitors/inducers interacting with narrow therapeutic index drugs. Categorize as "Drug-Drug Interaction".
+4. DRUG-DISEASE & DRUG-LIFESTYLE CONTRAINDICATIONS: Cross-reference all medications against active PMH, Diagnoses, AND Social History. Flag any drug that exacerbates an underlying disease state or clashes with diet/lifestyle (e.g., smoking, specific foods, supplements) as a "Drug-Disease Interaction" (Severity: Critical or High).
+5. ALLERGIES: Categorize known allergies strictly as "Contraindication" (Severity: Critical).
 
 Output ONLY valid JSON matching this exact structure:
 {
@@ -1681,7 +1681,7 @@ Output ONLY valid JSON matching this exact structure:
   ],
   "clinical_correlations": ["Correlate symptoms/labs with medications."],
   "drug_related_problems": [
-    { "category": "Contraindication | Cumulative Toxicity | Interaction | Untreated Indication | No Indication | Dosing Error", "issue": "Specific description of the mechanism or cumulative risk", "severity": "Hard Stop | High | Moderate | Low", "actionable_solution": "Precise intervention" }
+    { "category": "Contraindication | Drug-Drug Interaction | Drug-Disease Interaction | Dosing Error | Polypharmacy / Cumulative Risk | Adverse Effect", "issue": "Specific clinical description of the mechanism or broader systemic risk", "severity": "Critical | High | Moderate | Low", "actionable_solution": "Precise clinical intervention (e.g., Discontinue immediately, Reduce dose)" }
   ],
   "pharmacist_interventions": ["Specific steps addressing the DRPs."],
   "references": ["Cite specific guidelines"]
@@ -1763,7 +1763,7 @@ Output ONLY valid JSON matching this exact structure:
         drpHtml = `<div style="margin-top:15px; border-top: 1px solid var(--b); padding-top: 15px;">
           <div style="color:var(--danger); font-weight:700; margin-bottom:8px;"><span class="ms sm">warning</span> Drug-Related Problems (DRPs)</div>
           ${result.drug_related_problems.map(drp => {
-            let badgeClass = drp.severity === 'Hard Stop' || drp.severity === 'High' ? 'dng' : 'warn';
+            let badgeClass = drp.severity === 'Critical' || drp.severity === 'High' ? 'dng' : 'warn';
             let badgeText = drp.severity ? drp.severity.toUpperCase() : 'UNKNOWN';
             return `
             <div class="aalert ${badgeClass}" style="margin-bottom:8px; flex-direction:column;">
