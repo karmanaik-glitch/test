@@ -16,36 +16,70 @@
   <script src="https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js"></script>
 <style>
 /* ══ ULTRA-PREMIUM TOKENS & ANIMATIONS ══ */
+/* ══ ULTRA-PREMIUM MIDNIGHT & ELECTRIC BLUE TOKENS ══ */
 :root {
-  --blue: #FFFFFF; --bdim: rgba(255, 255, 255, 0.08); --bmid: rgba(255, 255, 255, 0.15);
-  --grad: linear-gradient(135deg, #27272A, #09090B);
+  /* The New Premium Blue Accents */
+  --blue: #38BDF8; /* Electric Sky Blue */
+  --bdim: rgba(56, 189, 248, 0.12); /* Soft blue glow for hovers */
+  --bmid: rgba(56, 189, 248, 0.25);
+  --grad: linear-gradient(135deg, #0284C7, #38BDF8); /* Rich blue gradient for buttons/avatars */
+  
+  /* Clinical Colors (Kept vibrant) */
   --ok: #10B981; --okdim: rgba(16,185,129,.12);
   --warn: #F59E0B; --wdim: rgba(245,158,11,.12);
   --danger: #EF4444; --ddim: rgba(239,68,68,.12);
   --preg: #EC4899; --pdim: rgba(236,72,153,.12);
   --peds: #8B5CF6; --pedim: rgba(139,92,246,.12);
   --geri: #F97316; --gdim: rgba(249,115,22,.12);
-  --cat-se: #EF4444; --cat-dos: #FFFFFF; --cat-int: #F59E0B;
+  
+  --cat-se: #EF4444; --cat-dos: #38BDF8; --cat-int: #F59E0B;
   --cat-con: #8B5CF6; --cat-mec: #F97316; --cat-gen: #10B981;
+  
   --ff: "Inter", system-ui, sans-serif; --fm: "JetBrains Mono", monospace;
   --spring: cubic-bezier(0.175, 0.885, 0.32, 1.15); --ease: cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 body {
-  --bg: #000000; --sf: rgba(10, 10, 10, 0.85); --card: #0F0F11; --card2: #18181B;
-  --b: #27272A; --b2: #3F3F46; --text: #FAFAFA; --t2: #A1A1AA; --muted: #52525B;
-  --ibg: rgba(0,0,0,0.5); --sk: rgba(255,255,255,0.06); --sk2: rgba(255,255,255,0.10);
+  /* Deep Slate/Midnight instead of pure black */
+  --bg: #020617; 
+  --sf: rgba(2, 6, 23, 0.85); /* Frosted midnight glass */
+  --card: #0F172A; /* Rich slate cards */
+  --card2: #1E293B; /* Slightly elevated slate */
+  
+  /* Blue-tinted borders and text */
+  --b: #1E293B; 
+  --b2: #334155; 
+  --text: #F8FAFC; /* Crisp ice white */
+  --t2: #94A3B8; /* Cool grey/blue for secondary text */
+  --muted: #64748B;
+  
+  --ibg: rgba(2, 6, 23, 0.6); 
+  --sk: rgba(56, 189, 248, 0.06); /* Blue-tinted skeleton loaders */
+  --sk2: rgba(56, 189, 248, 0.12);
   color-scheme: dark;
 }
 
 body.light {
-  --bg: #FAFAFA; --sf: rgba(255, 255, 255, 0.85); --card: #FFFFFF; --card2: #F4F4F5;
-  --b: #E4E4E7; --b2: #D4D4D8; --text: #09090B; --t2: #52525B; --muted: #A1A1AA;
-  --blue: #09090B; --bdim: rgba(0,0,0,0.05); --ibg: rgba(255,255,255,0.8);
-  --sk: rgba(0,0,0,0.05); --sk2: rgba(0,0,0,0.09);
+  /* Cool Ice White instead of warm paper white */
+  --bg: #F8FAFC; 
+  --sf: rgba(248, 250, 252, 0.85); 
+  --card: #FFFFFF; 
+  --card2: #F1F5F9; 
+  
+  --b: #E2E8F0; 
+  --b2: #CBD5E1; 
+  --text: #0F172A; /* Very dark slate text instead of black */
+  --t2: #64748B; 
+  --muted: #94A3B8;
+  
+  /* Dark electric blue for primary actions in light mode */
+  --blue: #0284C7; 
+  --bdim: rgba(2, 132, 199, 0.08); 
+  --ibg: rgba(255,255,255,0.8);
+  --sk: rgba(2, 132, 199, 0.05); 
+  --sk2: rgba(2, 132, 199, 0.1);
   color-scheme: light;
 }
-
 /* Material Icons - Sharp & Premium */
 .ms { font-family: "Material Symbols Rounded"; font-weight: 300; font-style: normal; line-height: 1; display: inline-flex; align-items: center; justify-content: center; -webkit-font-smoothing: antialiased; font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 24; vertical-align: middle; flex-shrink: 0; }
 .ms.fill { font-variation-settings: "FILL" 1, "wght" 300; }
