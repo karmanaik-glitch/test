@@ -169,13 +169,25 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .ws-hint { font-size: 0.74rem; color: var(--muted); margin-bottom: 28px; opacity: 0; animation: wsFade 0.5s var(--ease) both; }
 @keyframes wsFade { to { opacity: 1; } }
 .ws-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 400px; }
-.ws-btn { background: rgba(255,255,255,0.02); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 20px 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--t2); font-size: 0.82rem; font-weight: 600; cursor: pointer; position: relative; overflow: hidden; transition: all 0.5s var(--spring); min-height: 88px; opacity: 0; transform: translateY(10px); animation: wsCard 0.5s var(--spring) both; }
-@keyframes wsCard { to { opacity: 1; transform: translateY(0); } }
-.ws-btn::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.1), transparent 70%); opacity: 0; transition: opacity 0.4s ease; pointer-events: none; }
-.ws-btn:hover { transform: translateY(-4px) scale(1.02); border-color: rgba(255,255,255,0.2); color: var(--text); box-shadow: 0 16px 32px rgba(0,0,0,0.3); }
-.ws-btn:hover::after { opacity: 1; }
-.ws-btn .ms { color: var(--text); transition: transform 0.4s var(--spring); }
-.ws-btn:hover .ms { transform: scale(1.1) translateY(-2px); }
+.ws-btn { 
+  background: var(--card);
+  backdrop-filter: blur(24px); 
+  -webkit-backdrop-filter: blur(24px); 
+  border: 1px solid var(--b);
+  border-radius: 20px; 
+  padding: 20px 12px; 
+  display: flex; flex-direction: column; align-items: center; gap: 10px; 
+  color: var(--t2); font-size: 0.82rem; font-weight: 600; cursor: pointer; 
+  position: relative; overflow: hidden; transition: all 0.5s var(--spring); 
+  min-height: 88px; opacity: 0; transform: translateY(10px); 
+  animation: wsCard 0.5s var(--spring) both; 
+}
+.ws-btn:hover { 
+  transform: translateY(-4px) scale(1.02); 
+  border-color: var(--text);
+  color: var(--text); 
+  box-shadow: 0 16px 32px rgba(0,0,0,0.15); 
+}
 
 .msg { display: flex; gap: 12px; animation: slideUp 0.4s var(--spring) both; }
 .msg.user { flex-direction: row-reverse; }
@@ -228,9 +240,22 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 
 /* ══ FLOATING INPUT BAR ══ */
 #ia { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 760px; z-index: 100; background: transparent; padding: 0; border: none; }
-.irow { display: flex; align-items: flex-end; gap: 8px; background: rgba(15,15,15,0.6); backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px); border: 1px solid rgba(255,255,255,0.1); border-radius: 28px; padding: 10px 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); transition: all 0.3s var(--ease); }
-.irow:focus-within { background: rgba(20,20,20,0.9); border-color: rgba(255,255,255,0.3); transform: translateY(-2px); box-shadow: 0 24px 50px rgba(0,0,0,0.6); }
-#query { flex: 1; background: none; border: none; color: var(--text); font-family: var(--ff); font-size: 1rem; padding: 8px 4px; outline: none; resize: none; max-height: 120px; }
+.irow { 
+  display: flex; align-items: flex-end; gap: 8px; 
+  background: var(--sf); /* Dynamic frosted glass */
+  backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px); 
+  border: 1px solid var(--b); /* Dynamic border */
+  border-radius: 28px; padding: 10px 12px; 
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2); 
+  transition: all 0.3s var(--ease); 
+}
+.irow:focus-within { 
+  background: var(--card); /* Solidifies slightly on focus */
+  border-color: var(--text); /* High contrast focus ring */
+  transform: translateY(-2px); 
+  box-shadow: 0 24px 50px rgba(0,0,0,0.3); 
+}
+  #query { flex: 1; background: none; border: none; color: var(--text); font-family: var(--ff); font-size: 1rem; padding: 8px 4px; outline: none; resize: none; max-height: 120px; }
 .iibtn { width: 44px; height: 44px; border-radius: 12px; background: none; border: none; color: var(--t2); cursor: pointer; transition: 0.2s var(--spring); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .iibtn:hover { background: var(--bdim); color: var(--text); transform: scale(0.95); }
 .iibtn.micon { color: var(--danger); background: var(--ddim); animation: micp 1.5s ease infinite; }
@@ -409,6 +434,20 @@ textarea.finp { resize: vertical; min-height: 70px; }
   .ctag, .asum, .abody { color: #000 !important; }
   * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
 }
+/* Mobile Header Optimization (Preserves Text) */
+@media (max-width: 600px) {
+  header { padding: 12px 10px; } 
+  .hleft { gap: 6px; }
+  .hright { gap: 4px; }
+  .hmenu { padding: 4px; }
+  .lmark { width: 30px; height: 30px; border-radius: 8px; }
+  .lmark .ms { font-size: 18px; }
+  .ltitle { font-size: 0.95rem; }
+  .lsub { font-size: 0.55rem; }
+  .hbtn { width: 34px; height: 34px; border-radius: 10px; }
+  .hbtn .ms { font-size: 18px; }
+  .pc { width: 30px; height: 30px; font-size: 0.75rem; }
+}  
 </style>
 </head>
 <body>
@@ -1172,19 +1211,25 @@ function analyzeRx(){if(rxList.length<2){toast('Add at least 2 medications.','wa
 function renderWelcome(){
   const h=new Date().getHours();const gr=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
   const name=uName||'Doctor';
-  const words=`${gr}, ${name}.`.split(' ');
-  const wHtml=words.map((w,i)=>`<span class="ws-word" style="animation-delay:${0.3+i*0.15}s">${w}</span>`).join(' ');
+  
+  /* Hardcoding the blue spark just for the name */
+  const wHtml=`
+    <span class="ws-word" style="animation-delay:0.3s">${gr.split(' ')[0]}</span>
+    <span class="ws-word" style="animation-delay:0.45s">${gr.split(' ')[1]},</span>
+    <span class="ws-word" style="animation-delay:0.6s; color: #38BDF8;">${name}.</span>
+  `;
+  
   const c=document.getElementById('chat');
   c.innerHTML=`<div id="ws">
     <div class="ws-logo"><span class="ms lg fill">cardiology</span></div>
     <div class="ws-g">${wHtml}</div>
-    <div class="ws-sub" style="animation-delay:${0.3+words.length*0.15+0.1}s">How can I assist you today?</div>
-    <div class="ws-hint" style="animation-delay:${0.3+words.length*0.15+0.25}s">You can ask follow-up questions naturally.</div>
+    <div class="ws-sub" style="animation-delay:0.75s">How can I assist you today?</div>
+    <div class="ws-hint" style="animation-delay:0.9s">You can ask follow-up questions naturally.</div>
     <div class="ws-grid">
       <button class="ws-btn" style="animation-delay:0.9s" onclick="openM('tm');document.querySelector('.tbtn:nth-child(2)').click();">
         <span class="ms lg">monitor_heart</span>Drug Interactions
       </button>
-      <button class="ws-btn" style="animation-delay:1.0s" onclick="insertAndSend('Beers Criteria \u2014 high-risk medications to avoid in elderly patients')">
+      <button class="ws-btn" style="animation-delay:1.0s" onclick="insertAndSend('Beers Criteria \\u2014 high-risk medications to avoid in elderly patients')">
         <span class="ms lg">elderly</span>Beers Criteria
       </button>
       <button class="ws-btn" style="animation-delay:1.1s" onclick="insertAndSend('Standard pediatric dose for Amoxicillin 40mg/kg/day?')">
@@ -1194,7 +1239,8 @@ function renderWelcome(){
         <span class="ms lg">lab_research</span>Child-Pugh
       </button>
     </div>
-  </div>`;}
+  </div>`;
+}
 
 /* ══ CHAT UTILS ══ */
 const getChat=()=>document.getElementById('chat');
