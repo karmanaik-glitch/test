@@ -323,12 +323,16 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .wcard.open .cbody { grid-template-rows: 1fr; }
 
 /* ══ PREMIUM INPUT FIELDS ══ */
+/* ══ PREMIUM INPUT FIELDS (Slimmer Profile) ══ */
 .finp, .fl-in, .fl-sel, .rx-inp { 
-  width: 100%; min-height: 48px; 
+  width: 100%; 
+  min-height: 42px; /* 👈 Decreased from 48px */
   background: var(--card2); 
   border: 1px solid var(--b2); 
-  color: var(--text); border-radius: 12px; 
-  padding: 12px 16px; font-size: 0.9rem; 
+  color: var(--text); 
+  border-radius: 10px; /* Slightly tighter radius to match the slimmer size */
+  padding: 10px 14px; /* 👈 Reduced padding */
+  font-size: 0.88rem; 
   font-family: var(--ff); outline: none; 
   transition: all 0.25s var(--spring); 
   appearance: none; -webkit-appearance: none; 
@@ -338,29 +342,29 @@ header { display: flex; align-items: center; justify-content: space-between; pad
   box-shadow: 0 0 0 3px var(--bdim); 
   background: var(--card); 
 }
-textarea.finp { resize: vertical; min-height: 70px; }
+textarea.finp { resize: vertical; min-height: 60px; } /* 👈 Decreased from 70px */
 
 /* Custom Dropdown Arrows */
 select.finp, select.fl-sel {
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A1A1AA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
-  background-position: right 14px center;
+  background-position: right 12px center;
   background-size: 16px;
-  padding-right: 40px;
+  padding-right: 36px;
 }
-select.fl-sel { background-position: right 10px center; padding-right: 32px; }
+select.fl-sel { background-position: right 8px center; padding-right: 28px; }
 
 .flw { position: relative; margin-bottom: 10px; }
-.fl-lbl { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 0.9rem; color: var(--muted); transition: all 0.2s var(--ease); pointer-events: none; }
-.flw.up .fl-lbl { top: 10px; transform: none; font-size: 0.63rem; color: var(--text); font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.fl-lbl { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 0.88rem; color: var(--muted); transition: all 0.2s var(--ease); pointer-events: none; }
+.flw.up .fl-lbl { top: 8px; transform: none; font-size: 0.6rem; color: var(--text); font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
 .crow2 { display: flex; gap: 10px; } .crow2 .flw { flex: 1; }
-.cact { width: 100%; min-height: 44px; background: var(--card2); border: 1px solid var(--b2); color: var(--text); border-radius: 999px; font-weight: 700; font-size: 0.88rem; font-family: var(--ff); cursor: pointer; margin-top: 6px; transition: all 0.25s var(--spring); display: flex; align-items: center; justify-content: center; gap: 8px; }
+.cact { width: 100%; min-height: 42px; background: var(--card2); border: 1px solid var(--b2); color: var(--text); border-radius: 999px; font-weight: 700; font-size: 0.88rem; font-family: var(--ff); cursor: pointer; margin-top: 6px; transition: all 0.25s var(--spring); display: flex; align-items: center; justify-content: center; gap: 8px; }
 .cact:hover { background: var(--text); border-color: transparent; color: var(--bg); box-shadow: 0 4px 14px rgba(255,255,255,0.1); } .cact:active { transform: scale(0.97); }
 .cres { margin-top: 12px; text-align: center; font-weight: 700; font-size: 0.95rem; color: var(--ok); min-height: 22px; }
 .owarn { background: var(--ddim); border: 1px solid rgba(239,68,68,0.25); border-radius: 12px; padding: 10px 14px; font-size: 0.76rem; color: var(--danger); margin-bottom: 14px; display: flex; gap: 8px; align-items: flex-start; line-height: 1.55; font-weight: 500; }
 
 .rx-row { display: flex; gap: 8px; margin-bottom: 12px; position:relative; align-items: center; }
-.rx-add { min-width: 44px; min-height: 44px; background: var(--bdim); border: 1.5px solid rgba(255,255,255,0.2); color: var(--text); border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+.rx-add { min-width: 42px; min-height: 42px; background: var(--bdim); border: 1.5px solid rgba(255,255,255,0.2); color: var(--text); border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
 .rx-add:hover { background: var(--text); color: var(--bg); }
 .rx-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
 .rx-tag { background: var(--card2); border: 1px solid var(--b2); padding: 6px 12px; border-radius: 999px; font-size: 0.8rem; color: var(--text); display: flex; align-items: center; gap: 6px; }
@@ -469,49 +473,65 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
 #dc-confirm-modal { z-index: 600 !important; }
 
 @media print {
-  /* 1. Reset layout constraints for printing */
-  html, body, #ap, .mac, #cdss-view, .cdss-wiz, .wiz-body { 
-    height: auto !important; min-height: auto !important; 
-    overflow: visible !important; position: static !important; 
-    display: block !important; background: #fff !important; color: #000 !important; 
+  /* 1. Reset all animations and transforms that shove content off-page */
+  * {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important; 
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
-  
-  /* 2. Hide ALL non-essential UI elements (Including the #chat canvas!) */
-  #tw, header, #sb, #ia, #fb, #chat, .wiz-footer, .btn-block, .ms, #cdss-dash, #cdss-form, #splash, #lp, #cm, .mov, #ward-overlay { 
-    display: none !important; 
+
+  /* 2. Un-hide and expand the exact path to the Patient File */
+  html, body, #ap, .mac, #cdss-view, #cdss-file, .wiz-body {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color: #000 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
-  
-  /* 3. Ensure the patient file is the only thing shown */
-  #cdss-file { display: block !important; }
-  
-  /* 4. Format the Header for print (Shows Patient Name & ID, hides buttons) */
-  .wiz-hdr { 
-    position: static !important; background: #fff !important; 
-    border-bottom: 2px solid #000 !important; padding: 0 0 15px 0 !important; 
-    margin-bottom: 20px !important; display: block !important;
+
+  /* 3. Hide absolutely everything else */
+  #lp, #splash, #auth-loading, #tw, #sb-ov, #sb, #ia, #fb, #chat, #cm, .mov, header, #ward-overlay, #cdss-dash, .wiz-footer {
+    display: none !important;
   }
-  .wiz-hdr .hbtn { display: none !important; } /* Hides back/print buttons */
+
+  /* 4. Format the Header for paper */
+  .wiz-hdr {
+    display: flex !important;
+    position: static !important;
+    background: #fff !important;
+    border-bottom: 2px solid #000 !important;
+    padding: 0 0 15px 0 !important;
+    margin-bottom: 20px !important;
+  }
+  .wiz-hdr .hbtn { display: none !important; }
   #f-pt-name { font-size: 1.5rem !important; color: #000 !important; font-weight: 800 !important; }
   #f-pt-bed { font-size: 1rem !important; color: #555 !important; margin-top: 4px !important; }
-  
-  /* 5. Timeline & Report formatting */
+
+  /* 5. Clean Report & Table Formatting */
   #pt-timeline { padding: 0 !important; margin: 0 !important; }
-  .cdss-report { 
-    border: none !important; box-shadow: none !important; 
-    background: #fff !important; color: #000 !important; 
-    padding: 0 !important; margin-bottom: 40px !important; 
-    page-break-inside: avoid; 
+  .cdss-report {
+    border: none !important; box-shadow: none !important;
+    background: #fff !important; color: #000 !important;
+    padding: 0 !important; margin-bottom: 40px !important;
+    page-break-inside: avoid;
   }
   .rep-hdr { color: #000 !important; border-bottom: 2px solid #000 !important; padding-bottom: 5px !important; }
-  
-  /* 6. Clean Table Formatting for Paper */
-  .rep-tbl { page-break-inside: auto; width: 100% !important; border-collapse: collapse !important; }
+  .rep-tbl { width: 100% !important; border-collapse: collapse !important; page-break-inside: auto; }
   .rep-tbl tr { page-break-inside: avoid; page-break-after: auto; }
-  .rep-tbl th { background: #eee !important; color: #000 !important; border: 1px solid #ccc !important; }
-  .rep-tbl td { border: 1px solid #ccc !important; color: #000 !important; }
-  
-  /* 7. Force strict black & white printing */
-  * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
+  .rep-tbl th { background: #eee !important; color: #000 !important; border: 1px solid #aaa !important; }
+  .rep-tbl td { border: 1px solid #aaa !important; color: #000 !important; }
+  .spark-row { background: #fff !important; border: 1px solid #ccc !important; box-shadow: none !important; }
 }
 </style>
 </head>
