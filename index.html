@@ -596,7 +596,7 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
       <div class="hleft">
         <button class="hmenu" onclick="toggleSB();hap(10);"><span class="ms md">menu</span></button>
         <div class="lmark" onclick="toggleSB();hap(10);"><span class="ms md fill">cardiology</span></div>
-        <div><div class="ltitle">PharmAI</div><div class="lsub">Assistant</div></div>
+        <div><div class="ltitle">PharmAI</div><div class="lsub">Clinical Assistant</div></div>
       </div>
       <div class="hright">
         <button class="hbtn" id="navToggle" onclick="toggleAppMode();hap(10);" title="Ward Dashboard" style="position:relative;">
@@ -1832,21 +1832,25 @@ function saveWardData() {
   }, 2000);
 }
 
+/* ══ CORRECTED WARD DRAWER TOGGLE ══ */
 function toggleAppMode() {
   isWardMode = !isWardMode;
-  const chatView = document.getElementById('chat');
-  const iaView = document.getElementById('ia');
-  const fbView = document.getElementById('fb');
   const wardView = document.getElementById('cdss-view');
+  const overlay = document.getElementById('ward-overlay');
   const navIcon = document.getElementById('navIcon');
 
   if (isWardMode) {
-    chatView.style.display = 'none'; iaView.style.display = 'none'; fbView.style.display = 'none';
-    wardView.style.display = 'flex'; navIcon.textContent = 'chat'; renderWardList();
+    wardView.classList.add('open');
+    if(overlay) overlay.classList.add('open');
+    navIcon.textContent = 'chat';
+    renderWardList();
   } else {
-    chatView.style.display = 'flex'; iaView.style.display = 'flex'; fbView.style.display = 'flex';
-    wardView.style.display = 'none'; navIcon.textContent = 'local_hospital'; scrollD(); 
+    wardView.classList.remove('open');
+    if(overlay) overlay.classList.remove('open');
+    navIcon.textContent = 'local_hospital';
   }
+  Sounds.play('tick');
+  hap(15);
 }
 
 function switchWardTab(tab) {
