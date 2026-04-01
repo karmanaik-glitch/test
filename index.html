@@ -169,26 +169,42 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .ws-hint { font-size: 0.74rem; color: var(--muted); margin-bottom: 28px; opacity: 0; animation: wsFade 0.5s var(--ease) both; }
 @keyframes wsFade { to { opacity: 1; } }
 .ws-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 400px; }
+/* Fixed Widget Cards (With Animation Restored!) */
 .ws-btn { 
-  background: var(--card);
+  background: var(--card); 
   backdrop-filter: blur(24px); 
   -webkit-backdrop-filter: blur(24px); 
-  border: 1px solid var(--b);
+  border: 1px solid var(--b); 
   border-radius: 20px; 
   padding: 20px 12px; 
   display: flex; flex-direction: column; align-items: center; gap: 10px; 
   color: var(--t2); font-size: 0.82rem; font-weight: 600; cursor: pointer; 
   position: relative; overflow: hidden; transition: all 0.5s var(--spring); 
-  min-height: 88px; opacity: 0; transform: translateY(10px); 
-  animation: wsCard 0.5s var(--spring) both; 
+  min-height: 88px; 
+  opacity: 0; transform: translateY(10px); 
+  animation: wsCard 0.5s var(--spring) forwards; /* Restored animation call */
 }
+
+/* The missing animation that makes them visible! */
+@keyframes wsCard { 
+  to { opacity: 1; transform: translateY(0); } 
+}
+
 .ws-btn:hover { 
   transform: translateY(-4px) scale(1.02); 
-  border-color: var(--text);
+  border-color: var(--text); 
   color: var(--text); 
   box-shadow: 0 16px 32px rgba(0,0,0,0.15); 
 }
 
+.ws-btn .ms { 
+  color: var(--text); 
+  transition: transform 0.4s var(--spring); 
+}
+
+.ws-btn:hover .ms { 
+  transform: scale(1.1) translateY(-2px); 
+}
 .msg { display: flex; gap: 12px; animation: slideUp 0.4s var(--spring) both; }
 .msg.user { flex-direction: row-reverse; }
 @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
