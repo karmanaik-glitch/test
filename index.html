@@ -250,9 +250,9 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 
 /* ══ BOTTOM INPUT PANEL ══ */
 #ia { padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); background: var(--sf); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-top: 1px solid var(--b); flex-shrink: 0; width: 100%; z-index: 100; display: flex; flex-direction: column; gap: 8px; position: relative; }
-.irow { display: flex; align-items: flex-end; gap: 8px; background: var(--card); border: 1px solid var(--b); border-radius: 28px; padding: 8px 10px; transition: all 0.3s var(--ease); max-width: 800px; margin: 0 auto; width: 100%; }
+.irow { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--b); border-radius: 28px; padding: 6px 10px; transition: all 0.3s var(--ease); max-width: 800px; margin: 0 auto; width: 100%; }
 .irow:focus-within { border-color: var(--text); box-shadow: 0 8px 24px var(--bdim); }
-#query { flex: 1; background: none; border: none; color: var(--text); font-family: var(--ff); font-size: 1rem; padding: 10px 4px; outline: none; resize: none; max-height: 120px; line-height: 1.4; }
+#query { flex: 1; background: none; border: none; color: var(--text); font-family: var(--ff); font-size: 1rem; padding: 8px 4px; outline: none; resize: none; max-height: 120px; line-height: 1.4; display: block; }
 .iibtn { width: 44px; height: 44px; border-radius: 12px; background: none; border: none; color: var(--t2); cursor: pointer; transition: 0.2s var(--spring); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .iibtn:hover { background: var(--bdim); color: var(--text); transform: scale(0.95); }
 .iibtn.micon { color: var(--danger); background: var(--ddim); animation: micp 1.5s ease infinite; }
@@ -264,7 +264,7 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 #sbtn:not(:disabled) { background: var(--blue); color: #fff; box-shadow: 0 4px 14px var(--bmid); }
 #sbtn:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(56,189,248,0.4); }
 #sbtn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-.disc { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.65rem; color: var(--muted); text-align: center; line-height: 1.4; }
+.disc { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.65rem; color: var(--muted); text-align: center; line-height: 1.4; padding-bottom: 4px; }
 
 /* ══ MODALS & SLIDE-UP ══ */
 .mov { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 500; display: none; align-items: flex-end; justify-content: center; backdrop-filter: blur(8px); padding: 16px; }
@@ -322,26 +322,58 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .wcard .cbody { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.35s var(--spring); }
 .wcard.open .cbody { grid-template-rows: 1fr; }
 
+/* ══ PREMIUM INPUT FIELDS ══ */
+.finp, .fl-in, .fl-sel, .rx-inp { 
+  width: 100%; min-height: 48px; 
+  background: var(--card2); 
+  border: 1px solid var(--b2); 
+  color: var(--text); border-radius: 12px; 
+  padding: 12px 16px; font-size: 0.9rem; 
+  font-family: var(--ff); outline: none; 
+  transition: all 0.25s var(--spring); 
+  appearance: none; -webkit-appearance: none; 
+}
+.finp:focus, .fl-in:focus, .fl-sel:focus, .rx-inp:focus { 
+  border-color: var(--blue); 
+  box-shadow: 0 0 0 3px var(--bdim); 
+  background: var(--card); 
+}
+textarea.finp { resize: vertical; min-height: 70px; }
+
+/* Custom Dropdown Arrows */
+select.finp, select.fl-sel {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A1A1AA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+select.fl-sel { background-position: right 10px center; padding-right: 32px; }
+
 .flw { position: relative; margin-bottom: 10px; }
-.fl-in, .fl-sel { width: 100%; min-height: 52px; background: var(--ibg); border: 1.5px solid var(--b2); color: var(--text); border-radius: 14px; padding: 22px 14px 8px; font-size: 0.9rem; font-family: var(--ff); outline: none; transition: all 0.25s; appearance: none; -webkit-appearance: none; }
-.fl-in:focus, .fl-sel:focus { border-color: var(--text); box-shadow: 0 0 0 3px var(--bdim); }
-.fl-sel option { background: var(--bg); }
 .fl-lbl { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 0.9rem; color: var(--muted); transition: all 0.2s var(--ease); pointer-events: none; }
 .flw.up .fl-lbl { top: 10px; transform: none; font-size: 0.63rem; color: var(--text); font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
 .crow2 { display: flex; gap: 10px; } .crow2 .flw { flex: 1; }
-.cact { width: 100%; min-height: 44px; background: var(--card2); border: 1.5px solid var(--b2); color: var(--text); border-radius: 999px; font-weight: 700; font-size: 0.88rem; font-family: var(--ff); cursor: pointer; margin-top: 6px; transition: all 0.25s var(--spring); display: flex; align-items: center; justify-content: center; gap: 8px; }
+.cact { width: 100%; min-height: 44px; background: var(--card2); border: 1px solid var(--b2); color: var(--text); border-radius: 999px; font-weight: 700; font-size: 0.88rem; font-family: var(--ff); cursor: pointer; margin-top: 6px; transition: all 0.25s var(--spring); display: flex; align-items: center; justify-content: center; gap: 8px; }
 .cact:hover { background: var(--text); border-color: transparent; color: var(--bg); box-shadow: 0 4px 14px rgba(255,255,255,0.1); } .cact:active { transform: scale(0.97); }
 .cres { margin-top: 12px; text-align: center; font-weight: 700; font-size: 0.95rem; color: var(--ok); min-height: 22px; }
 .owarn { background: var(--ddim); border: 1px solid rgba(239,68,68,0.25); border-radius: 12px; padding: 10px 14px; font-size: 0.76rem; color: var(--danger); margin-bottom: 14px; display: flex; gap: 8px; align-items: flex-start; line-height: 1.55; font-weight: 500; }
-.rx-row { display: flex; gap: 8px; margin-bottom: 12px; position:relative; }
-.rx-inp { flex: 1; min-height: 44px; background: var(--ibg); border: 1.5px solid var(--b2); color: var(--text); border-radius: 999px; padding: 0 16px; font-size: 0.9rem; font-family: var(--ff); outline: none; transition: all 0.25s; }
-.rx-inp:focus { border-color: var(--text); box-shadow: 0 0 0 3px var(--bdim); }
+
+.rx-row { display: flex; gap: 8px; margin-bottom: 12px; position:relative; align-items: center; }
 .rx-add { min-width: 44px; min-height: 44px; background: var(--bdim); border: 1.5px solid rgba(255,255,255,0.2); color: var(--text); border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
 .rx-add:hover { background: var(--text); color: var(--bg); }
 .rx-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
 .rx-tag { background: var(--card2); border: 1px solid var(--b2); padding: 6px 12px; border-radius: 999px; font-size: 0.8rem; color: var(--text); display: flex; align-items: center; gap: 6px; }
 .rx-del { background: none; border: none; color: var(--danger); cursor: pointer; display: flex; padding: 2px; transition: transform 0.2s; }
 .rx-del:hover { transform: scale(1.15); }
+
+/* ══ TREATMENT ROW ALIGNMENT ══ */
+.tx-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; align-items: center; margin-bottom: 12px; }
+@media(max-width: 600px) { 
+  .tx-row { grid-template-columns: 1fr 1fr 1fr; }
+  #tx-drug, .tx-row .rx-ac { grid-column: span 3; } 
+  .tx-row .rx-add { grid-column: span 3; width: 100%; border-radius: 12px; background: var(--blue); color: #fff; border: none; min-height: 44px; }
+}
 
 /* Custom Checkboxes for Clinical Scores */
 .chk-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 10px; background: var(--card2); border-radius: 10px; border: 1px solid var(--b2); cursor: pointer; transition: 0.2s; }
@@ -350,8 +382,8 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .chk-lbl { font-size: 0.85rem; color: var(--text); flex: 1; }
 
 /* Drug Autocomplete Dropdown */
-#rx-ac { position: absolute; top: 100%; left: 0; right: 48px; background: var(--card); border: 1px solid var(--text); border-radius: 12px; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.5); display: none; margin-top: 4px; }
-#rx-ac.show { display: block; }
+#rx-ac, #dc-rx-ac { position: absolute; top: 100%; left: 0; right: 48px; background: var(--card); border: 1px solid var(--text); border-radius: 12px; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.5); display: none; margin-top: 4px; }
+#rx-ac.show, #dc-rx-ac.show { display: block; }
 .rx-ac-item { padding: 10px 16px; font-size: 0.88rem; cursor: pointer; border-bottom: 1px solid var(--b); color: var(--text); }
 .rx-ac-item:hover { background: var(--bdim); }
 
@@ -434,18 +466,51 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
 .spark-lbl { font-size: 0.85rem; font-weight: 700; color: var(--text); width: 80px; }
 .spark-val { font-size: 0.9rem; font-weight: 700; color: var(--ok); width: 60px; text-align: right; }
 
+#dc-confirm-modal { z-index: 600 !important; }
+
 @media print {
-  html, body, #ap, .mac, #cdss-view, .cdss-wiz, .wiz-body { height: auto !important; min-height: auto !important; overflow: visible !important; position: static !important; display: block !important; background: #fff !important; color: #000 !important; }
-  #tw, header, #sb, #ia, #fb, .wiz-hdr, .wiz-footer, .btn-block, .ms, #cdss-dash, #cdss-form, #splash, #lp, #cm, .mov, #ward-overlay { display: none !important; }
+  /* 1. Reset layout constraints for printing */
+  html, body, #ap, .mac, #cdss-view, .cdss-wiz, .wiz-body { 
+    height: auto !important; min-height: auto !important; 
+    overflow: visible !important; position: static !important; 
+    display: block !important; background: #fff !important; color: #000 !important; 
+  }
+  
+  /* 2. Hide ALL non-essential UI elements (Including the #chat canvas!) */
+  #tw, header, #sb, #ia, #fb, #chat, .wiz-footer, .btn-block, .ms, #cdss-dash, #cdss-form, #splash, #lp, #cm, .mov, #ward-overlay { 
+    display: none !important; 
+  }
+  
+  /* 3. Ensure the patient file is the only thing shown */
   #cdss-file { display: block !important; }
+  
+  /* 4. Format the Header for print (Shows Patient Name & ID, hides buttons) */
+  .wiz-hdr { 
+    position: static !important; background: #fff !important; 
+    border-bottom: 2px solid #000 !important; padding: 0 0 15px 0 !important; 
+    margin-bottom: 20px !important; display: block !important;
+  }
+  .wiz-hdr .hbtn { display: none !important; } /* Hides back/print buttons */
+  #f-pt-name { font-size: 1.5rem !important; color: #000 !important; font-weight: 800 !important; }
+  #f-pt-bed { font-size: 1rem !important; color: #555 !important; margin-top: 4px !important; }
+  
+  /* 5. Timeline & Report formatting */
   #pt-timeline { padding: 0 !important; margin: 0 !important; }
-  .cdss-report { border: none !important; box-shadow: none !important; background: #fff !important; color: #000 !important; padding: 0 !important; margin-bottom: 40px !important; page-break-inside: avoid; }
-  .rep-hdr { color: #000 !important; border-bottom: 2px solid #000 !important; }
-  .rep-tbl { page-break-inside: auto; }
+  .cdss-report { 
+    border: none !important; box-shadow: none !important; 
+    background: #fff !important; color: #000 !important; 
+    padding: 0 !important; margin-bottom: 40px !important; 
+    page-break-inside: avoid; 
+  }
+  .rep-hdr { color: #000 !important; border-bottom: 2px solid #000 !important; padding-bottom: 5px !important; }
+  
+  /* 6. Clean Table Formatting for Paper */
+  .rep-tbl { page-break-inside: auto; width: 100% !important; border-collapse: collapse !important; }
   .rep-tbl tr { page-break-inside: avoid; page-break-after: auto; }
-  .rep-tbl th { background: #eee !important; color: #000 !important; border-color: #aaa !important; }
-  .rep-tbl td { border-color: #aaa !important; }
-  .ctag, .asum, .abody { color: #000 !important; }
+  .rep-tbl th { background: #eee !important; color: #000 !important; border: 1px solid #ccc !important; }
+  .rep-tbl td { border: 1px solid #ccc !important; color: #000 !important; }
+  
+  /* 7. Force strict black & white printing */
   * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
 }
 </style>
@@ -516,7 +581,7 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
       <div style="font-size:1.5rem;margin-bottom:8px;">&#128075;</div>
       <div style="font-size:1.1rem;font-weight:700;margin-bottom:6px;letter-spacing:-.02em;">Welcome to PharmAI!</div>
       <div style="font-size:0.88rem;color:var(--t2);margin-bottom:28px;line-height:1.6;">What should we call you?</div>
-      <div class="lfield name"><input type="text" id="display-name" placeholder="Your name or nickname" autocomplete="given-name" oninput="clearErr()"/></div>
+      <div class="lfield name"><input type="text" id="display-name" class="finp" placeholder="Your name or nickname" autocomplete="given-name" oninput="clearErr()"/></div>
       <button class="lbtn" onclick="saveName()"><span class="ms sm">check</span> Continue</button>
       <div id="name-err" style="display:none;align-items:center;justify-content:center;gap:6px;color:var(--danger);font-size:0.78rem;margin-top:12px;">
         <span class="ms xs">error</span>&nbsp;Please enter your name.
@@ -531,7 +596,7 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
       <div class="hleft">
         <button class="hmenu" onclick="toggleSB();hap(10);"><span class="ms md">menu</span></button>
         <div class="lmark" onclick="toggleSB();hap(10);"><span class="ms md fill">cardiology</span></div>
-        <div><div class="ltitle">PharmAI</div><div class="lsub">Clinical Assistant</div></div>
+        <div><div class="ltitle">PharmAI</div><div class="lsub">Assistant</div></div>
       </div>
       <div class="hright">
         <button class="hbtn" id="navToggle" onclick="toggleAppMode();hap(10);" title="Ward Dashboard" style="position:relative;">
@@ -691,7 +756,7 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
                   </select>
                   <select id="lab-param" class="finp" style="flex:1; min-width:140px;"><option value="">-- Parameter --</option></select>
                   <input type="text" id="lab-val" class="finp" style="width:80px;" placeholder="Value">
-                  <button class="hbtn" style="background:var(--text); color:var(--bg);" onclick="addLabTag()"><span class="ms sm">add</span></button>
+                  <button class="rx-add" style="margin:0;" onclick="addLabTag()"><span class="ms sm">add</span></button>
                 </div>
                 <div class="rx-list" id="lab-tags" style="margin-top:12px; margin-bottom:0;"></div>
               </div>
@@ -710,7 +775,7 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
                   <input type="text" id="tx-dose" class="finp" placeholder="Dose">
                   <input type="text" id="tx-freq" class="finp" placeholder="Freq (OD, BD)">
                   <input type="text" id="tx-route" class="finp" placeholder="Route (PO, IV)">
-                  <button class="hbtn" style="background:var(--text); color:var(--bg);" onclick="addTxTag()"><span class="ms sm">add</span></button>
+                  <button class="rx-add" style="margin:0;" onclick="addTxTag()"><span class="ms sm">add</span></button>
                 </div>
                 <div class="rx-list" id="tx-tags" style="flex-direction:column; margin-bottom:0;"></div>
               </div>
@@ -771,38 +836,46 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
   <div class="msh">
     <div class="mhdr"><div class="mtitle"><span class="ms md">logout</span> Close Case</div><button class="mclose" onclick="closeM('discharge-modal');"><span class="ms sm">close</span></button></div>
     <div class="mbody">
-      <div class="fg"><span class="flbl">Outcome</span>
-        <select id="dc-outcome" class="finp" onchange="document.getElementById('dc-meds-sec').style.display = this.value === 'discharge' ? 'block' : 'none';">
-          <option value="discharge">Routine Discharge (Generate Patient Card)</option>
-          <option value="dama">DAMA (Discharge Against Medical Advice)</option>
-          <option value="lost">Transferred / Incomplete Follow-up</option>
-        </select>
-      </div>
       
-      <div class="fg" style="margin-top:12px;"><span class="flbl">Date of Discharge (DOD)</span><input type="date" id="dc-dod" class="finp"></div>
-      
-      <div id="dc-meds-sec">
-        <div class="sect-title"><span class="ms sm">medication</span> Discharge Medications</div>
-        <p style="font-size:0.8rem; color:var(--t2); margin-bottom:12px;">Generate a layman-friendly Patient Counseling Card.</p>
-        <div class="rx-row" style="position:relative;">
-          <input type="text" id="dc-rx-inp" class="rx-inp rx-ac-inp" placeholder="e.g. Amoxicillin 500mg TDS x 5 days" autocomplete="off" oninput="handleAC(this)" onkeypress="if(event.key==='Enter')addDcRx()">
-          <div id="dc-rx-ac" class="rx-ac"></div>
-          <button class="rx-add" onclick="addDcRx()"><span class="ms sm">add</span></button>
-        </div>
-        <div class="rx-list" id="dc-rx-list"></div>
-        
-        <div class="fg" style="margin-top:16px;">
-          <span class="flbl">Patient Language</span>
-          <select id="dc-lang" class="finp">
-            <option value="English">English</option>
-            <option value="Hindi">Hindi (हिंदी)</option>
-            <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+      <div class="fgrid">
+        <div class="fg"><span class="flbl">Outcome</span>
+          <select id="dc-outcome" class="finp" onchange="document.getElementById('dc-meds-sec').style.display = this.value === 'discharge' ? 'block' : 'none';">
+            <option value="discharge">Routine Discharge (Counseling Card)</option>
+            <option value="dama">DAMA (Against Medical Advice)</option>
+            <option value="lost">Transferred / Incomplete</option>
           </select>
         </div>
+        <div class="fg"><span class="flbl">Date of Discharge</span><input type="date" id="dc-dod" class="finp"></div>
       </div>
       
-      <div class="fg"><span class="flbl">Final Clinical Notes (Optional)</span><textarea id="dc-notes" class="finp"></textarea></div>
-      <button class="btn-block" style="margin-top:20px;" onclick="processDischarge()"><span class="ms sm">check_circle</span> Finalize & Close Case</button>
+      <div id="dc-meds-sec">
+        <div class="sect-title" style="margin-top:8px;"><span class="ms sm">medication</span> Discharge Medications</div>
+        <p style="font-size:0.8rem; color:var(--t2); margin-bottom:12px;">Generate a layman-friendly Patient Counseling Card.</p>
+        
+        <div class="lb-box">
+          <div class="rx-row" style="position:relative; margin-bottom:8px;">
+            <input type="text" id="dc-rx-inp" class="rx-inp rx-ac-inp" placeholder="e.g. Amoxicillin 500mg TDS" autocomplete="off" oninput="handleAC(this)" onkeypress="if(event.key==='Enter')addDcRx()">
+            <div id="dc-rx-ac" class="rx-ac"></div>
+            <button class="rx-add" onclick="addDcRx()"><span class="ms sm">add</span></button>
+          </div>
+          <div class="rx-list" id="dc-rx-list" style="margin-bottom:0;"></div>
+        </div>
+        
+        <div class="fgrid" style="margin-top:12px;">
+          <div class="fg">
+            <span class="flbl">Patient Language</span>
+            <select id="dc-lang" class="finp">
+              <option value="English">English</option>
+              <option value="Hindi">Hindi (हिंदी)</option>
+              <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <div class="fg" style="margin-top:12px;"><span class="flbl">Final Clinical Notes (Optional)</span><textarea id="dc-notes" class="finp" style="min-height:80px;" placeholder="Add any final case summaries..."></textarea></div>
+      
+      <button class="btn-block" style="margin-top:24px; background:var(--blue); color:#fff; box-shadow: 0 4px 14px var(--bmid);" onclick="processDischarge()"><span class="ms sm">check_circle</span> Finalize & Close Case</button>
     </div>
   </div>
 </div>
@@ -1357,28 +1430,24 @@ async function deleteAccount(){
   }
 }
 
-/* ══ FIRESTORE SESSIONS (Subcollections) ══ */
+/* ══ FIRESTORE SESSIONS (With Subcollection Migration) ══ */
+function getDocSizeKB(obj) { return new Blob([JSON.stringify(obj)]).size / 1024; }
+
 async function loadSessions(){
   if(!user) return;
   try{
-    // 1. Try loading from the NEW Firestore subcollection
     const snap = await db.collection('users').doc(user).collection('sessions').get();
     if(!snap.empty) {
       sessions = snap.docs.map(d => d.data()).sort((a,b) => b.id - a.id);
       localStorage.setItem('psess_'+user,JSON.stringify(sessions));
       renderSB();
     } else {
-      // 2. Fallback to local storage
       const s = localStorage.getItem('psess_'+user);
       if (s) { sessions = JSON.parse(s); renderSB(); }
-      
-      // 3. MIGRATION: Pull from the OLD Firebase document!
       const docSnap = await db.collection('users').doc(user).get();
       if (docSnap.exists && docSnap.data().sessions && docSnap.data().sessions.length > 0) {
         sessions = docSnap.data().sessions;
         renderSB();
-        
-        // Auto-migrate to the new scalable folder quietly
         const batch = db.batch();
         sessions.forEach(sess => {
           batch.set(db.collection('users').doc(user).collection('sessions').doc(sess.id.toString()), sess);
@@ -1392,8 +1461,14 @@ async function loadSessions(){
     renderSB();
   }
 }
+
 function saveSessions(){
   if(!user) return;
+  let kb = getDocSizeKB(sessions);
+  if(kb > 800) {
+      sessions = sessions.slice(0, Math.max(0, sessions.length - 5));
+      toast('Older chats auto-archived to save space.', 'info');
+  }
   localStorage.setItem('psess_'+user,JSON.stringify(sessions));
   const s = sessions.find(x=>x.id===currSess);
   if(s) {
@@ -1712,28 +1787,23 @@ let cdssTempLabs = [];
 let cdssTempTx = [];
 let currentWardMode = 'admit';
 
+// ══ WARD MIGRATION ══
 async function loadWardData() {
   if (!user) return;
-  
-  // 1. Check local storage (new key first, fallback to old key)
   let localData = localStorage.getItem('pharmai_ward_' + user) || localStorage.getItem('pharmai_ward');
   if (localData) { wardPatients = JSON.parse(localData); renderWardList(); }
   
   try {
-    // 2. Try loading from the NEW Firestore subcollection
     const snap = await db.collection('users').doc(user).collection('ward').get();
     if (!snap.empty) {
       wardPatients = snap.docs.map(d => d.data());
       localStorage.setItem('pharmai_ward_' + user, JSON.stringify(wardPatients));
       renderWardList();
     } else {
-      // 3. MIGRATION: If new folder is empty, pull from the OLD Firebase document!
       const docSnap = await db.collection('users').doc(user).get();
       if (docSnap.exists && docSnap.data().wardPatients && docSnap.data().wardPatients.length > 0) {
         wardPatients = docSnap.data().wardPatients;
         renderWardList();
-        
-        // Auto-migrate them to the new scalable folder quietly
         const batch = db.batch();
         wardPatients.forEach(pt => {
           batch.set(db.collection('users').doc(user).collection('ward').doc(pt.id.toString()), pt);
@@ -1744,6 +1814,8 @@ async function loadWardData() {
     }
   } catch(e) { console.warn("Failed to load ward from Firestore", e); }
 }
+
+let wardSaveTimer = null;
 function saveWardData() {
   if(!user) return;
   localStorage.setItem('pharmai_ward_' + user, JSON.stringify(wardPatients));
@@ -1762,22 +1834,19 @@ function saveWardData() {
 
 function toggleAppMode() {
   isWardMode = !isWardMode;
+  const chatView = document.getElementById('chat');
+  const iaView = document.getElementById('ia');
+  const fbView = document.getElementById('fb');
   const wardView = document.getElementById('cdss-view');
-  const overlay = document.getElementById('ward-overlay');
   const navIcon = document.getElementById('navIcon');
 
   if (isWardMode) {
-    wardView.classList.add('open');
-    if(overlay) overlay.classList.add('open');
-    navIcon.textContent = 'chat';
-    renderWardList();
+    chatView.style.display = 'none'; iaView.style.display = 'none'; fbView.style.display = 'none';
+    wardView.style.display = 'flex'; navIcon.textContent = 'chat'; renderWardList();
   } else {
-    wardView.classList.remove('open');
-    if(overlay) overlay.classList.remove('open');
-    navIcon.textContent = 'local_hospital';
+    chatView.style.display = 'flex'; iaView.style.display = 'flex'; fbView.style.display = 'flex';
+    wardView.style.display = 'none'; navIcon.textContent = 'local_hospital'; scrollD(); 
   }
-  Sounds.play('tick');
-  hap(15);
 }
 
 function switchWardTab(tab) {
@@ -1930,10 +1999,13 @@ function openCDSSFile(id) {
     `;
   }
   
-  document.getElementById('pt-timeline').innerHTML = sparkHTML + (pt.htmlTimeline || '<div style="color:var(--muted); text-align:center; padding:20px;">No AI reports generated yet.</div>');
+  const timelineEl = document.getElementById('pt-timeline');
+  timelineEl.innerHTML = sparkHTML + (pt.htmlTimeline || '<div style="color:var(--muted); text-align:center; padding:20px;">No AI reports generated yet.</div>');
+  timelineEl.scrollTop = 0; 
+  
   const fa = document.getElementById('file-actions');
   if(pt.status === 'closed') { fa.innerHTML = `<button class="btn-block sec" onclick="reopenCase('${id}')"><span class="ms sm">lock_open</span> Reopen Case</button>`; fa.style.display = 'flex'; } 
-  else { fa.innerHTML = `<button class="btn-block sec" onclick="qDoseCheck('${id}')"><span class="ms sm">vaccines</span> Dose Check</button><button class="btn-block sec" onclick="openCDSSWiz('progress');hap(10);"><span class="ms sm">edit_note</span> Add Progress</button><button class="btn-block" onclick="openDischargeModal();hap(10);" style="background:var(--danger); box-shadow:none;"><span class="ms sm">logout</span> Close Case</button>`; fa.style.display = 'flex'; }
+  else { fa.innerHTML = `<button class="btn-block sec" onclick="qDoseCheck('${id}')"><span class="ms sm">vaccines</span> Dose Check</button><button class="btn-block sec" onclick="openCDSSWiz('progress');hap(10);"><span class="ms sm">edit_note</span> Add Progress</button><button class="btn-block" onclick="openDischargeModal();hap(10);" style="background:var(--danger); color:#fff; box-shadow:none;"><span class="ms sm">logout</span> Close Case</button>`; fa.style.display = 'flex'; }
 }
 
 function reopenCase(id) { const pt = wardPatients.find(p => p.id === id); if(pt) { pt.status = 'active'; saveWardData(); openCDSSFile(id); toast('Case reopened', 'ok'); } }
@@ -1956,7 +2028,7 @@ async function execProcessDischarge() {
       closeM('discharge-modal'); await callCDSSAI(payload, 'discharge', lang);
     } else {
       if(pt) { pt.htmlTimeline = pt.htmlTimeline || ''; pt.htmlTimeline = `<div class="cdss-report" style="border-left:4px solid var(--t2)"><div class="rep-hdr">Case Closed: ${outcome.toUpperCase()} ${dod ? `<span style="float:right; color:var(--text); font-size:0.85rem;">DOD: ${dod}</span>` : ''}</div><p>${esc(notes)}</p></div>` + pt.htmlTimeline; }
-      saveWardData(); closeM('discharge-modal'); closeCDSSFile(); 
+      saveWardData(); closeM('discharge-modal'); openCDSSFile(activeCaseId); 
     }
   } finally { btn.disabled = false; btn.innerHTML = ogText; }
 }
@@ -2007,9 +2079,12 @@ async function genCarePlan() {
       wardPatients.unshift(pt);
     } else if (pt) { pt.currentTx = cdssTempTx; }
     
-    if(payload.vitals && (payload.vitals.bp || payload.vitals.hr)) { pt.vitalsHistory.push({ date: new Date().toISOString(), bp: payload.vitals.bp, hr: payload.vitals.hr }); }
+    if(payload.vitals && (payload.vitals.bp || payload.vitals.hr)) { 
+      pt.vitalsHistory = pt.vitalsHistory || [];
+      pt.vitalsHistory.push({ date: new Date().toISOString(), bp: payload.vitals.bp, hr: payload.vitals.hr }); 
+    }
     saveWardData(); 
-  } catch(e) { toast('Failed to save patient data.', 'err'); btn.disabled = false; btn.innerHTML = ogText; return; }
+  } catch(e) { console.error("Save Error:", e); toast('Failed to save patient data.', 'err'); btn.disabled = false; btn.innerHTML = ogText; return; }
   
   btn.disabled = false; btn.innerHTML = ogText;
   closeCDSSWiz(); openCDSSFile(activeCaseId);
