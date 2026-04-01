@@ -1361,17 +1361,37 @@ async function deleteAccount(){
 async function loadSessions(){
   if(!user) return;
   try{
+    // 1. Try loading from the NEW Firestore subcollection
     const snap = await db.collection('users').doc(user).collection('sessions').get();
     if(!snap.empty) {
       sessions = snap.docs.map(d => d.data()).sort((a,b) => b.id - a.id);
       localStorage.setItem('psess_'+user,JSON.stringify(sessions));
+      renderSB();
     } else {
-      const s=localStorage.getItem('psess_'+user);sessions=s?JSON.parse(s):[];
+      // 2. Fallback to local storage
+      const s = localStorage.getItem('psess_'+user);
+      if (s) { sessions = JSON.parse(s); renderSB(); }
+      
+      // 3. MIGRATION: Pull from the OLD Firebase document!
+      const docSnap = await db.collection('users').doc(user).get();
+      if (docSnap.exists && docSnap.data().sessions && docSnap.data().sessions.length > 0) {
+        sessions = docSnap.data().sessions;
+        renderSB();
+        
+        // Auto-migrate to the new scalable folder quietly
+        const batch = db.batch();
+        sessions.forEach(sess => {
+          batch.set(db.collection('users').doc(user).collection('sessions').doc(sess.id.toString()), sess);
+        });
+        await batch.commit();
+        localStorage.setItem('psess_'+user,JSON.stringify(sessions));
+      }
     }
-  }catch(e){const s=localStorage.getItem('psess_'+user);sessions=s?JSON.parse(s):[];}
-  renderSB();
+  }catch(e){
+    const s=localStorage.getItem('psess_'+user);sessions=s?JSON.parse(s):[];
+    renderSB();
+  }
 }
-
 function saveSessions(){
   if(!user) return;
   localStorage.setItem('psess_'+user,JSON.stringify(sessions));
@@ -1694,19 +1714,36 @@ let currentWardMode = 'admit';
 
 async function loadWardData() {
   if (!user) return;
-  const localData = localStorage.getItem('pharmai_ward_' + user);
+  
+  // 1. Check local storage (new key first, fallback to old key)
+  let localData = localStorage.getItem('pharmai_ward_' + user) || localStorage.getItem('pharmai_ward');
   if (localData) { wardPatients = JSON.parse(localData); renderWardList(); }
   
   try {
+    // 2. Try loading from the NEW Firestore subcollection
     const snap = await db.collection('users').doc(user).collection('ward').get();
     if (!snap.empty) {
       wardPatients = snap.docs.map(d => d.data());
       localStorage.setItem('pharmai_ward_' + user, JSON.stringify(wardPatients));
       renderWardList();
+    } else {
+      // 3. MIGRATION: If new folder is empty, pull from the OLD Firebase document!
+      const docSnap = await db.collection('users').doc(user).get();
+      if (docSnap.exists && docSnap.data().wardPatients && docSnap.data().wardPatients.length > 0) {
+        wardPatients = docSnap.data().wardPatients;
+        renderWardList();
+        
+        // Auto-migrate them to the new scalable folder quietly
+        const batch = db.batch();
+        wardPatients.forEach(pt => {
+          batch.set(db.collection('users').doc(user).collection('ward').doc(pt.id.toString()), pt);
+        });
+        await batch.commit();
+        localStorage.setItem('pharmai_ward_' + user, JSON.stringify(wardPatients));
+      }
     }
-  } catch(e) {}
+  } catch(e) { console.warn("Failed to load ward from Firestore", e); }
 }
-
 function saveWardData() {
   if(!user) return;
   localStorage.setItem('pharmai_ward_' + user, JSON.stringify(wardPatients));
