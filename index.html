@@ -857,6 +857,7 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
       <button class="tbtn" onclick="switchTab(event,'preg');"><span class="ms xs">pregnant_woman</span> Preg. Cat.</button>
     </div>
     <div class="mbody">
+      
       <div class="tp active" id="tp-calc">
         <div class="ccard open" id="cc-ckd">
           <div class="chdr" onclick="toggleC('cc-ckd');"><div class="chdr-l"><span class="ms sm">water_drop</span> CKD-EPI (eGFR)</div><span class="ms sm chev">expand_more</span></div>
@@ -872,6 +873,53 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
             <div class="crow2"><div class="flw"><input class="fl-in" id="c-age" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Age (years)</label></div><div class="flw"><input class="fl-in" id="c-wt" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Weight (kg)</label></div></div>
             <div class="crow2"><div class="flw"><input class="fl-in" id="c-scr" type="number" step="0.01" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">SCr (mg/dL)</label></div><div class="flw"><select class="fl-sel" id="c-sex" onchange="flU(this)" onfocus="flU(this)" onblur="flB(this)"><option value="">Sex</option><option value="M">Male</option><option value="F">Female</option></select><label class="fl-lbl">Sex</label></div></div>
             <button class="cact" onclick="calcCrCl();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-crcl"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-ped">
+          <div class="chdr" onclick="toggleC('cc-ped');"><div class="chdr-l"><span class="ms sm">child_care</span> Pediatric Dosing</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="crow2"><div class="flw"><input class="fl-in" id="p-wt" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Weight (kg)</label></div><div class="flw"><input class="fl-in" id="p-dose" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Dose (mg/kg)</label></div></div>
+            <button class="cact" onclick="calcPed();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-ped"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-bsa">
+          <div class="chdr" onclick="toggleC('cc-bsa');"><div class="chdr-l"><span class="ms sm">straighten</span> BSA (Mosteller)</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="crow2"><div class="flw"><input class="fl-in" id="bsa-ht" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Height (cm)</label></div><div class="flw"><input class="fl-in" id="bsa-wt" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Weight (kg)</label></div></div>
+            <button class="cact" onclick="calcBSA();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-bsa"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-ibw">
+          <div class="chdr" onclick="toggleC('cc-ibw');"><div class="chdr-l"><span class="ms sm">monitor_weight</span> IBW / ABW</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="crow2"><div class="flw"><input class="fl-in" id="ibw-ht" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Height (cm)</label></div><div class="flw"><input class="fl-in" id="ibw-wt" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Actual Weight (kg)</label></div></div>
+            <div class="flw"><select class="fl-sel" id="ibw-sex" onchange="flU(this)" onfocus="flU(this)" onblur="flB(this)"><option value="">Sex</option><option value="M">Male</option><option value="F">Female</option></select><label class="fl-lbl">Sex</label></div>
+            <button class="cact" onclick="calcIBW();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-ibw"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-ca">
+          <div class="chdr" onclick="toggleC('cc-ca');"><div class="chdr-l"><span class="ms sm">science</span> Corrected Calcium</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="crow2"><div class="flw"><input class="fl-in" id="ca-ca" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Serum Ca (mg/dL)</label></div><div class="flw"><input class="fl-in" id="ca-alb" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Albumin (g/dL)</label></div></div>
+            <button class="cact" onclick="calcCa();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-ca"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-cp">
+          <div class="chdr" onclick="toggleC('cc-cp');"><div class="chdr-l"><span class="ms sm">lab_research</span> Child-Pugh Score</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="crow2"><div class="flw"><input class="fl-in" id="cp-bil" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Bilirubin (mg/dL)</label></div><div class="flw"><input class="fl-in" id="cp-alb" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Albumin (g/dL)</label></div></div>
+            <div class="flw"><input class="fl-in" id="cp-inr" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">INR</label></div>
+            <div class="crow2"><div class="flw"><select class="fl-sel" id="cp-asc" onchange="flU(this)" onfocus="flU(this)" onblur="flB(this)"><option value="">Ascites</option><option value="1">None</option><option value="2">Mild</option><option value="3">Moderate/Severe</option></select><label class="fl-lbl">Ascites</label></div><div class="flw"><select class="fl-sel" id="cp-enc" onchange="flU(this)" onfocus="flU(this)" onblur="flB(this)"><option value="">Encephalopathy</option><option value="1">None</option><option value="2">Grade 1-2</option><option value="3">Grade 3-4</option></select><label class="fl-lbl">Encephalopathy</label></div></div>
+            <button class="cact" onclick="calcCP();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-cp"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-op">
+          <div class="chdr" onclick="toggleC('cc-op');"><div class="chdr-l"><span class="ms sm">medication</span> Opioid Equianalgesic</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="owarn"><span class="ms xs" style="flex-shrink:0">warning</span> For reference only. Always verify with a clinical pharmacist. Apply 25-30% dose reduction for incomplete cross-tolerance.</div>
+            <div class="crow2"><div class="flw"><select class="fl-sel" id="op-from" onchange="flU(this)" onfocus="flU(this)" onblur="flB(this)"><option value="">From drug</option><option value="1">Morphine PO</option><option value="3">Morphine IV/IM</option><option value="1.5">Oxycodone PO</option><option value="4">Hydromorphone PO</option><option value="20">Hydromorphone IV</option><option value="0.15">Codeine PO</option><option value="0.25">Tramadol PO</option></select><label class="fl-lbl">From drug</label></div><div class="flw"><input class="fl-in" id="op-dose" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Dose (mg)</label></div></div>
+            <div class="flw"><select class="fl-sel" id="op-to" onchange="flU(this)" onfocus="flU(this)" onblur="flB(this)"><option value="">To drug</option><option value="1">Morphine PO</option><option value="3">Morphine IV/IM</option><option value="1.5">Oxycodone PO</option><option value="4">Hydromorphone PO</option><option value="20">Hydromorphone IV</option><option value="0.15">Codeine PO</option><option value="0.25">Tramadol PO</option></select><label class="fl-lbl">To drug</label></div>
+            <button class="cact" onclick="calcOp();hap(20);"><span class="ms xs">play_arrow</span> Convert</button><div class="cres" id="r-op"></div>
           </div></div></div>
         </div>
         <div class="ccard" id="cc-meld">
@@ -924,6 +972,7 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
           </div></div></div>
         </div>
       </div>
+      
       <div class="tp" id="tp-poly">
         <p style="font-size:0.85rem;color:var(--t2);margin-bottom:16px;line-height:1.6">Add multiple medications to generate a comprehensive polypharmacy interaction analysis.</p>
         <div class="rx-row" style="position:relative;">
@@ -1409,9 +1458,15 @@ function flU(el){el.closest('.flw').classList.add('up');}
 function flB(el){if(!el.value&&el.value!=='0')el.closest('.flw').classList.remove('up');}
 function toggleSB(){const sb=document.getElementById('sb'),ov=document.getElementById('sb-ov');if(sb.classList.contains('open')){sb.classList.remove('open');setTimeout(()=>ov.classList.remove('open'),350);}else{ov.classList.add('open');setTimeout(()=>sb.classList.add('open'),10);}Sounds.play('tick');}
 
-/* ══ CALCULATORS ══ */
+/* ══ ALL 12 CALCULATORS ══ */
 function calcCKD(){const a=+document.getElementById('ckd-age').value,s=+document.getElementById('ckd-scr').value,sex=document.getElementById('ckd-sex').value,el=document.getElementById('r-ckd');if(!a||!s||!sex){el.style.color='var(--danger)';el.textContent='Fill all fields.';return;}const k=sex==='F'?0.7:0.9, al=sex==='F'?-0.241:-0.302, m=Math.min(s/k,1), mx=Math.max(s/k,1);let e=141*Math.pow(m,al)*Math.pow(mx,-1.209)*Math.pow(0.993,a);if(sex==='F')e*=1.018;el.style.color=e>=60?'var(--ok)':e>=30?'var(--warn)':'var(--danger)';el.textContent=`eGFR: ${e.toFixed(1)} mL/min/1.73m\u00B2`;}
 function calcCrCl(){const a=+document.getElementById('c-age').value,w=+document.getElementById('c-wt').value,s=+document.getElementById('c-scr').value,sex=document.getElementById('c-sex').value,el=document.getElementById('r-crcl');if(!a||!w||!s||!sex){el.style.color='var(--danger)';el.textContent='Fill all fields.';return;}let v=((140-a)*w)/(72*s);if(sex==='F')v*=.85;v=Math.max(0,v);el.style.color=v>=60?'var(--ok)':v>=30?'var(--warn)':'var(--danger)';el.textContent=`${v.toFixed(1)} mL/min`;}
+function calcPed(){const w=+document.getElementById('p-wt').value,d=+document.getElementById('p-dose').value,el=document.getElementById('r-ped');if(!w||!d){el.style.color='var(--danger)';el.textContent='Fill all fields.';return;}el.style.color='var(--ok)';el.textContent=`${(w*d).toFixed(2)} mg total dose`;}
+function calcBSA(){const h=+document.getElementById('bsa-ht').value,w=+document.getElementById('bsa-wt').value,el=document.getElementById('r-bsa');if(!h||!w){el.style.color='var(--danger)';el.textContent='Fill all fields.';return;}el.style.color='var(--ok)';el.textContent=`${Math.sqrt((h*w)/3600).toFixed(2)} m\u00B2`;}
+function calcIBW(){const h=+document.getElementById('ibw-ht').value,aw=+document.getElementById('ibw-wt').value,sex=document.getElementById('ibw-sex').value,el=document.getElementById('r-ibw');if(!h||!aw||!sex){el.style.color='var(--danger)';el.textContent='Fill all fields.';return;}const hi=h/2.54;const ibw=sex==='M'?50+2.3*(hi-60):45.5+2.3*(hi-60);const abw=aw>ibw?ibw+0.4*(aw-ibw):aw;el.style.color='var(--ok)';el.textContent=`IBW: ${Math.max(0,ibw).toFixed(1)} kg | ABW: ${abw.toFixed(1)} kg`;}
+function calcCa(){const ca=+document.getElementById('ca-ca').value,alb=+document.getElementById('ca-alb').value,el=document.getElementById('r-ca');if(!ca||!alb){el.style.color='var(--danger)';el.textContent='Fill all fields.';return;}const corr=ca+0.8*(4.0-alb);el.style.color=corr>=8.5&&corr<=10.5?'var(--ok)':corr<8.5?'var(--warn)':'var(--danger)';el.textContent=`Corrected Ca: ${corr.toFixed(2)} mg/dL`;}
+function calcCP(){const bil=+document.getElementById('cp-bil').value,alb=+document.getElementById('cp-alb').value,inr=+document.getElementById('cp-inr').value,asc=+document.getElementById('cp-asc').value,enc=+document.getElementById('cp-enc').value,el=document.getElementById('r-cp');if(!bil||!alb||!inr||!asc||!enc){el.style.color='var(--danger)';el.textContent='Fill all fields.';return;}let sc=0;sc+=bil<2?1:bil<=3?2:3;sc+=alb>3.5?1:alb>=2.8?2:3;sc+=inr<1.7?1:inr<=2.3?2:3;sc+=asc;sc+=enc;const cls=sc<=6?'A (5\u20136)':sc<=9?'B (7\u20139)':'C (10\u201315)';el.style.color=sc<=6?'var(--ok)':sc<=9?'var(--warn)':'var(--danger)';el.textContent=`Score: ${sc} \u2014 Class ${cls}`;}
+function calcOp(){const fr=+document.getElementById('op-from').value,dose=+document.getElementById('op-dose').value,to=+document.getElementById('op-to').value,el=document.getElementById('r-op');if(!fr||!dose||!to){el.style.color='var(--danger)';el.textContent='Fill all fields.';return;}const raw=(dose*fr)/to;el.style.color='var(--warn)';el.innerHTML=`Equiv: ${raw.toFixed(2)} mg<br><small style="font-size:0.75rem;color:var(--muted)">After 25% reduction: ${(raw*.75).toFixed(2)} mg</small>`;}
 function calcMELD(){const b=+document.getElementById('meld-bil').value,i=+document.getElementById('meld-inr').value,s=+document.getElementById('meld-scr').value,n=+document.getElementById('meld-na').value,el=document.getElementById('r-meld');if(!b||!i||!s||!n){el.style.color='var(--danger)';el.textContent='Fill all fields.';return;}const sc=Math.max(1,s),bc=Math.max(1,b),ic=Math.max(1,i);let m=3.78*Math.log(bc)+11.2*Math.log(ic)+9.57*Math.log(sc)+6.43;m=Math.round(m);if(m>11){const naC=Math.max(125,Math.min(n,137));m=m+1.32*(137-naC)-(0.033*m*(137-naC));}el.style.color='var(--warn)';el.textContent=`MELD-Na Score: ${Math.round(m)}`;}
 function calcVanc(){const d=+document.getElementById('vanc-dose').value,c=+document.getElementById('vanc-crcl').value,el=document.getElementById('r-vanc');if(!d||!c){el.style.color='var(--danger)';el.textContent='Fill all fields.';return;}const clVanc=(c*0.06)*0.8;const auc=d/clVanc;el.style.color=auc>=400&&auc<=600?'var(--ok)':'var(--warn)';el.innerHTML=`Est. AUC24: ${Math.round(auc)} mg\u00B7h/L<br><small style="color:var(--muted);font-size:0.7rem">Target: 400-600</small>`;}
 function calcPheny(){const o=+document.getElementById('ph-obs').value,a=+document.getElementById('ph-alb').value,el=document.getElementById('r-pheny');if(!o||!a){el.style.color='var(--danger)';el.textContent='Fill all fields.';return;}const c=o/((0.2*a)+0.1);el.style.color='var(--warn)';el.innerHTML=`Corrected: ${c.toFixed(1)} mcg/mL`;}
@@ -1670,19 +1725,22 @@ function saveWardData() {
 
 function toggleAppMode() {
   isWardMode = !isWardMode;
-  const chatView = document.getElementById('chat');
-  const iaView = document.getElementById('ia');
-  const fbView = document.getElementById('fb');
   const wardView = document.getElementById('cdss-view');
+  const overlay = document.getElementById('ward-overlay');
   const navIcon = document.getElementById('navIcon');
 
   if (isWardMode) {
-    chatView.style.display = 'none'; iaView.style.display = 'none'; fbView.style.display = 'none';
-    wardView.style.display = 'flex'; navIcon.textContent = 'chat'; renderWardList();
+    wardView.classList.add('open');
+    if(overlay) overlay.classList.add('open');
+    navIcon.textContent = 'chat';
+    renderWardList();
   } else {
-    chatView.style.display = 'flex'; iaView.style.display = 'flex'; fbView.style.display = 'flex';
-    wardView.style.display = 'none'; navIcon.textContent = 'local_hospital'; scrollD(); 
+    wardView.classList.remove('open');
+    if(overlay) overlay.classList.remove('open');
+    navIcon.textContent = 'local_hospital';
   }
+  Sounds.play('tick');
+  hap(15);
 }
 
 function switchWardTab(tab) {
