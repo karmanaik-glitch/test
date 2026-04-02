@@ -55,6 +55,13 @@ button, input, textarea, select { font-family: var(--ff); }
 #ap { display: none; position: fixed; inset: 0; overflow: hidden; }
 .mac { display: flex; flex-direction: column; height: 100dvh; width: 100%; position: relative; }
 
+/* ══ MISSING UTILITY CLASSES ══ */
+@keyframes msgIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.fgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.fg { display: flex; flex-direction: column; gap: 6px; }
+.lb-box { background: var(--card2); border: 1px solid var(--b2); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+.sect-title { font-weight: 700; font-size: 1.05rem; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--b); padding-bottom: 8px; }
+
 /* ══ TOASTS & SPLASH & AUTH ══ */
 #tw { position: fixed; top: max(env(safe-area-inset-top), 16px); left: 50%; transform: translateX(-50%); z-index: 8000; display: flex; flex-direction: column; gap: 8px; width: min(90vw, 380px); pointer-events: none; }
 .toast { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 999px; font-size: 0.84rem; font-weight: 600; pointer-events: all; box-shadow: 0 8px 32px rgba(0,0,0,0.3); animation: toastIn 0.35s var(--spring) both; backdrop-filter: blur(16px); }
@@ -325,13 +332,13 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 /* ══ PREMIUM INPUT FIELDS (Ultra-Compact) ══ */
 .finp, .fl-in, .fl-sel, .rx-inp { 
   width: 100%; 
-  min-height: 36px; /* 👈 Slashed down to a true compact size */
+  min-height: 36px;
   background: var(--card2); 
   border: 1px solid var(--b2); 
   color: var(--text); 
-  border-radius: 8px; /* 👈 Tighter corners for the smaller size */
-  padding: 8px 12px; /* 👈 Much tighter padding */
-  font-size: 0.85rem; /* 👈 Slightly smaller text to fit the box */
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
   font-family: var(--ff); outline: none; 
   transition: all 0.25s var(--spring); 
   appearance: none; -webkit-appearance: none; 
@@ -341,7 +348,7 @@ header { display: flex; align-items: center; justify-content: space-between; pad
   box-shadow: 0 0 0 3px var(--bdim); 
   background: var(--card); 
 }
-textarea.finp { resize: vertical; min-height: 56px; } /* 👈 Slimmer text area */
+textarea.finp { resize: vertical; min-height: 56px; }
 
 /* Custom Dropdown Arrows (Adjusted for slim padding) */
 select.finp, select.fl-sel {
@@ -364,8 +371,6 @@ select.fl-sel { background-position: right 8px center; padding-right: 24px; }
 .owarn { background: var(--ddim); border: 1px solid rgba(239,68,68,0.25); border-radius: 12px; padding: 10px 14px; font-size: 0.76rem; color: var(--danger); margin-bottom: 14px; display: flex; gap: 8px; align-items: flex-start; line-height: 1.55; font-weight: 500; }
 
 .rx-row { display: flex; gap: 8px; margin-bottom: 12px; position:relative; align-items: center; }
-
-/* 👈 The add button reduced to perfectly match the 36px input boxes */
 .rx-add { min-width: 36px; min-height: 36px; background: var(--bdim); border: 1.5px solid rgba(255,255,255,0.2); color: var(--text); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
 .rx-add:hover { background: var(--text); color: var(--bg); }
 .rx-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
@@ -376,7 +381,7 @@ select.fl-sel { background-position: right 8px center; padding-right: 24px; }
 .tx-row { 
   display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; 
   gap: 8px; align-items: center; margin-bottom: 12px; 
-  position: relative; /* 👈 This anchors the dropdown so it doesn't break the grid! */
+  position: relative; 
 }
 @media(max-width: 600px) { 
   .tx-row { grid-template-columns: 1fr 1fr 1fr; }
@@ -390,7 +395,6 @@ select.fl-sel { background-position: right 8px center; padding-right: 24px; }
 .chk-row input { width: 18px; height: 18px; accent-color: var(--text); cursor: pointer; }
 .chk-lbl { font-size: 0.85rem; color: var(--text); flex: 1; }
 
-/* Drug Autocomplete Dropdown */
 /* Drug Autocomplete Dropdown */
 .rx-ac { 
   position: absolute; top: 100%; left: 0; right: 48px; 
@@ -439,8 +443,8 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
 /* ══ WARD DRAWER (SLIDE-OUT) ══ */
 #ward-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1999; opacity: 0; pointer-events: none; transition: opacity 0.4s var(--ease); }
 #ward-overlay.open { opacity: 1; pointer-events: all; }
-#cdss-view { position: fixed; top: 0; right: -480px; width: 100%; max-width: 480px; height: 100dvh; background: var(--sf); backdrop-filter: blur(40px); border-left: 1px solid var(--b); z-index: 2000; display: flex; flex-direction: column; transition: transform 0.5s var(--spring); box-shadow: -20px 0 80px rgba(0,0,0,0.6); }
-#cdss-view.open { transform: translateX(-480px); }
+#cdss-view { position: fixed; top: 0; right: 0; width: 100%; max-width: 480px; height: 100dvh; background: var(--sf); backdrop-filter: blur(40px); border-left: 1px solid var(--b); z-index: 2000; display: flex; flex-direction: column; transition: transform 0.4s var(--spring); box-shadow: -20px 0 80px rgba(0,0,0,0.6); transform: translateX(100%); }
+#cdss-view.open { transform: translateX(0); }
 
 .cdss-dash { flex: 1; overflow-y: auto; padding: 20px; touch-action: pan-y; }
 .cdss-dash::-webkit-scrollbar { display: none; }
@@ -484,59 +488,25 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
 #dc-confirm-modal { z-index: 600 !important; }
 
 @media print {
-  /* 1. Reset all animations and transforms that shove content off-page */
-  * {
-    transition: none !important;
-    animation: none !important;
-    transform: none !important; 
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    color-adjust: exact !important;
-  }
+  @page { margin: 1cm; }
+  * { transition: none !important; animation: none !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
 
-  /* 2. Un-hide and expand the exact path to the Patient File */
-  html, body, #ap, .mac, #cdss-view, #cdss-file, .wiz-body {
-    display: block !important;
-    position: static !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    height: auto !important;
-    min-height: auto !important;
-    overflow: visible !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background: #fff !important;
-    color: #000 !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-  }
+  /* Ensure the Drawer behaves like a normal page on print */
+  #cdss-view { transform: none !important; position: static !important; width: 100% !important; max-width: 100% !important; box-shadow: none !important; border: none !important; }
+  
+  /* Hide unnecessary UI elements */
+  #lp, #splash, #auth-loading, #tw, #sb-ov, #sb, #ia, #fb, #chat, #cm, .mov, header, #ward-overlay, .wiz-footer, #cdss-dash { display: none !important; }
 
-  /* 3. Hide absolutely everything else */
-  #lp, #splash, #auth-loading, #tw, #sb-ov, #sb, #ia, #fb, #chat, #cm, .mov, header, #ward-overlay, #cdss-dash, .wiz-footer {
-    display: none !important;
-  }
-
-  /* 4. Format the Header for paper */
-  .wiz-hdr {
-    display: flex !important;
-    position: static !important;
-    background: #fff !important;
-    border-bottom: 2px solid #000 !important;
-    padding: 0 0 15px 0 !important;
-    margin-bottom: 20px !important;
-  }
+  /* Format the Header for paper */
+  .cdss-wiz { display: block !important; position: static !important; width: 100% !important; max-width: 100% !important; background: #fff !important; color: #000 !important; opacity: 1 !important; visibility: visible !important; }
+  .wiz-hdr { display: flex !important; position: static !important; background: #fff !important; border-bottom: 2px solid #000 !important; padding: 0 0 15px 0 !important; margin-bottom: 20px !important; }
   .wiz-hdr .hbtn { display: none !important; }
   #f-pt-name { font-size: 1.5rem !important; color: #000 !important; font-weight: 800 !important; }
   #f-pt-bed { font-size: 1rem !important; color: #555 !important; margin-top: 4px !important; }
 
-  /* 5. Clean Report & Table Formatting */
-  #pt-timeline { padding: 0 !important; margin: 0 !important; }
-  .cdss-report {
-    border: none !important; box-shadow: none !important;
-    background: #fff !important; color: #000 !important;
-    padding: 0 !important; margin-bottom: 40px !important;
-    page-break-inside: avoid;
-  }
+  /* Clean Report & Table Formatting */
+  #pt-timeline { padding: 0 !important; margin: 0 !important; overflow: visible !important; }
+  .cdss-report { border: 1px solid #ddd !important; box-shadow: none !important; background: #fff !important; color: #000 !important; padding: 15px !important; margin-bottom: 30px !important; page-break-inside: avoid; border-radius: 8px !important; }
   .rep-hdr { color: #000 !important; border-bottom: 2px solid #000 !important; padding-bottom: 5px !important; }
   .rep-tbl { width: 100% !important; border-collapse: collapse !important; page-break-inside: auto; }
   .rep-tbl tr { page-break-inside: avoid; page-break-after: auto; }
@@ -660,7 +630,7 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
     
     <div id="chat"></div>
       
-    <div id="ward-overlay" onclick="toggleAppMode()"></div>
+    <div id="ward-overlay" onclick="closeWardMode()"></div>
     <div id="cdss-view">
       
       <div class="cdss-dash" id="cdss-dash">
@@ -777,7 +747,7 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
                 <div class="fg"><span class="flbl" style="color:var(--warn)">Bilirubin</span><input type="number" step="0.1" id="l-bil" class="finp"></div>
               </div>
               <div class="lb-box">
-                <span class="flbl" style="margin-bottom:8px;">Add Specific Lab Panel Values</span>
+                <div class="sect-title">Add Specific Lab Panel Values</div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
                   <select id="lab-sys" class="finp" style="flex:1; min-width:140px;" onchange="updLabParams()">
                     <option value="">-- Select Category --</option>
@@ -1863,14 +1833,27 @@ function saveWardData() {
   }, 2000);
 }
 
-/* ══ CORRECTED WARD DRAWER TOGGLE ══ */
+/* ══ HISTORY API FOR BACK BUTTON ══ */
 function toggleAppMode() {
-  isWardMode = !isWardMode;
+  if (!isWardMode) {
+    history.pushState({ wardOpen: true }, '', '#ward');
+    applyWardState(true);
+  } else {
+    history.back();
+  }
+}
+
+function closeWardMode() {
+  if (isWardMode) history.back();
+}
+
+function applyWardState(isOpen) {
+  isWardMode = isOpen;
   const wardView = document.getElementById('cdss-view');
   const overlay = document.getElementById('ward-overlay');
   const navIcon = document.getElementById('navIcon');
 
-  if (isWardMode) {
+  if (isOpen) {
     wardView.classList.add('open');
     if(overlay) overlay.classList.add('open');
     navIcon.textContent = 'chat';
@@ -1883,6 +1866,14 @@ function toggleAppMode() {
   Sounds.play('tick');
   hap(15);
 }
+
+window.addEventListener('popstate', (e) => {
+  if (e.state && e.state.wardOpen) {
+    applyWardState(true);
+  } else {
+    applyWardState(false);
+  }
+});
 
 function switchWardTab(tab) {
   activeTab = tab;
