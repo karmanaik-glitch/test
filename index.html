@@ -37,7 +37,7 @@ body {
 }
 
 body.light {
-  --bg: #F7F7F7; /* Perfect clean white-grey, highly legible */
+  --bg: #F7F7F7; 
   --sf: rgba(255, 255, 255, 0.85); --card: #FFFFFF; --card2: #F4F4F5;
   --b: #E4E4E7; --b2: #D4D4D8; --text: #09090B; --t2: #3F3F46; --muted: #A1A1AA;
   --ibg: rgba(255,255,255,0.8); --sk: rgba(0,0,0,0.05); --sk2: rgba(0,0,0,0.09);
@@ -490,41 +490,92 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
 
 #dc-confirm-modal { z-index: 600 !important; }
 
+/* ══ BULLETPROOF MULTI-PAGE PRINTING ══ */
 @media print {
   @page { margin: 1cm; }
   * { transition: none !important; animation: none !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
 
-  /* OVERRIDE ALL FIXED/SCROLL CONTAINERS FOR MULTI-PAGE PRINTING */
-  html, body, #ap, .mac, #cdss-view, .cdss-wiz, .wiz-body, #pt-timeline {
+  /* 1. RESET ALL STRUCTURAL CONTAINERS (Bypass viewport locks) */
+  html, body, #ap, .mac, #cdss-view, #cdss-file, .wiz-body, #pt-timeline {
       height: auto !important;
       min-height: auto !important;
+      max-height: none !important;
+      width: auto !important;
+      max-width: none !important;
       overflow: visible !important;
       position: static !important;
       display: block !important;
+      transform: none !important;
+      box-shadow: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
   }
 
-  /* Ensure the Drawer behaves like a normal page on print */
-  #cdss-view { transform: none !important; width: 100% !important; max-width: 100% !important; box-shadow: none !important; border: none !important; }
-  
-  /* Hide unnecessary UI elements */
-  #lp, #splash, #auth-loading, #tw, #sb-ov, #sb, #ia, #fb, #chat, #cm, .mov, header, #ward-overlay, .wiz-footer, #cdss-dash { display: none !important; }
+  /* 2. HIDE EVERYTHING ELSE IN THE APP */
+  body > *:not(#ap),
+  header, #sb, #sb-ov, #fb, #chat, #ia, #ward-overlay, 
+  #cdss-dash, #cdss-form, .wiz-footer, .mov, #tw, #cm {
+      display: none !important;
+  }
 
-  /* Format the Header for paper */
-  .cdss-wiz { background: #fff !important; color: #000 !important; opacity: 1 !important; visibility: visible !important; }
-  .wiz-hdr { display: flex !important; background: #fff !important; border-bottom: 2px solid #000 !important; padding: 0 0 15px 0 !important; margin-bottom: 20px !important; }
+  /* 3. ENSURE REPORT CONTAINER IS VISIBLE */
+  #cdss-file {
+      opacity: 1 !important;
+      visibility: visible !important;
+      background: #fff !important;
+      color: #000 !important;
+  }
+
+  /* 4. CLEAN UP THE HEADER */
+  .wiz-hdr {
+      display: flex !important;
+      position: static !important;
+      background: transparent !important;
+      border-bottom: 2px solid #000 !important;
+      padding: 0 0 10px 0 !important;
+      margin-bottom: 20px !important;
+  }
   .wiz-hdr .hbtn { display: none !important; }
-  #f-pt-name { font-size: 1.5rem !important; color: #000 !important; font-weight: 800 !important; }
-  #f-pt-bed { font-size: 1rem !important; color: #555 !important; margin-top: 4px !important; }
+  #f-pt-name { font-size: 1.6rem !important; color: #000 !important; font-weight: 800 !important; }
+  #f-pt-bed { font-size: 1.1rem !important; color: #444 !important; }
 
-  /* Clean Report & Table Formatting */
-  #pt-timeline { padding: 0 !important; margin: 0 !important; }
-  .cdss-report { border: 1px solid #ddd !important; box-shadow: none !important; background: #fff !important; color: #000 !important; padding: 15px !important; margin-bottom: 30px !important; page-break-inside: avoid; border-radius: 8px !important; }
-  .rep-hdr { color: #000 !important; border-bottom: 2px solid #000 !important; padding-bottom: 5px !important; }
-  .rep-tbl { width: 100% !important; border-collapse: collapse !important; page-break-inside: auto; }
-  .rep-tbl tr { page-break-inside: avoid; page-break-after: auto; }
-  .rep-tbl th { background: #eee !important; color: #000 !important; border: 1px solid #aaa !important; }
-  .rep-tbl td { border: 1px solid #aaa !important; color: #000 !important; }
-  .spark-row { background: #fff !important; border: 1px solid #ccc !important; box-shadow: none !important; }
+  /* 5. PAGE BREAKS AND TRUNCATION FIXES */
+  #pt-timeline {
+      padding: 0 !important;
+      margin: 0 !important;
+  }
+  .cdss-report {
+      border: 1px solid #ccc !important;
+      background: #fff !important;
+      color: #000 !important;
+      padding: 15px !important;
+      margin-bottom: 25px !important;
+      border-radius: 8px !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+  }
+  .rep-tbl {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      page-break-inside: auto !important;
+  }
+  .rep-tbl tr {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+  }
+  .rep-tbl th {
+      background: #f0f0f0 !important;
+      color: #000 !important;
+      border: 1px solid #999 !important;
+  }
+  .rep-tbl td {
+      border: 1px solid #999 !important;
+      color: #000 !important;
+  }
+  .spark-row {
+      border: 1px solid #ccc !important;
+      background: #fff !important;
+  }
 }
 </style>
 </head>
@@ -2137,25 +2188,28 @@ async function callCDSSAI(payload, mode, lang = 'English') {
   if (mode === 'baseline' || mode === 'progress') {
     sysPrompt = `You are PharmAI, an elite Senior Clinical Pharmacist. Perform a rigorous, multi-variable Comprehensive Medication Review (CMR).
 UNIVERSAL CLINICAL RULES:
-1. CUMULATIVE TOXICITY: Explicitly calculate and flag Anticholinergic burden, Serotonin Syndrome risk, combined CNS depression, QTc prolongation, and stacked bleeding risks. IF multiple agents stack risk, trigger "Polypharmacy / Cumulative Risk".
-2. RENAL/HEPATIC: The calculated CrCl has been pre-computed and is provided in the payload as 'calculated_CrCl'. Use ONLY this value for all renal dosing assessments.
-3. PHARMACOKINETICS: Scan for enzyme inhibitors/inducers interacting with NTI drugs.
-4. DRUG-DISEASE: Cross-reference all medications against active PMH, Diagnoses, AND Social History.
+1. CUMULATIVE TOXICITY: Explicitly calculate and flag Anticholinergic burden, Serotonin Syndrome risk, combined CNS depression, QTc prolongation, and stacked bleeding risks.
+2. RENAL/HEPATIC: Use the 'calculated_CrCl' provided in the payload for all renal dosing assessments.
+3. PHARMACOKINETICS: Scan for enzyme inhibitors/inducers interacting with narrow therapeutic index (NTI) drugs.
+4. DRUG-DISEASE: Cross-reference all medications against active PMH, Diagnoses, and Social History.
 5. ALLERGIES: Categorize known allergies strictly as "Contraindication" (Severity: Critical).
-6. NTI DRUGS: If ANY narrow therapeutic index drug is present ALWAYS flag in the monitoring column.
+6. NTI DRUGS: Always flag NTI drugs in the monitoring column.
 7. WEIGHT-BASED DOSING: Verify that the prescribed dose is appropriate for the patient's actual body weight.
 
-Sort all drug_related_problems in descending severity order: Critical first, then High, then Moderate, then Low.
+FORMATTING RULES:
+- Keep patient_profile, medical_history, and vitals_and_labs fields EXTREMELY CONCISE (1-10 words max per field) as structured single-field data. Do NOT use long paragraphs.
+- Sort all drug_related_problems in descending severity order: Critical first, then High, then Moderate, then Low.
 
 Output ONLY valid JSON matching this exact structure:
 {
-  "patient_demographics_history": "Exact demographics, DOA, diagnosis, chief complaints, social history, and PMH. Highlight Red Flags.",
-  "baseline_vitals_labs": "Exact baseline vitals and labs. Explicitly state the calculated CrCl and evaluate hemodynamic stability.",
+  "patient_profile": { "Age_and_Sex": "...", "Weight_and_BMI": "...", "Diagnosis": "...", "Chief_Complaint": "...", "Allergies": "..." },
+  "medical_history": { "Past_Medical_History": "...", "Past_Medications": "...", "Social_and_Family": "..." },
+  "vitals_and_labs": { "Vitals_Summary": "...", "Calculated_CrCl": "...", "Abnormal_Labs": "..." },
   "current_therapy": [ { "drug": "Name", "dose": "Dose", "freq": "Freq", "indication": "Inferred Indication", "moa": "Brief MOA", "monitoring": "Params", "side_effects": "Key SEs" } ],
-  "clinical_correlations": ["Correlate symptoms/labs with medications."],
+  "clinical_correlations": ["Specific correlation 1", "Specific correlation 2"],
   "drug_related_problems": [ { "category": "Contraindication | Drug-Drug Interaction | Drug-Disease Interaction | Dosing Error | Polypharmacy | Adverse Effect", "issue": "Specific clinical description", "severity": "Critical | High | Moderate | Low", "actionable_solution": "Precise clinical intervention" } ],
-  "pharmacist_interventions": ["Specific steps addressing the DRPs."],
-  "references": ["Cite specific guidelines"]
+  "pharmacist_interventions": ["Specific, actionable step 1", "Specific, actionable step 2"],
+  "references": ["Guideline/Reference 1", "Guideline/Reference 2"]
 }`;
   } else if (mode === 'discharge') {
     sysPrompt = `You are an elite Patient Educator and Geriatric Care Specialist. Generate a highly specific, actionable discharge counseling card.
@@ -2218,6 +2272,13 @@ Output ONLY valid JSON matching this exact structure:
         </div>
       </div>`;
     } else {
+      
+      const profile = result.patient_profile || {};
+      const hist = result.medical_history || {};
+      const vl = result.vitals_and_labs || {};
+      
+      const renderKV = (obj) => Object.entries(obj).map(([k, v]) => `<div style="margin-bottom:6px; font-size:0.82rem; line-height:1.4;"><strong style="color:var(--t2);">${k.replace(/_/g, ' ')}:</strong> <span style="color:var(--text);">${v || '-'}</span></div>`).join('');
+
       const hasDRPs = Array.isArray(result.drug_related_problems) && result.drug_related_problems.length > 0;
       let drpHtml = '';
       if(hasDRPs) {
@@ -2241,30 +2302,17 @@ Output ONLY valid JSON matching this exact structure:
 
       html = `<div class="cdss-report">
         <div class="rep-hdr">${mode === 'baseline' ? 'Admission CMR Report' : 'Daily Progress CMR'} - ${new Date().toLocaleDateString()} at ${ts()} ${doaDisplay}</div>
-        <div style="font-size:0.85rem; color:var(--text); margin-bottom:12px; line-height: 1.5;">
-          <strong>Demographics & History:</strong> ${result.patient_demographics_history || 'Not provided.'}<br><br>
-          <strong>Baseline Vitals & Labs:</strong> ${result.baseline_vitals_labs || 'Not provided.'}
-        </div>
-        <div style="font-weight:700; color:var(--text); margin-bottom:8px;"><span class="ms sm">medication</span> Current Therapy Assessment</div>
-        <div style="width:100%; overflow-x:auto; margin-bottom:15px; border-radius:8px; border:1px solid var(--b);">
-          <table class="rep-tbl" style="min-width: 800px; margin:0;">
-            <tr><th>Drug</th><th>Dose</th><th>Freq</th><th>Indication</th><th>MOA</th><th>Monitoring</th><th>Side Effects</th></tr>
-            ${currentTherapyHtml}
-          </table>
-        </div>
-        ${correlationsHtml} ${drpHtml}
-        <div style="margin-top:15px; padding-top:15px; border-top: 1px solid var(--b);">
-           <div style="font-weight:700; color:var(--ok); margin-bottom:8px;"><span class="ms sm">check_circle</span> Pharmacist Interventions</div>
-           <ul style="font-size:0.85rem; margin-left:20px;">${(result.pharmacist_interventions||['No interventions required at this time.']).map(i=>`<li>${i}</li>`).join('')}</ul>
-        </div>
-        <div style="margin-top:15px; font-size:0.7rem; color:var(--muted); border-top: 1px dashed var(--b); padding-top:10px;">
-          <strong>Evidence-Based References:</strong><br>${(result.references||[]).join('<br>')}
-        </div>
-      </div>`;
-    }
-    if(pt) { pt.htmlTimeline = html + pt.htmlTimeline; saveWardData(); openCDSSFile(activeCaseId); }
-  } catch(e) { document.getElementById(loaderId).innerHTML = `<div class="aalert dng"><span class="ms sm">error</span><div><strong>Analysis Failed</strong><br>The AI returned improperly formatted data. Please try generating the plan again.</div></div>`; }
-}
-</script>
-</body>
-</html>
+        
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:16px;">
+          <div class="lb-box" style="margin:0; padding:12px;">
+            <div style="font-weight:700; color:var(--text); margin-bottom:8px; border-bottom:1px solid var(--b); padding-bottom:6px;"><span class="ms sm">person</span> Patient Profile</div>
+            ${renderKV(profile)}
+          </div>
+          <div class="lb-box" style="margin:0; padding:12px;">
+            <div style="font-weight:700; color:var(--text); margin-bottom:8px; border-bottom:1px solid var(--b); padding-bottom:6px;"><span class="ms sm">history_edu</span> Medical History</div>
+            ${renderKV(hist)}
+          </div>
+          <div class="lb-box" style="margin:0; padding:12px;">
+            <div style="font-weight:700; color:var(--text); margin-bottom:8px; border-bottom:1px solid var(--b); padding-bottom:6px;"><span class="ms sm">favorite_border</span> Vitals & Labs</div>
+            ${renderKV(vl)}
+          </div>
