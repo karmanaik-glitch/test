@@ -322,17 +322,16 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .wcard .cbody { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.35s var(--spring); }
 .wcard.open .cbody { grid-template-rows: 1fr; }
 
-/* ══ PREMIUM INPUT FIELDS ══ */
-/* ══ PREMIUM INPUT FIELDS (Slimmer Profile) ══ */
+/* ══ PREMIUM INPUT FIELDS (Ultra-Compact) ══ */
 .finp, .fl-in, .fl-sel, .rx-inp { 
   width: 100%; 
-  min-height: 42px; /* 👈 Decreased from 48px */
+  min-height: 36px; /* 👈 Slashed down to a true compact size */
   background: var(--card2); 
   border: 1px solid var(--b2); 
   color: var(--text); 
-  border-radius: 10px; /* Slightly tighter radius to match the slimmer size */
-  padding: 10px 14px; /* 👈 Reduced padding */
-  font-size: 0.88rem; 
+  border-radius: 8px; /* 👈 Tighter corners for the smaller size */
+  padding: 8px 12px; /* 👈 Much tighter padding */
+  font-size: 0.85rem; /* 👈 Slightly smaller text to fit the box */
   font-family: var(--ff); outline: none; 
   transition: all 0.25s var(--spring); 
   appearance: none; -webkit-appearance: none; 
@@ -342,35 +341,37 @@ header { display: flex; align-items: center; justify-content: space-between; pad
   box-shadow: 0 0 0 3px var(--bdim); 
   background: var(--card); 
 }
-textarea.finp { resize: vertical; min-height: 60px; } /* 👈 Decreased from 70px */
+textarea.finp { resize: vertical; min-height: 56px; } /* 👈 Slimmer text area */
 
-/* Custom Dropdown Arrows */
+/* Custom Dropdown Arrows (Adjusted for slim padding) */
 select.finp, select.fl-sel {
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A1A1AA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 16px;
-  padding-right: 36px;
+  background-position: right 10px center;
+  background-size: 14px;
+  padding-right: 30px;
 }
-select.fl-sel { background-position: right 8px center; padding-right: 28px; }
+select.fl-sel { background-position: right 8px center; padding-right: 24px; }
 
 .flw { position: relative; margin-bottom: 10px; }
-.fl-lbl { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 0.88rem; color: var(--muted); transition: all 0.2s var(--ease); pointer-events: none; }
-.flw.up .fl-lbl { top: 8px; transform: none; font-size: 0.6rem; color: var(--text); font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
-.crow2 { display: flex; gap: 10px; } .crow2 .flw { flex: 1; }
-.cact { width: 100%; min-height: 42px; background: var(--card2); border: 1px solid var(--b2); color: var(--text); border-radius: 999px; font-weight: 700; font-size: 0.88rem; font-family: var(--ff); cursor: pointer; margin-top: 6px; transition: all 0.25s var(--spring); display: flex; align-items: center; justify-content: center; gap: 8px; }
+.fl-lbl { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; color: var(--muted); transition: all 0.2s var(--ease); pointer-events: none; }
+.flw.up .fl-lbl { top: 6px; transform: none; font-size: 0.58rem; color: var(--text); font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.crow2 { display: flex; gap: 8px; } .crow2 .flw { flex: 1; }
+
+.cact { width: 100%; min-height: 38px; background: var(--card2); border: 1px solid var(--b2); color: var(--text); border-radius: 999px; font-weight: 700; font-size: 0.85rem; font-family: var(--ff); cursor: pointer; margin-top: 6px; transition: all 0.25s var(--spring); display: flex; align-items: center; justify-content: center; gap: 8px; }
 .cact:hover { background: var(--text); border-color: transparent; color: var(--bg); box-shadow: 0 4px 14px rgba(255,255,255,0.1); } .cact:active { transform: scale(0.97); }
 .cres { margin-top: 12px; text-align: center; font-weight: 700; font-size: 0.95rem; color: var(--ok); min-height: 22px; }
 .owarn { background: var(--ddim); border: 1px solid rgba(239,68,68,0.25); border-radius: 12px; padding: 10px 14px; font-size: 0.76rem; color: var(--danger); margin-bottom: 14px; display: flex; gap: 8px; align-items: flex-start; line-height: 1.55; font-weight: 500; }
 
 .rx-row { display: flex; gap: 8px; margin-bottom: 12px; position:relative; align-items: center; }
-.rx-add { min-width: 42px; min-height: 42px; background: var(--bdim); border: 1.5px solid rgba(255,255,255,0.2); color: var(--text); border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+
+/* 👈 The add button reduced to perfectly match the 36px input boxes */
+.rx-add { min-width: 36px; min-height: 36px; background: var(--bdim); border: 1.5px solid rgba(255,255,255,0.2); color: var(--text); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
 .rx-add:hover { background: var(--text); color: var(--bg); }
 .rx-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
 .rx-tag { background: var(--card2); border: 1px solid var(--b2); padding: 6px 12px; border-radius: 999px; font-size: 0.8rem; color: var(--text); display: flex; align-items: center; gap: 6px; }
 .rx-del { background: none; border: none; color: var(--danger); cursor: pointer; display: flex; padding: 2px; transition: transform 0.2s; }
 .rx-del:hover { transform: scale(1.15); }
-
 /* ══ TREATMENT ROW ALIGNMENT ══ */
 .tx-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; align-items: center; margin-bottom: 12px; }
 @media(max-width: 600px) { 
