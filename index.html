@@ -37,8 +37,8 @@ body {
 }
 
 body.light {
-  --bg: #FAFAFA; --sf: rgba(255, 255, 255, 0.85); --card: #FFFFFF; --card2: #F4F4F5;
-  --b: #E4E4E7; --b2: #D4D4D8; --text: #09090B; --t2: #52525B; --muted: #A1A1AA;
+  --bg: #F3F4F6; --sf: rgba(255, 255, 255, 0.85); --card: #FFFFFF; --card2: #F4F4F5;
+  --b: #E4E4E7; --b2: #D4D4D8; --text: #09090B; --t2: #3F3F46; --muted: #A1A1AA;
   --ibg: rgba(255,255,255,0.8); --sk: rgba(0,0,0,0.05); --sk2: rgba(0,0,0,0.09);
   --logo-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
   color-scheme: light;
@@ -290,7 +290,7 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .mbody::-webkit-scrollbar { display: none; }
 .tp { display: none; animation: msgIn 0.3s var(--spring) both; } .tp.active { display: block; }
 .sg { margin-bottom: 20px; }
-.sg-title { font-size: 0.68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.sg-title { font-size: 0.68rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
 .si { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--b); }
 .si:last-child { border-bottom: none; }
 .si-l { display: flex; flex-direction: column; gap: 3px; }
@@ -491,21 +491,30 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
   @page { margin: 1cm; }
   * { transition: none !important; animation: none !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
 
+  /* OVERRIDE ALL FIXED/SCROLL CONTAINERS FOR MULTI-PAGE PRINTING */
+  html, body, #ap, .mac, #cdss-view, .cdss-wiz, .wiz-body, #pt-timeline {
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      position: static !important;
+      display: block !important;
+  }
+
   /* Ensure the Drawer behaves like a normal page on print */
-  #cdss-view { transform: none !important; position: static !important; width: 100% !important; max-width: 100% !important; box-shadow: none !important; border: none !important; }
+  #cdss-view { transform: none !important; width: 100% !important; max-width: 100% !important; box-shadow: none !important; border: none !important; }
   
   /* Hide unnecessary UI elements */
   #lp, #splash, #auth-loading, #tw, #sb-ov, #sb, #ia, #fb, #chat, #cm, .mov, header, #ward-overlay, .wiz-footer, #cdss-dash { display: none !important; }
 
   /* Format the Header for paper */
-  .cdss-wiz { display: block !important; position: static !important; width: 100% !important; max-width: 100% !important; background: #fff !important; color: #000 !important; opacity: 1 !important; visibility: visible !important; }
-  .wiz-hdr { display: flex !important; position: static !important; background: #fff !important; border-bottom: 2px solid #000 !important; padding: 0 0 15px 0 !important; margin-bottom: 20px !important; }
+  .cdss-wiz { background: #fff !important; color: #000 !important; opacity: 1 !important; visibility: visible !important; }
+  .wiz-hdr { display: flex !important; background: #fff !important; border-bottom: 2px solid #000 !important; padding: 0 0 15px 0 !important; margin-bottom: 20px !important; }
   .wiz-hdr .hbtn { display: none !important; }
   #f-pt-name { font-size: 1.5rem !important; color: #000 !important; font-weight: 800 !important; }
   #f-pt-bed { font-size: 1rem !important; color: #555 !important; margin-top: 4px !important; }
 
   /* Clean Report & Table Formatting */
-  #pt-timeline { padding: 0 !important; margin: 0 !important; overflow: visible !important; }
+  #pt-timeline { padding: 0 !important; margin: 0 !important; }
   .cdss-report { border: 1px solid #ddd !important; box-shadow: none !important; background: #fff !important; color: #000 !important; padding: 15px !important; margin-bottom: 30px !important; page-break-inside: avoid; border-radius: 8px !important; }
   .rep-hdr { color: #000 !important; border-bottom: 2px solid #000 !important; padding-bottom: 5px !important; }
   .rep-tbl { width: 100% !important; border-collapse: collapse !important; page-break-inside: auto; }
@@ -1232,7 +1241,7 @@ function toast(msg,type='info',dur=3000){const w=document.getElementById('tw');c
 /* ══ THEME / SETTINGS ══ */
 function loadS(){try{const s=localStorage.getItem('pharmai_S');if(s)S={...S,...JSON.parse(s)};}catch(e){}}
 function saveS(){localStorage.setItem('pharmai_S',JSON.stringify(S));}
-function applyTheme(m){const p=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';const a=m==='auto'?p:m;document.body.classList.toggle('light',a==='light');document.getElementById('tcm').content=a==='light'?'#FAFAFA':'#000000';}
+function applyTheme(m){const p=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';const a=m==='auto'?p:m;document.body.classList.toggle('light',a==='light');document.getElementById('tcm').content=a==='light'?'#F3F4F6':'#000000';}
 function setTheme(m){S.theme=m;saveS();applyTheme(m);document.querySelectorAll('.tp-pill').forEach(p=>p.classList.remove('active'));document.getElementById('th-'+m)?.classList.add('active');hap(10);Sounds.play('tick');syncSettings();}
 function toggleSet(k){S[k]=document.getElementById('hap-t').checked;saveS();hap(10);Sounds.play('tick');syncSettings();}
 function applyUI(){document.getElementById('hap-t').checked=S.haptic;document.querySelectorAll('.tp-pill').forEach(p=>p.classList.remove('active'));document.getElementById('th-'+S.theme)?.classList.add('active');}
