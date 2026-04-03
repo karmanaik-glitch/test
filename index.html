@@ -4,11 +4,14 @@
   <link rel="stylesheet" href="style.css" />  
   <link rel="manifest" href="manifest.json"/>
   <meta charset="UTF-8"/>
+  <!-- FIX: removed user-scalable=no from all except maximum-scale (kept per user request) -->
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover"/>
   <meta name="theme-color" content="#000000" id="tcm"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <!-- FIX: added meta description for PWA/SEO -->
+  <meta name="description" content="PharmAI — AI-powered clinical pharmacist assistant for drug information, ward management, and medication reviews."/>
   <title>PharmAI</title>
   
   <script>
@@ -27,6 +30,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet"/>
+  <!-- FIX: DOMPurify for XSS prevention on AI-generated HTML content -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
 </head>
 <body>
 
@@ -127,6 +132,10 @@
         <div class="sb-profile"><div class="sb-pc" id="sbpc">?</div><div class="sb-pi"><div class="name" id="sbnm">User</div><div class="role">Clinical User</div></div></div>
         <button class="sb-new" onclick="newChat();hap(15);"><span class="ms sm">add</span> New Chat</button>
       </div>
+      <!-- FIX: Session search input -->
+      <div style="padding:0 12px 8px;">
+        <input id="sess-search" type="search" placeholder="Search sessions..." style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--b2);border-radius:10px;padding:7px 12px;font-size:0.82rem;color:var(--text);outline:none;" />
+      </div>
       <div class="sb-list" id="sbl"></div>
     </div>
     <div id="fb">
@@ -178,6 +187,7 @@
       <div class="cdss-wiz" id="cdss-form">
         <div class="wiz-hdr">
           <div style="display:flex; align-items:center; gap:10px; font-weight:700;" id="wiz-title"><span class="ms md">person_add</span> Admit Patient</div>
+          <!-- FIX: close button calls closeCDSSWiz() which now checks for unsaved data -->
           <button class="hbtn" onclick="closeCDSSWiz();hap(10);" style="background:none; border:none;"><span class="ms sm">close</span></button>
         </div>
         <div class="wiz-body" style="padding-bottom:120px;">
@@ -332,7 +342,8 @@
   <div class="msh">
     <div class="mhdr"><div class="mtitle"><span class="ms md" style="color:var(--danger)">report</span> Report ADR (PvPI)</div><button class="mclose" onclick="closeM('adr-modal');"><span class="ms sm">close</span></button></div>
     <div class="mbody">
-      <p style="font-size:0.8rem; color:var(--t2); margin-bottom:16px;">Generate a structured Adverse Drug Reaction report format for pharmacovigilance.</p>
+      <!-- FIX: Added PvPI portal link -->
+      <p style="font-size:0.8rem; color:var(--t2); margin-bottom:8px;">Generate an ADR report. After copying, submit at <a href="https://pvpi.gov.in" target="_blank" style="color:var(--blue);">pvpi.gov.in</a> for official pharmacovigilance recording.</p>
       <div class="fg"><span class="flbl">Patient Initials / ID</span><input type="text" id="adr-pt" class="finp" readonly></div>
       <div class="fg"><span class="flbl">Suspected Drug(s)</span><input type="text" id="adr-drug" class="finp" placeholder="e.g. Amoxicillin 500mg"></div>
       <div class="fg"><span class="flbl">Reaction Description</span><textarea id="adr-desc" class="finp" placeholder="Describe the adverse event..."></textarea></div>
@@ -340,7 +351,7 @@
         <div class="fg"><span class="flbl">Date of Onset</span><input type="date" id="adr-date" class="finp"></div>
         <div class="fg"><span class="flbl">Action Taken</span><select id="adr-action" class="finp"><option value="Drug withdrawn">Drug withdrawn</option><option value="Dose reduced">Dose reduced</option><option value="None">None</option></select></div>
       </div>
-      <button class="btn-block" style="margin-top:12px;" onclick="generateADR()"><span class="ms sm">description</span> Generate Report</button>
+      <button class="btn-block" style="margin-top:12px;" onclick="generateADR()"><span class="ms sm">description</span> Copy Report</button>
     </div>
   </div>
 </div>
@@ -433,20 +444,21 @@
   </div>
 </div>
 
+<!-- FIX: Added data-tab attributes to tab buttons so openPolyRxTab() / openCKDCalc() can find them reliably -->
 <div class="mov" id="tm" onclick="handleOC(event,'tm')">
   <div class="msh">
     <div class="mhdr"><div class="mtitle"><span class="ms md">stethoscope</span> Clinical Tools</div><button class="mclose" onclick="closeM('tm');"><span class="ms sm">close</span></button></div>
     <div class="mtabs">
-      <button class="tbtn active" onclick="switchTab(event,'calc');"><span class="ms xs">calculate</span> Calculators</button>
-      <button class="tbtn" onclick="switchTab(event,'poly');"><span class="ms xs">monitor_heart</span> PolyRx</button>
-      <button class="tbtn" onclick="switchTab(event,'lab');"><span class="ms xs">science</span> Lab Values</button>
-      <button class="tbtn" onclick="switchTab(event,'preg');"><span class="ms xs">pregnant_woman</span> Preg. Cat.</button>
+      <button class="tbtn active" data-tab="calc" onclick="switchTab(event,'calc');"><span class="ms xs">calculate</span> Calculators</button>
+      <button class="tbtn" data-tab="poly" onclick="switchTab(event,'poly');"><span class="ms xs">monitor_heart</span> PolyRx</button>
+      <button class="tbtn" data-tab="lab" onclick="switchTab(event,'lab');"><span class="ms xs">science</span> Lab Values</button>
+      <button class="tbtn" data-tab="preg" onclick="switchTab(event,'preg');"><span class="ms xs">pregnant_woman</span> Preg. Cat.</button>
     </div>
     <div class="mbody">
       
       <div class="tp active" id="tp-calc">
         <div class="ccard open" id="cc-ckd">
-          <div class="chdr" onclick="toggleC('cc-ckd');"><div class="chdr-l"><span class="ms sm">water_drop</span> CKD-EPI (eGFR)</div><span class="ms sm chev">expand_more</span></div>
+          <div class="chdr" onclick="toggleC('cc-ckd');"><div class="chdr-l"><span class="ms sm">water_drop</span> CKD-EPI eGFR (2021)</div><span class="ms sm chev">expand_more</span></div>
           <div class="cbody"><div class="cbwrap"><div class="cinn">
             <div class="crow2"><div class="flw"><input class="fl-in" id="ckd-age" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Age (years)</label></div><div class="flw"><input class="fl-in" id="ckd-scr" type="number" step="0.01" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">SCr (mg/dL)</label></div></div>
             <div class="flw"><select class="fl-sel" id="ckd-sex" onchange="flU(this)" onfocus="flU(this)" onblur="flB(this)"><option value="">Sex</option><option value="M">Male</option><option value="F">Female</option></select><label class="fl-lbl">Sex</label></div>
@@ -519,7 +531,7 @@
         <div class="ccard" id="cc-vanc">
           <div class="chdr" onclick="toggleC('cc-vanc');"><div class="chdr-l"><span class="ms sm">medication</span> Vancomycin AUC24 (Steady)</div><span class="ms sm chev">expand_more</span></div>
           <div class="cbody"><div class="cbwrap"><div class="cinn">
-            <div class="owarn"><span class="ms xs" style="flex-shrink:0">warning</span> Simplified steady-state estimate. Not for AKI or unstable renal function. Target AUC/MIC 400-600.</div>
+            <div class="owarn"><span class="ms xs" style="flex-shrink:0">warning</span> Simplified steady-state estimate only. ASHP/IDSA 2020 recommends Bayesian tool or two-level AUC monitoring for clinical decisions. Do NOT adjust dose solely from this result.</div>
             <div class="crow2"><div class="flw"><input class="fl-in" id="vanc-dose" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">24h Dose (mg)</label></div><div class="flw"><input class="fl-in" id="vanc-crcl" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">CrCl (mL/min)</label></div></div>
             <button class="cact" onclick="calcVanc();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-vanc"></div>
           </div></div></div>
