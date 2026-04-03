@@ -1,14 +1,23 @@
-/* ══ WARD DASHBOARD & CDSS LOGIC ══ */
+/* ══ WARD DASHBOARD & CDSS LOGIC — FIXED ══ */
 let isWardMode = false;
 let wardPatients = [];
 let activeTab = 'active';
 let cdssTempLabs = [];
 let cdssTempTx = [];
 let currentWardMode = 'admit';
+let _wardFormDirty = false; /* FIX: track unsaved form state */
 
-// ══ WARD MIGRATION (Async with localforage) ══
+// ══ WARD DATA LOAD / SAVE ══
 async function loadWardData() {
   if (!user) return;
+
+  /* FIX: Show skeleton while loading */
+  const container = document.getElementById('pt-list-container');
+  if(container) container.innerHTML = `<div style="text-align:center;padding:30px 20px;color:var(--muted);">
+    <span class="ms sm" style="animation:spin 1s linear infinite">progress_activity</span><br>
+    <span style="font-size:0.82rem;margin-top:8px;display:block;">Loading patients...</span>
+  </div>`;
+
   try {
     let localData = await localforage.getItem('pharmai_ward_' + user);
     if (localData) { wardPatients = localData; renderWardList(); }
@@ -23,15 +32,23 @@ async function loadWardData() {
       if (docSnap.exists && docSnap.data().wardPatients && docSnap.data().wardPatients.length > 0) {
         wardPatients = docSnap.data().wardPatients;
         renderWardList();
-        const batch = db.batch();
-        wardPatients.forEach(pt => {
-          batch.set(db.collection('users').doc(user).collection('ward').doc(pt.id.toString()), pt);
-        });
-        await batch.commit();
+        /* FIX: chunk batch writes to stay under Firestore 500-doc limit */
+        const CHUNK = 400;
+        for(let i=0;i<wardPatients.length;i+=CHUNK){
+          const batch = db.batch();
+          wardPatients.slice(i,i+CHUNK).forEach(pt => {
+            batch.set(db.collection('users').doc(user).collection('ward').doc(pt.id.toString()), pt);
+          });
+          await batch.commit();
+        }
         localforage.setItem('pharmai_ward_' + user, wardPatients);
       }
     }
-  } catch(e) { console.warn("Failed to load ward data", e); }
+    if(!wardPatients.length) renderWardList(); /* clear skeleton if no patients */
+  } catch(e) {
+    console.warn("Failed to load ward data", e);
+    renderWardList();
+  }
 }
 
 let wardSaveTimer = null;
@@ -42,12 +59,16 @@ function saveWardData() {
   clearTimeout(wardSaveTimer);
   wardSaveTimer = setTimeout(async () => {
     try { 
-      const batch = db.batch();
-      wardPatients.forEach(pt => {
-        batch.set(db.collection('users').doc(user).collection('ward').doc(pt.id.toString()), pt);
-      });
-      await batch.commit();
-    } catch(e) {}
+      /* FIX: chunk batch to avoid 500-doc Firestore limit */
+      const CHUNK = 400;
+      for(let i=0;i<wardPatients.length;i+=CHUNK){
+        const batch = db.batch();
+        wardPatients.slice(i,i+CHUNK).forEach(pt => {
+          batch.set(db.collection('users').doc(user).collection('ward').doc(pt.id.toString()), pt);
+        });
+        await batch.commit();
+      }
+    } catch(e) { console.warn('Ward save failed:', e); }
   }, 2000);
 }
 
@@ -101,6 +122,7 @@ function switchWardTab(tab) {
 
 function renderWardList() {
   const container = document.getElementById('pt-list-container');
+  if(!container) return;
   const filtered = wardPatients.filter(p => p.status === activeTab);
   
   const count = wardPatients.filter(p => p.status === 'active').length;
@@ -117,19 +139,22 @@ function renderWardList() {
     `; return;
   }
 
-  container.innerHTML = filtered.map(p => `
+  container.innerHTML = filtered.map(p => {
+    /* FIX: null-safe .cc access — a restored backup may have missing fields */
+    const cc = p.cc ? String(p.cc).substring(0, 30) : 'No details';
+    return `
     <div class="pat-card ${p.status}" onclick="openCDSSFile('${p.id}');hap(10);">
       <div class="pc-head">
-        <div class="pc-name">${esc(p.name)}</div>
-        <div class="pc-badge">${esc(p.bedId)}</div>
+        <div class="pc-name">${esc(p.name || 'Unknown')}</div>
+        <div class="pc-badge">${esc(p.bedId || '—')}</div>
       </div>
       <div class="pc-details">
-        <span>${p.age}y ${p.sex}</span>
-        <span>${p.weight} kg</span>
-        <span>CC: ${esc(p.cc.substring(0, 30))}...</span>
+        <span>${p.age || '?'}y ${p.sex || ''}</span>
+        <span>${p.weight || '?'} kg</span>
+        <span>CC: ${esc(cc)}${p.cc && p.cc.length > 30 ? '…' : ''}</span>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function clearCDSSForm() {
@@ -139,12 +164,14 @@ function clearCDSSForm() {
   document.getElementById('w-preg-fg').style.display = 'none';
   cdssTempLabs = []; cdssTempTx = [];
   renderCDSSLabs(); renderCDSSTx();
+  _wardFormDirty = false;
 }
 
 function calcBMI() {
   const w = parseFloat(document.getElementById('w-wt').value), h = parseFloat(document.getElementById('w-ht').value), bmiEl = document.getElementById('w-bmi');
   if (w && h) { const bmi = (w / ((h/100) * (h/100))).toFixed(1); bmiEl.textContent = bmi + ' kg/m²'; bmiEl.style.color = (bmi < 18.5 || bmi >= 25) ? 'var(--warn)' : 'var(--ok)'; } 
   else { bmiEl.textContent = '--'; bmiEl.style.color = 'var(--t2)'; }
+  _wardFormDirty = true;
 }
 
 function togglePreg() {
@@ -176,9 +203,19 @@ function openCDSSWiz(mode) {
     document.getElementById('btn-gen-plan').innerHTML = '<span class="ms sm">memory</span> Generate Progress Plan';
     renderCDSSTx();
   }
+
+  /* Track form changes to warn before accidental close */
+  document.querySelectorAll('#cdss-form .finp').forEach(el => {
+    el.addEventListener('input', () => { _wardFormDirty = true; }, { once: true });
+  });
 }
 
-function closeCDSSWiz() { document.getElementById('cdss-form').classList.remove('open'); }
+/* FIX: warn before closing form if unsaved data exists */
+function closeCDSSWiz() {
+  if(_wardFormDirty && !confirm('You have unsaved changes. Discard and close?')) return;
+  _wardFormDirty = false;
+  document.getElementById('cdss-form').classList.remove('open');
+}
 
 const cdssLabOpts = {
   hemato: ['Hb (g/dL)', 'RBC (millions/µL)', 'WBC (cells/mm³)', 'Platelets (lakhs/µL)', 'MCV (fL)', 'MCH (pg)', 'MCHC (g/dL)', 'PCV/HCT (%)', 'ESR (mm/hr)', 'Neutrophils (%)', 'Lymphocytes (%)', 'INR', 'aPTT (sec)'],
@@ -196,6 +233,7 @@ function addLabTag() {
   const param = document.getElementById('lab-param').value, val = document.getElementById('lab-val').value;
   if (!param || !val) { toast('Select a parameter and enter a value.', 'warn'); return; }
   cdssTempLabs.push({ param, val }); document.getElementById('lab-val').value = ''; renderCDSSLabs(); hap(10);
+  _wardFormDirty = true;
 }
 function renderCDSSLabs() { document.getElementById('lab-tags').innerHTML = cdssTempLabs.map((l, i) => `<div class="rx-tag">${l.param}: <b>${esc(l.val)}</b> <button class="rx-del" onclick="remLabTag(${i});hap(10);"><span class="ms xs">close</span></button></div>`).join(''); }
 function remLabTag(i) { cdssTempLabs.splice(i, 1); renderCDSSLabs(); }
@@ -205,7 +243,7 @@ function addTxTag() {
   if (!drug) { toast('Drug name is required.', 'warn'); return; }
   cdssTempTx.push({ drug, dose, freq, route });
   document.getElementById('tx-drug').value = ''; document.getElementById('tx-dose').value = ''; document.getElementById('tx-freq').value = ''; document.getElementById('tx-route').value = '';
-  renderCDSSTx(); hap(10);
+  renderCDSSTx(); hap(10); _wardFormDirty = true;
 }
 function editTxTag(i) { const t = cdssTempTx[i]; document.getElementById('tx-drug').value = t.drug || ''; document.getElementById('tx-dose').value = t.dose || ''; document.getElementById('tx-freq').value = t.freq || ''; document.getElementById('tx-route').value = t.route || ''; remTxTag(i); }
 function renderCDSSTx() { document.getElementById('tx-tags').innerHTML = cdssTempTx.map((t, i) => `<div class="rx-tag" style="justify-content:space-between; width:100%;">${esc(t.drug)} - ${esc(t.dose)} ${esc(t.freq)} (${esc(t.route)}) <div><button class="rx-del" style="color:var(--text); margin-right:8px;" onclick="editTxTag(${i});hap(10);"><span class="ms xs">edit</span></button><button class="rx-del" onclick="remTxTag(${i});hap(10);"><span class="ms xs">close</span></button></div></div>`).join(''); }
@@ -224,13 +262,17 @@ let activeCaseId = null;
 let dcRxList = [];
 
 function openCDSSFile(id) {
-  activeCaseId = id; const pt = wardPatients.find(p => p.id === id); if(!pt) return;
-  document.getElementById('cdss-dash').style.display = 'none'; document.getElementById('cdss-file').classList.add('open');
-  document.getElementById('f-pt-name').textContent = pt.name; document.getElementById('f-pt-bed').textContent = pt.bedId;
+  activeCaseId = id;
+  const pt = wardPatients.find(p => p.id === id);
+  if(!pt) return;
+  document.getElementById('cdss-dash').style.display = 'none';
+  document.getElementById('cdss-file').classList.add('open');
+  document.getElementById('f-pt-name').textContent = pt.name || 'Unknown';
+  document.getElementById('f-pt-bed').textContent = pt.bedId || '—';
   
   let sparkHTML = '';
   if (pt.vitalsHistory && pt.vitalsHistory.length > 0) {
-    const bps = pt.vitalsHistory.map(v => parseInt(v.bp.split('/')[0])).filter(n => !isNaN(n));
+    const bps = pt.vitalsHistory.map(v => parseInt((v.bp||'').split('/')[0])).filter(n => !isNaN(n));
     const hrs = pt.vitalsHistory.map(v => parseInt(v.hr)).filter(n => !isNaN(n));
     sparkHTML = `
       <div style="margin-bottom:20px;">
@@ -246,8 +288,13 @@ function openCDSSFile(id) {
   timelineEl.scrollTop = 0; 
   
   const fa = document.getElementById('file-actions');
-  if(pt.status === 'closed') { fa.innerHTML = `<button class="btn-block sec" onclick="reopenCase('${id}')"><span class="ms sm">lock_open</span> Reopen Case</button>`; fa.style.display = 'flex'; } 
-  else { fa.innerHTML = `<button class="btn-block sec" onclick="qDoseCheck('${id}')"><span class="ms sm">vaccines</span> Dose Check</button><button class="btn-block sec" onclick="openCDSSWiz('progress');hap(10);"><span class="ms sm">edit_note</span> Add Progress</button><button class="btn-block" onclick="openDischargeModal();hap(10);" style="background:var(--danger); color:#fff; box-shadow:none;"><span class="ms sm">logout</span> Close Case</button>`; fa.style.display = 'flex'; }
+  if(pt.status === 'closed') {
+    fa.innerHTML = `<button class="btn-block sec" onclick="reopenCase('${id}')"><span class="ms sm">lock_open</span> Reopen Case</button>`;
+    fa.style.display = 'flex';
+  } else {
+    fa.innerHTML = `<button class="btn-block sec" onclick="qDoseCheck('${id}')"><span class="ms sm">vaccines</span> Dose Check</button><button class="btn-block sec" onclick="openCDSSWiz('progress');hap(10);"><span class="ms sm">edit_note</span> Add Progress</button><button class="btn-block" onclick="openDischargeModal();hap(10);" style="background:var(--danger); color:#fff; box-shadow:none;"><span class="ms sm">logout</span> Close Case</button>`;
+    fa.style.display = 'flex';
+  }
 }
 
 function reopenCase(id) { const pt = wardPatients.find(p => p.id === id); if(pt) { pt.status = 'active'; saveWardData(); openCDSSFile(id); toast('Case reopened', 'ok'); } }
@@ -259,8 +306,12 @@ function addDcRx() { const v = document.getElementById('dc-rx-inp').value.trim()
 function processDischarge() { openM('dc-confirm-modal'); }
 
 async function execProcessDischarge() {
-  const outcome = document.getElementById('dc-outcome').value, notes = document.getElementById('dc-notes').value, dod = document.getElementById('dc-dod') ? document.getElementById('dc-dod').value : '';
-  closeM('dc-confirm-modal'); const btn = document.querySelector('#discharge-modal .btn-block'); const ogText = btn.innerHTML;
+  const outcome = document.getElementById('dc-outcome').value,
+        notes = document.getElementById('dc-notes').value,
+        dod = document.getElementById('dc-dod') ? document.getElementById('dc-dod').value : '';
+  closeM('dc-confirm-modal');
+  const btn = document.querySelector('#discharge-modal .btn-block');
+  const ogText = btn.innerHTML;
   btn.disabled = true; btn.innerHTML = '<span class="ms sm" style="animation:spin 1s linear infinite">progress_activity</span> Finalizing...';
   try {
     let pt = wardPatients.find(p => p.id === activeCaseId); if(pt) pt.status = 'closed';
@@ -281,17 +332,23 @@ function openADRModal() {
   document.getElementById('adr-drug').value = ''; document.getElementById('adr-desc').value = ''; document.getElementById('adr-date').value = '';
   openM('adr-modal');
 }
+
 function generateADR() {
   const ptInfo = document.getElementById('adr-pt').value;
   const drug = document.getElementById('adr-drug').value;
   const desc = document.getElementById('adr-desc').value;
   if(!drug || !desc) { toast('Please fill suspected drug and description.', 'warn'); return; }
-  const r = `**PvPI Adverse Drug Reaction Report**\nDate: ${new Date().toLocaleDateString()}\nPatient: ${ptInfo}\nSuspected Drug: ${drug}\nOnset Date: ${document.getElementById('adr-date').value}\nReaction Description: ${desc}\nAction Taken: ${document.getElementById('adr-action').value}\nReporter: ${uName} (Clinical Pharmacist)`;
-  navigator.clipboard.writeText(r).then(() => { toast('Report Copied to Clipboard!', 'ok'); closeM('adr-modal'); });
+  const r = `PvPI Adverse Drug Reaction Report\nDate: ${new Date().toLocaleDateString()}\nPatient: ${ptInfo}\nSuspected Drug: ${drug}\nOnset Date: ${document.getElementById('adr-date').value}\nReaction Description: ${desc}\nAction Taken: ${document.getElementById('adr-action').value}\nReporter: ${uName} (Clinical Pharmacist)\n\nNote: Submit this report at pvpi.gov.in or via VigiFlow for official pharmacovigilance recording.`;
+  navigator.clipboard.writeText(r).then(() => {
+    toast('Report Copied! Submit at pvpi.gov.in', 'ok', 5000);
+    closeM('adr-modal');
+  });
 }
 
 async function genCarePlan() {
-  const isUpdate = (currentWardMode === 'progress'); let pt = activeCaseId ? wardPatients.find(p => p.id === activeCaseId) : null;
+  const isUpdate = (currentWardMode === 'progress');
+  /* FIX: safe pt lookup with null guard throughout */
+  let pt = activeCaseId ? wardPatients.find(p => p.id === activeCaseId) : null;
   const currentDOA = document.getElementById('w-doa') ? document.getElementById('w-doa').value : '';
   const payload = {
     isUpdate: isUpdate,
@@ -318,13 +375,23 @@ async function genCarePlan() {
       activeCaseId = 'PT-' + Date.now();
       pt = { id: activeCaseId, status: 'active', name: payload.demographics.name || 'Unknown', bedId: payload.demographics.id || 'TBD', age: payload.demographics.age, sex: payload.demographics.sex, weight: payload.demographics.wt, cc: payload.history.dx || payload.history.cc || 'No complaints', htmlTimeline: '', currentTx: cdssTempTx, demo: payload.demographics, hist: payload.history, vitalsHistory: [] };
       wardPatients.unshift(pt);
-    } else if (pt) { pt.currentTx = cdssTempTx; }
+    } else if (pt) {
+      pt.currentTx = cdssTempTx;
+    }
     
+    /* FIX: null guard — pt can still be null if isUpdate is true but patient was deleted */
+    if(!pt) {
+      toast('Patient record not found. Please re-admit.', 'err');
+      btn.disabled = false; btn.innerHTML = ogText;
+      return;
+    }
+
     if(payload.vitals && (payload.vitals.bp || payload.vitals.hr)) { 
       pt.vitalsHistory = pt.vitalsHistory || [];
       pt.vitalsHistory.push({ date: new Date().toISOString(), bp: payload.vitals.bp, hr: payload.vitals.hr }); 
     }
-    saveWardData(); 
+    saveWardData();
+    _wardFormDirty = false;
   } catch(e) { console.error("Save Error:", e); toast('Failed to save patient data.', 'err'); btn.disabled = false; btn.innerHTML = ogText; return; }
   
   btn.disabled = false; btn.innerHTML = ogText;
@@ -340,19 +407,19 @@ async function callCDSSAI(payload, mode, lang = 'English') {
   if (mode === 'baseline' || mode === 'progress') {
     sysPrompt = `You are PharmAI, an elite Senior Clinical Pharmacist. Perform a rigorous, multi-variable Comprehensive Medication Review (CMR).
 UNIVERSAL CLINICAL RULES:
-1. CUMULATIVE TOXICITY: Explicitly calculate and flag Anticholinergic burden, Serotonin Syndrome risk, combined CNS depression, QTc prolongation, and stacked bleeding risks. IF multiple agents stack risk, trigger "Polypharmacy / Cumulative Risk".
-2. RENAL/HEPATIC: The calculated CrCl has been pre-computed and is provided in the payload as 'calculated_CrCl'. Use ONLY this value for all renal dosing assessments.
+1. CUMULATIVE TOXICITY: Explicitly calculate and flag Anticholinergic burden, Serotonin Syndrome risk, combined CNS depression, QTc prolongation, and stacked bleeding risks.
+2. RENAL/HEPATIC: Use the pre-computed 'calculated_CrCl' from the payload for all renal dosing assessments.
 3. PHARMACOKINETICS: Scan for enzyme inhibitors/inducers interacting with NTI drugs.
 4. DRUG-DISEASE: Cross-reference all medications against active PMH, Diagnoses, AND Social History.
 5. ALLERGIES: Categorize known allergies strictly as "Contraindication" (Severity: Critical).
 6. NTI DRUGS: If ANY narrow therapeutic index drug is present ALWAYS flag in the monitoring column.
-7. WEIGHT-BASED DOSING: Verify that the prescribed dose is appropriate for the patient's actual body weight.
+7. WEIGHT-BASED DOSING: Verify dose appropriateness for patient's actual body weight.
 
-Sort all drug_related_problems in descending severity order: Critical first, then High, then Moderate, then Low.
+Sort drug_related_problems in descending severity: Critical first, then High, Moderate, Low.
 
-Output ONLY valid JSON matching this exact structure:
+Output ONLY valid JSON:
 {
-  "patient_demographics_history": "Exact demographics, DOA, diagnosis, chief complaints, social history, and PMH. Highlight Red Flags.",
+  "patient_demographics_history": "Exact demographics, DOA, diagnosis, chief complaints, social history, PMH. Highlight Red Flags.",
   "baseline_vitals_labs": "Exact baseline vitals and labs. Explicitly state the calculated CrCl and evaluate hemodynamic stability.",
   "current_therapy": [ { "drug": "Name", "dose": "Dose", "freq": "Freq", "indication": "Inferred Indication", "moa": "Brief MOA", "monitoring": "Params", "side_effects": "Key SEs" } ],
   "clinical_correlations": ["Correlate symptoms/labs with medications."],
@@ -365,18 +432,18 @@ Output ONLY valid JSON matching this exact structure:
 CRITICAL DIRECTIVES:
 1. 5TH-GRADE READING LEVEL: Use short, direct sentences in ${lang}. Use active voice.
 2. HYPER-SPECIFIC ADVICE: Specify EXACTLY how to take the drug.
-3. CONTEXTUALIZE: You MUST explicitly address any lifestyle/dietary factors mentioned in the patient's Social History.
+3. CONTEXTUALIZE: Explicitly address any lifestyle/dietary factors in the patient's Social History.
 4. RED FLAGS: Clearly list severe symptoms requiring immediate attention.
-5. CULTURAL CONTEXT: When outputting in Hindi/Gujarati, use culturally relevant Indian dietary examples (e.g. palak for Vit K).
+5. CULTURAL CONTEXT: When outputting in Hindi/Gujarati, use culturally relevant Indian dietary examples.
 6. OUTPUT STRICT JSON ONLY.
 
-Output ONLY valid JSON matching this exact structure:
+Output ONLY valid JSON:
 {
   "title": "Discharge Instructions",
   "diagnosis_simple": "A clear layman explanation.",
   "medications": [ { "name": "Medicine Name", "purpose": "Why you are taking this", "schedule": "Exact time/instructions", "warnings": "Specific side effects or diet interactions" } ],
-  "lifestyle_and_diet": ["Actionable, patient-specific diet/lifestyle rule #1"],
-  "when_to_call_doctor": ["Specific red flag symptom #1"]
+  "lifestyle_and_diet": ["Actionable, patient-specific diet/lifestyle rule"],
+  "when_to_call_doctor": ["Specific red flag symptom"]
 }`;
   }
 
@@ -385,10 +452,16 @@ Output ONLY valid JSON matching this exact structure:
 
   try {
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
       body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: JSON.stringify(payload) }], temperature: 0.1, max_tokens: mode === 'discharge' ? 2000 : 3000, response_format: { type: 'json_object' } })
     });
     const data = await res.json();
+
+    /* FIX: null-check on API response before accessing .choices */
+    if(data.error) throw new Error(data.error.message || 'API error');
+    if(!data.choices || !data.choices[0] || !data.choices[0].message) throw new Error('Empty response from AI service.');
+
     let rawContent = data.choices[0].message.content.trim().replace(/^```json/gi, '').replace(/^```/gi, '').replace(/```$/g, '').trim();
     const result = JSON.parse(rawContent);
 
@@ -397,10 +470,17 @@ Output ONLY valid JSON matching this exact structure:
       result.drug_related_problems.sort((a,b) => (sevOrder[a.severity] || 99) - (sevOrder[b.severity] || 99));
     }
     
-    document.getElementById(loaderId).remove();
+    const loaderEl = document.getElementById(loaderId);
+    if(loaderEl) loaderEl.remove();
+
     let html = '';
     const dodDisplay = payload.dod ? `<span style="float:right; color:var(--text); font-size:0.85rem; font-weight:600;">DOD: ${payload.dod}</span>` : '';
     const doaDisplay = payload.demographics && payload.demographics.doa ? `<span style="float:right; color:var(--text); font-size:0.85rem; font-weight:600;">DOA: ${payload.demographics.doa}</span>` : '';
+
+    /* FIX: AI disclaimer appended to every generated report */
+    const aiDisclaimer = `<div style="margin-top:15px; padding:8px 12px; background:rgba(255,193,7,0.07); border:1px solid rgba(255,193,7,0.25); border-radius:8px; font-size:0.7rem; color:var(--muted); line-height:1.5;">
+      <strong style="color:var(--warn);">&#9888; Clinical Decision Support Only:</strong> This AI-generated report is intended to assist a qualified clinical pharmacist. Always verify drug-related problems, doses, and recommendations against current formulary, local protocols, and the patient's full clinical picture before acting. Cited references are AI-suggested — verify independently.
+    </div>`;
 
     if(mode === 'discharge') {
       html = `<div class="cdss-report" style="border-left:4px solid var(--ok); background:rgba(16,185,129,0.05);">
@@ -419,6 +499,7 @@ Output ONLY valid JSON matching this exact structure:
           <div style="font-weight:700; color:var(--danger); margin-bottom:8px;"><span class="ms sm">warning</span> When to Call the Doctor</div>
           <ul style="font-size:0.85rem; margin-left:20px;">${(result.when_to_call_doctor||[]).map(w => `<li>${w}</li>`).join('')}</ul>
         </div>
+        ${aiDisclaimer}
       </div>`;
     } else {
       const hasDRPs = Array.isArray(result.drug_related_problems) && result.drug_related_problems.length > 0;
@@ -433,7 +514,7 @@ Output ONLY valid JSON matching this exact structure:
               <div style="font-weight:700; text-transform:uppercase; font-size:0.7rem;">${drp.category || 'Issue'} [${badgeText} RISK]</div>
               <div style="margin:4px 0; color:var(--text);"><strong>Issue:</strong> ${drp.issue || '-'}</div>
               <div style="color:var(--text);"><strong>Intervention:</strong> ${drp.actionable_solution || '-'}</div>
-            </div>`}).join('')}
+            </div>`;}).join('')}
         </div>`;
       }
       const currentTherapyHtml = Array.isArray(result.current_therapy) && result.current_therapy.length > 0 ? 
@@ -463,17 +544,26 @@ Output ONLY valid JSON matching this exact structure:
         <div style="margin-top:15px; font-size:0.7rem; color:var(--muted); border-top: 1px dashed var(--b); padding-top:10px;">
           <strong>Evidence-Based References:</strong><br>${(result.references||[]).join('<br>')}
         </div>
+        ${aiDisclaimer}
       </div>`;
     }
     if(pt) { pt.htmlTimeline = html + pt.htmlTimeline; saveWardData(); openCDSSFile(activeCaseId); }
-  } catch(e) { document.getElementById(loaderId).innerHTML = `<div class="aalert dng"><span class="ms sm">error</span><div><strong>Analysis Failed</strong><br>The AI returned improperly formatted data. Please try generating the plan again.</div></div>`; }
+  } catch(e) {
+    const loaderEl = document.getElementById(loaderId);
+    if(loaderEl) loaderEl.innerHTML = `<div class="aalert dng"><span class="ms sm">error</span><div><strong>Analysis Failed</strong><br>${esc(e.message || 'The AI returned an error. Please try again.')}</div></div>`;
+  }
 }
+
+/* FIX: null/array check on currentTx before mapping */
 function qDoseCheck(id) {
   const pt = wardPatients.find(p=>p.id===id);
   if(!pt) return;
-  const tx = pt.currentTx.map(t=>`${t.drug} ${t.dose} ${t.freq}`).join(', ');
-  if(!tx) { toast('No active treatments to check.', 'warn'); return; }
+  if(!Array.isArray(pt.currentTx) || pt.currentTx.length === 0) {
+    toast('No active treatments to check.', 'warn'); return;
+  }
+  const tx = pt.currentTx.map(t=>`${t.drug||''} ${t.dose||''} ${t.freq||''}`.trim()).filter(Boolean).join(', ');
+  if(!tx) { toast('No valid treatments found.', 'warn'); return; }
   toggleAppMode();
-  const q = `Patient: ${pt.age}y ${pt.sex}, weight ${pt.weight}kg. Current Regimen: ${tx}. Check dose appropriateness. Suggest renal/hepatic adjustments if required.`;
+  const q = `Patient: ${pt.age || '?'}y ${pt.sex || ''}, weight ${pt.weight || '?'}kg. Current Regimen: ${tx}. Check dose appropriateness. Suggest renal/hepatic adjustments if required based on these vitals and recent labs.`;
   insertAndSend(q);
 }
