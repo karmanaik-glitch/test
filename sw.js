@@ -1,9 +1,16 @@
-const CACHE_NAME = 'pharmai-cache-v2';
+const CACHE_NAME = 'pharmai-cache-v3';
 
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json',
+  // NEW: Added the split CSS and JS files
+  './css/style.css',
+  './js/app.js',
+  './js/auth.js',
+  './js/cdss.js',
+  './js/calculators.js',
+  // External assets
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block',
   'https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js'
 ];
@@ -35,6 +42,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Only cache same-origin requests or specific external URLs
   if (!event.request.url.startsWith(self.location.origin) && !urlsToCache.includes(event.request.url)) {
     return;
   }
@@ -44,8 +52,10 @@ self.addEventListener('fetch', (event) => {
       .then((response) => {
         if (response) return response;
         const fetchRequest = event.request.clone();
+        
         return fetch(fetchRequest).then(
           (response) => {
+            // Check if we received a valid response
             if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
