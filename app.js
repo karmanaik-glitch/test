@@ -1,0 +1,550 @@
+'use strict';
+
+/* ══ DRUG AUTOCOMPLETE DATABASE ══ */
+const indianDrugs = ["Amoxicillin","Clavulanic Acid","Paracetamol","Metformin","Glimepiride","Atorvastatin","Rosuvastatin","Pantoprazole","Rabeprazole","Amlodipine","Telmisartan","Losartan","Levothyroxine","Aspirin","Clopidogrel","Azithromycin","Cefixime","Ceftriaxone","Diclofenac","Aceclofenac","Ibuprofen","Ondansetron","Domperidone","Metoprolol","Bisoprolol","Sitagliptin","Vildagliptin","Teneligliptin","Dapagliptin","Empagliflozin","Montelukast","Levocetirizine","Cetirizine","Fexofenadine","Pregabalin","Gabapentin","Methylcobalamin","Vitamin D3","Calcium Carbonate","Iron","Folic Acid","Zinc","Vitamin B Complex","Vitamin C","Cilnidipine","Chlorthalidone","Metronidazole","Ciprofloxacin","Ofloxacin","Levofloxacin","Doxycycline","Fluconazole","Itraconazole","Miconazole","Albendazole","Ivermectin","Hydroxychloroquine","Linezolid","Meropenem","Piperacillin","Tazobactam","Amikacin","Gentamicin","Vancomycin","Teicoplanin","Colistin","Polymyxin B","Tigecycline","Dexamethasone","Methylprednisolone","Prednisolone","Hydrocortisone","Deflazacort","Budesonide","Formoterol","Salbutamol","Levosalbutamol","Ipratropium","Tiotropium","Fluticasone","Mometasone","Umeclidinium","Glycopyrrolate","Theophylline","Doxofylline","Deriphyllin","Ambroxol","Guaifenesin","Bromhexine","Dextromethorphan","Chlorpheniramine","Phenylephrine","Paroxetine","Escitalopram","Sertraline","Fluoxetine","Fluvoxamine","Amitriptyline","Duloxetine","Venlafaxine","Mirtazapine","Desvenlafaxine","Bupropion","Clonazepam","Diazepam","Lorazepam","Alprazolam","Etizolam","Clobazam","Zolpidem","Nitrazepam","Midazolam","Chlordiazepoxide","Phenytoin","Carbamazepine","Valproate","Levetiracetam","Lamotrigine","Topiramate","Oxcarbazepine","Zonisamide","Lacosamide","Brivaracetam","Perampanel","Rufinamide","Eslicarbazepine","Vigabatrin","Tiagabine","Ethosuximide","Primidone","Phenobarbital","Haloperidol","Risperidone","Olanzapine","Quetiapine","Clozapine","Ziprasidone","Aripiprazole","Paliperidone","Iloperidone","Lurasidone","Asenapine","Blonanserin","Amisulpride","Cariprazine","Brexpiprazole","Lumateperone","Pimavanserin"];
+
+function handleAC(inp) {
+  const v = inp.value.toLowerCase();
+  const ac = inp.nextElementSibling;
+  if(!ac || !ac.classList.contains('rx-ac')) return;
+  if(v.length < 2) { ac.classList.remove('show'); return; }
+  const matches = indianDrugs.filter(d => d.toLowerCase().includes(v)).slice(0,8);
+  if(matches.length > 0) {
+    ac.innerHTML = matches.map(m => `<div class="rx-ac-item" onclick="selectAC('${m}', '${inp.id}')">${m}</div>`).join('');
+    ac.classList.add('show');
+  } else { ac.classList.remove('show'); }
+}
+
+function selectAC(val, id) {
+  const inp = document.getElementById(id);
+  inp.value = val;
+  inp.nextElementSibling.classList.remove('show');
+  inp.focus();
+}
+
+document.addEventListener('click', e => {
+  if(!e.target.classList.contains('rx-ac-inp')) {
+    document.querySelectorAll('.rx-ac').forEach(a => a.classList.remove('show'));
+  }
+});
+
+/* ══ PREMIUM UI SOUND ENGINE ══ */
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+
+const Sounds = {
+  play: (type) => {
+    if (!S.haptic || audioCtx.state === 'suspended') return;
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    const now = audioCtx.currentTime;
+    if (type === 'tick') {
+      osc.type = 'sine'; osc.frequency.setValueAtTime(800, now);
+      osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
+      gainNode.gain.setValueAtTime(0.05, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      osc.start(now); osc.stop(now + 0.05);
+    } else if (type === 'pop') {
+      osc.type = 'sine'; osc.frequency.setValueAtTime(400, now);
+      osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+      gainNode.gain.setValueAtTime(0.1, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      osc.start(now); osc.stop(now + 0.1);
+    } else if (type === 'receive') {
+      osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now);
+      osc.frequency.setValueAtTime(800, now + 0.1);
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(0.05, now + 0.05);
+      gainNode.gain.linearRampToValueAtTime(0, now + 0.2);
+      osc.start(now); osc.stop(now + 0.25);
+    }
+  }
+};
+document.addEventListener('click', () => { if(audioCtx.state === 'suspended') audioCtx.resume(); }, {once: true});
+
+/* ══ OFFLINE EVENTS ══ */
+window.addEventListener('offline', () => toast('You are offline. Changes will sync when reconnected.', 'warn', 8000));
+window.addEventListener('online', () => { toast('Back online. Syncing data...', 'ok', 3000); saveWardData(); saveSessions(); });
+
+/* ══ STATE ══ */
+const GROQ_MODEL='llama-3.3-70b-versatile';
+const VISION_MODEL='llama-3.2-11b-vision-preview';
+const MAX_HIST=10;
+let user=null,uName='',groqKey='',loading=false,micOn=false,recog=null,hist=[],sessions=[],currSess=null,rxList=[],lastQuery='';
+const F={preg:false,peds:false,geri:false,counsel:false,steward:false};
+let S={haptic:true,theme:'auto'};
+let _pendingFBUser=null;
+let lastSendTime = 0;
+
+/* ══ SIDEBAR SWIPE LOGIC ══ */
+let touchStartX = 0;
+document.addEventListener('DOMContentLoaded', () => {
+  const sb = document.getElementById('sb');
+  sb.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+  sb.addEventListener('touchend', e => {
+    if (touchStartX - e.changedTouches[0].clientX > 60 && sb.classList.contains('open')) toggleSB();
+  });
+});
+
+/* ══ HAPTIC & TOAST ══ */
+function hap(ms){if(!S.haptic)return;if('vibrate'in navigator)navigator.vibrate(ms);}
+function toast(msg,type='info',dur=3000){const w=document.getElementById('tw');const el=document.createElement('div');el.className=`toast ${type}`;const ic={ok:'check_circle',warn:'warning',err:'error',info:'info'};el.innerHTML=`<span class="ms xs">${ic[type]||'info'}</span><span>${msg}</span>`;w.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),350);},dur);}
+
+/* ══ THEME / SETTINGS (Async with localforage) ══ */
+async function loadS(){
+  try {
+    const s = await localforage.getItem('pharmai_S');
+    if(s) S={...S, ...s};
+  } catch(e) {}
+  applyTheme(S.theme);
+}
+function saveS(){localforage.setItem('pharmai_S', S);}
+function applyTheme(m){const p=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';const a=m==='auto'?p:m;document.body.classList.toggle('light',a==='light');document.getElementById('tcm').content=a==='light'?'#F7F7F7':'#000000';}
+function setTheme(m){S.theme=m;saveS();applyTheme(m);document.querySelectorAll('.tp-pill').forEach(p=>p.classList.remove('active'));document.getElementById('th-'+m)?.classList.add('active');hap(10);Sounds.play('tick');syncSettings();}
+function toggleSet(k){S[k]=document.getElementById('hap-t').checked;saveS();hap(10);Sounds.play('tick');syncSettings();}
+function applyUI(){document.getElementById('hap-t').checked=S.haptic;document.querySelectorAll('.tp-pill').forEach(p=>p.classList.remove('active'));document.getElementById('th-'+S.theme)?.classList.add('active');}
+
+async function syncSettings(){if(!user)return;try{await fsWrite(() => db.collection('users').doc(user).set({settings:S},{merge:true}), 'settings');}catch(e){}}
+async function loadSettingsFromFirestore(){if(!user)return;try{const d=await db.collection('users').doc(user).get();if(d.exists&&d.data().settings){S={...S,...d.data().settings};saveS();applyUI();applyTheme(S.theme);}}catch(e){}}
+
+/* ══ SPLASH & ONBOARDING ══ */
+async function handleSplash(){
+  const seen = await localforage.getItem('pharmai_vis');
+  const sp=document.getElementById('splash');
+  if(seen){sp.style.display='none';}else{localforage.setItem('pharmai_vis','1');setTimeout(()=>{sp.style.display='none';},1900);}
+}
+
+async function checkOnboarding(){
+  const ob = await localforage.getItem('pharmai_onboarded');
+  if(!ob){
+    setTimeout(()=>document.getElementById('onboarding-modal').classList.add('active'), 500);
+  }
+}
+function nextOb(step){
+  document.querySelectorAll('.ob-slide').forEach(s=>s.classList.remove('active'));
+  document.getElementById('ob-'+step).classList.add('active');
+}
+function finishOb(){
+  document.getElementById('onboarding-modal').classList.remove('active');
+  localforage.setItem('pharmai_onboarded', '1');
+}
+
+/* ══ INITIALIZATION ══ */
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadS();
+  handleSplash();
+  initMic();
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(S.theme==='auto')applyTheme('auto');});
+  document.getElementById('query').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendQ();hap(20);}});
+  document.getElementById('query').addEventListener('input',()=>{autoR();updCC();});
+  document.getElementById('chat').addEventListener('click',e=>{
+    const btn=e.target.closest('.acbtn');if(!btn)return;
+    const txt=btn.getAttribute('data-text');if(!txt)return;
+    if(btn.classList.contains('tts-btn'))tts(decodeURIComponent(txt),btn);
+    if(btn.classList.contains('cpy-btn'))cpyTxt(decodeURIComponent(txt),btn);
+  });
+
+  auth.onAuthStateChanged(async(fbUser)=>{
+    const loading_el=document.getElementById('auth-loading');
+    if(fbUser){
+      if(!fbUser.displayName){
+        _pendingFBUser=fbUser;
+        loading_el.style.display='none';
+        document.getElementById('lp').style.display='flex';
+        document.getElementById('auth-step').style.display='none';
+        document.getElementById('name-step').style.display='block';
+        setTimeout(()=>document.getElementById('display-name').focus(),300);
+        return;
+      }
+      loading_el.style.display='none';
+      await enterApp(fbUser);
+    } else {
+      loading_el.style.display='none';
+      document.getElementById('lp').style.display='flex';
+      document.getElementById('auth-step').style.display='block';
+      document.getElementById('name-step').style.display='none';
+      setLoginLoading(false);
+    }
+  });
+});
+
+/* ══ UI HELPERS & MODALS ══ */
+let openModals = [];
+function toggleF(k){hap(10);F[k]=!F[k];document.getElementById('t-'+k).classList.toggle('on',F[k]);Sounds.play('tick');}
+function openM(id){document.getElementById(id).classList.add('open'); openModals.push(id); Sounds.play('tick');}
+function closeM(id){document.getElementById(id).classList.remove('open'); openModals = openModals.filter(m => m !== id);}
+function handleOC(e,id){if(e.target===document.getElementById(id) && openModals[openModals.length - 1] === id){closeM(id);}}
+
+function switchTab(e,key){const sh=e.target.closest('.msh');sh.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));sh.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));document.getElementById('tp-'+key).classList.add('active');e.target.classList.add('active');Sounds.play('tick');}
+function toggleC(id){document.querySelectorAll('.ccard').forEach(c=>{if(c.id!==id)c.classList.remove('open');});document.getElementById(id).classList.toggle('open');Sounds.play('tick');}
+function toggleWizC(id){document.querySelectorAll('.wcard').forEach(c=>{if(c.id!==id)c.classList.remove('open');});document.getElementById(id).classList.toggle('open');Sounds.play('tick');}
+function flU(el){el.closest('.flw').classList.add('up');}
+function flB(el){if(!el.value&&el.value!=='0')el.closest('.flw').classList.remove('up');}
+function toggleSB(){const sb=document.getElementById('sb'),ov=document.getElementById('sb-ov');if(sb.classList.contains('open')){sb.classList.remove('open');setTimeout(()=>ov.classList.remove('open'),350);}else{ov.classList.add('open');setTimeout(()=>sb.classList.add('open'),10);}Sounds.play('tick');}
+
+/* ══ SESSIONS (Async with localforage) ══ */
+function getDocSizeKB(obj) { return new Blob([JSON.stringify(obj)]).size / 1024; }
+
+async function loadSessions(){
+  if(!user) return;
+  try{
+    const snap = await db.collection('users').doc(user).collection('sessions').get();
+    if(!snap.empty) {
+      sessions = snap.docs.map(d => d.data()).sort((a,b) => b.id - a.id);
+      localforage.setItem('psess_'+user, sessions);
+      renderSB();
+    } else {
+      const s = await localforage.getItem('psess_'+user);
+      if (s) { sessions = s; renderSB(); }
+      const docSnap = await db.collection('users').doc(user).get();
+      if (docSnap.exists && docSnap.data().sessions && docSnap.data().sessions.length > 0) {
+        sessions = docSnap.data().sessions;
+        renderSB();
+        const batch = db.batch();
+        sessions.forEach(sess => {
+          batch.set(db.collection('users').doc(user).collection('sessions').doc(sess.id.toString()), sess);
+        });
+        await batch.commit();
+        localforage.setItem('psess_'+user, sessions);
+      }
+    }
+  }catch(e){
+    const s = await localforage.getItem('psess_'+user);
+    sessions = s || [];
+    renderSB();
+  }
+}
+
+function saveSessions(){
+  if(!user) return;
+  let kb = getDocSizeKB(sessions);
+  if(kb > 800) {
+      sessions = sessions.slice(0, Math.max(0, sessions.length - 5));
+      toast('Older chats auto-archived to save space.', 'info');
+  }
+  localforage.setItem('psess_'+user, sessions);
+  const s = sessions.find(x=>x.id===currSess);
+  if(s) {
+    fsWrite(() => db.collection('users').doc(user).collection('sessions').doc(s.id.toString()).set(s), 'sessions');
+  }
+}
+
+async function clearChats(){
+  if(!confirm('Clear all chat history?'))return;
+  try {
+    const snap = await db.collection('users').doc(user).collection('sessions').get();
+    const batch = db.batch();
+    snap.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+  } catch(e){}
+  sessions=[];currSess=null;hist=[];
+  await localforage.removeItem('psess_'+user);
+  renderWelcome();toast('Chat history cleared.','ok');
+}
+
+function saveHist(){
+  if(!currSess){currSess=Date.now();const title=hist.length?hist[0].content.substring(0,28)+'\u2026':'New Chat';sessions.unshift({id:currSess,title,hist:[],html:''});}
+  const s=sessions.find(x=>x.id===currSess);
+  if(s){s.hist=hist.slice(-MAX_HIST*2);const cl=document.getElementById('chat').cloneNode(true);const ty=cl.querySelector('#typ');if(ty)ty.remove();s.html=cl.innerHTML;}
+  saveSessions();renderSB();
+}
+
+async function genTitle(q){if(!groqKey||!currSess)return;try{const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},body:JSON.stringify({model:GROQ_MODEL,messages:[{role:'system',content:'Generate a 3-5 word clinical topic title. Return ONLY the title, no punctuation at end.'},{role:'user',content:q}],temperature:.3,max_tokens:20})});const d=await r.json();const t=d.choices?.[0]?.message?.content?.trim();if(t){const s=sessions.find(x=>x.id===currSess);if(s){s.title=t;saveSessions();renderSB();}}}catch(e){}}
+
+function renderSB(){const l=document.getElementById('sbl');l.innerHTML='';sessions.forEach(s=>{const d=document.createElement('div');d.className='sbi'+(currSess===s.id?' active':'');d.innerHTML=`<div class="sbi-t" onclick="loadChat(${s.id});hap(10);"><span class="ms xs">chat</span><span>${esc(s.title)}</span></div><button class="sbi-del" onclick="delChat(${s.id},event);hap(20);"><span class="ms xs">delete</span></button>`;l.appendChild(d);});}
+
+function newChat(){hist=[];currSess=null;renderWelcome();if(document.getElementById('sb').classList.contains('open'))toggleSB();renderSB();}
+function loadChat(id){const s=sessions.find(x=>x.id===id);if(!s)return;currSess=id;hist=s.hist;document.getElementById('chat').innerHTML=s.html;if(document.getElementById('sb').classList.contains('open'))toggleSB();scrollD();renderSB();Sounds.play('tick');}
+
+async function delChat(id,e){
+  e.stopPropagation();
+  sessions=sessions.filter(x=>x.id!==id);
+  if(currSess===id){hist=[];currSess=null;renderWelcome();}
+  localforage.setItem('psess_'+user, sessions);
+  try { await fsWrite(() => db.collection('users').doc(user).collection('sessions').doc(id.toString()).delete(), 'delSession'); } catch(err){}
+  renderSB();
+}
+
+/* ══ EXPORT / IMPORT ══ */
+function exportData(){
+  const dump = { sessions, wardPatients, settings: S, exportDate: new Date().toISOString(), userName: uName };
+  const b=new Blob([JSON.stringify(dump)],{type:'application/json'});
+  const u=URL.createObjectURL(b);const a=document.createElement('a');
+  a.href=u;a.download=`PharmAI_Backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();URL.revokeObjectURL(u);toast('Exported!','ok');
+}
+
+function importData(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=async function(ev){
+    try{
+      const p=JSON.parse(ev.target.result);
+      if(p.sessions) sessions = p.sessions;
+      if(p.wardPatients) wardPatients = p.wardPatients;
+      if(p.settings) { S = {...S, ...p.settings}; saveS(); applyUI(); applyTheme(S.theme); }
+      
+      await localforage.setItem('psess_'+user, sessions);
+      await localforage.setItem('pharmai_ward_' + user, wardPatients);
+      
+      for(const s of sessions) await db.collection('users').doc(user).collection('sessions').doc(s.id.toString()).set(s);
+      for(const w of wardPatients) await db.collection('users').doc(user).collection('ward').doc(w.id.toString()).set(w);
+      
+      renderSB(); renderWardList();
+      toast('Backup restored!','ok');closeM('sm');
+    }catch(err){toast('Invalid backup file.','err');}
+  };r.readAsText(f);
+}
+
+/* ══ POLYRX ══ */
+function addRx(){const inp=document.getElementById('rx-input');const v=inp.value.trim();if(!v||rxList.includes(v)){toast('Drug already added or field empty.','warn');return;}hap(10);rxList.push(v);inp.value='';renderRx();}
+function remRx(i){hap(10);rxList.splice(i,1);renderRx();}
+function renderRx(){document.getElementById('rx-con').innerHTML=rxList.map((r,i)=>`<div class="rx-tag">${esc(r)}<button class="rx-del" onclick="remRx(${i})"><span class="ms xs">close</span></button></div>`).join('');}
+
+function analyzeRx(){
+  if(rxList.length<2){toast('Add at least 2 medications.','warn');return;}
+  closeM('tm');
+  
+  let ctxStr = '';
+  const useCtx = document.getElementById('poly-ctx').checked;
+  
+  if (useCtx) {
+    if (!activeCaseId) {
+      toast('Cannot use context: No active patient selected.', 'warn');
+      return; 
+    }
+    const pt = wardPatients.find(p => p.id === activeCaseId);
+    if (pt && pt.demo) {
+      const age = pt.demo.age || 'Unknown';
+      const sex = pt.demo.sex || 'Unknown';
+      const wt = pt.demo.wt ? `${pt.demo.wt}kg` : 'Unknown weight';
+      ctxStr = `\nPatient Context: ${age}y ${sex}, ${wt}. `;
+    }
+  }
+  
+  const q=`Analyze polypharmacy interactions between: ${rxList.join(', ')}. ${ctxStr}Provide an Interaction Matrix covering severity, mechanism, and required monitoring.`;
+  insertAndSend(q);
+  rxList=[];
+  renderRx();
+}
+
+/* ══ CHAT ENGINE ══ */
+function renderWelcome(){
+  const h=new Date().getHours();const gr=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+  const name=uName||'Doctor';
+  const wHtml=`
+    <span class="ws-word" style="animation-delay:0.3s">${gr.split(' ')[0]}</span>
+    <span class="ws-word" style="animation-delay:0.45s">${gr.split(' ')[1]},</span>
+    <span class="ws-word" style="animation-delay:0.6s; color: var(--blue);">${name}.</span>
+  `;
+  const c=document.getElementById('chat');
+  c.innerHTML=`<div id="ws">
+    <div class="ws-logo"><span class="ms lg fill">cardiology</span></div>
+    <div class="ws-g">${wHtml}</div>
+    <div class="ws-sub" style="animation-delay:0.75s">How can I assist you today?</div>
+    <div class="ws-hint" style="animation-delay:0.9s">You can ask follow-up questions naturally.</div>
+    <div class="ws-grid">
+      <button class="ws-btn" style="animation-delay:0.9s" onclick="openM('tm');document.querySelector('.tbtn:nth-child(2)').click();">
+        <span class="ms lg">monitor_heart</span>Drug Interactions
+      </button>
+      <button class="ws-btn" style="animation-delay:1.0s" onclick="insertAndSend('Beers Criteria \\u2014 high-risk medications to avoid in elderly patients')">
+        <span class="ms lg">elderly</span>Beers Criteria
+      </button>
+      <button class="ws-btn" style="animation-delay:1.1s" onclick="insertAndSend('Standard pediatric dose for Amoxicillin 40mg/kg/day?')">
+        <span class="ms lg">child_care</span>Peds Dosing
+      </button>
+      <button class="ws-btn" style="animation-delay:1.2s" onclick="openM('tm');document.getElementById('cc-ckd').classList.add('open');">
+        <span class="ms lg">water_drop</span>eGFR Calc
+      </button>
+    </div>
+  </div>`;
+}
+
+const getChat=()=>document.getElementById('chat');
+function scrollD(){setTimeout(()=>{const c=getChat();c.scrollTo({top:c.scrollHeight,behavior:'smooth'});},50);}
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function autoR(){const q=document.getElementById('query');q.style.height='auto';q.style.height=Math.min(q.scrollHeight,120)+'px';}
+function insertQ(t){hap(10);const q=document.getElementById('query');q.value=t;autoR();q.focus();}
+function insertAndSend(t){insertQ(t);setTimeout(sendQ,100);}
+function updCC(){const q=document.getElementById('query'),cc=document.getElementById('cc'),l=q.value.length;if(l>0){cc.textContent=l;cc.classList.add('show');cc.classList.toggle('warn',l>400);}else{cc.classList.remove('show');}}
+function ts(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+
+function regenLast(btn){
+  if(!lastQuery || loading) return;
+  const aiMsg = btn.closest('.msg');
+  const userMsg = aiMsg.previousElementSibling;
+  if(userMsg && userMsg.classList.contains('user')) userMsg.remove();
+  aiMsg.remove();
+  if(hist.length >= 2) { hist.pop(); hist.pop(); }
+  document.getElementById('query').value = lastQuery;
+  sendQ();
+}
+
+function appendUser(text){const ws=document.getElementById('ws');if(ws)ws.remove();const d=document.createElement('div');d.className='msg user';d.innerHTML=`<div class="bwrap"><div class="utxt">${esc(text)}</div><div class="mts">${ts()}</div></div>`;getChat().appendChild(d);scrollD();}
+function appendSkel(){const d=document.createElement('div');d.className='msg';d.id='typ';d.innerHTML=`<div class="avatar ai"><span class="ms sm fill">cardiology</span></div><div class="bwrap" style="max-width:84%;width:100%"><div class="skel"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="think-txt">PharmAI is analyzing...</div></div></div>`;getChat().appendChild(d);scrollD();}
+function remTyp(){const t=document.getElementById('typ');if(t)t.remove();}
+
+function appendAI(p){
+  const CM={'Side Effects':{c:'se',i:'bolt',l:'Side Effects'},'Dosage':{c:'dos',i:'medication',l:'Dosage'},'Drug Interaction':{c:'int',i:'monitor_heart',l:'Drug Interaction'},'Contraindication':{c:'con',i:'block',l:'Contraindication'},'Mechanism of Action':{c:'mec',i:'biotech',l:'Mechanism of Action'},'General Information':{c:'gen',i:'info',l:'General Information'}};
+  const cat=CM[p.category]||{c:'gen',i:'info',l:p.category||'Response'};
+  const badges=[F.preg?'<span class="fb2">Pregnancy</span>':'', F.peds?'<span class="fb2">Pediatric</span>':'', F.geri?'<span class="fb2">Geriatric</span>':'', F.counsel?'<span class="fb2">Counseling</span>':'', F.steward?'<span class="fb2">Stewardship</span>':''].filter(Boolean).join('');
+  const wH=p.warning?`<div class="aalert warn"><span class="ms xs" style="flex-shrink:0">warning</span><span>${p.warning}</span></div>`:'';
+  const dH=p.danger?`<div class="aalert dng"><span class="ms xs" style="flex-shrink:0">gpp_bad</span><span>${p.danger}</span></div>`:'';
+  const kH=p.keyPoints?.length?`<div class="kpw"><div class="aslbl"><span class="ms xs">checklist</span> Key Points</div>${p.keyPoints.map(k=>`<div class="kpi"><div class="kpd"></div><span>${k}</span></div>`).join('')}</div>`:'';
+  const sH=p.sources?.length?`<div class="srcrow"><span class="srclbl">Sources</span>${p.sources.map(s=>`<span class="srcc">${esc(s)}</span>`).join('')}</div>`:'';
+  const plain=[p.summary,p.warning?'Warning: '+p.warning:'',p.danger?'Danger: '+p.danger:'',(p.details||'').replace(/<[^>]+>/g,''),p.keyPoints?.length?'Key points: '+p.keyPoints.join('. '):'',p.sources?.length?'Sources: '+p.sources.join(', '):''].filter(Boolean).join('\n\n');
+  const d=document.createElement('div');d.className='msg';
+  d.innerHTML=`<div class="avatar ai"><span class="ms sm fill">cardiology</span></div>
+  <div class="bwrap" style="max-width:84%"><div class="aic ${cat.c}">
+    <div class="ctag ${cat.c}"><span class="ms xs">${cat.i}</span> ${cat.l}</div>
+    ${badges?`<div class="fbadges">${badges}</div>`:''}
+    <div class="asum"><span class="ms xs">bookmark</span>${p.summary}</div>
+    ${wH}${dH}
+    <div class="aslbl" style="padding-top:12px"><span class="ms xs">menu_book</span> Details</div>
+    <div class="abody">${p.details||''}</div>
+    ${kH}${sH}
+    <div class="acbar">
+      <button class="acbtn tts-btn" data-text="${encodeURIComponent(plain)}"><span class="ms xs">volume_up</span> Read Aloud</button>
+      <button class="acbtn cpy-btn" data-text="${encodeURIComponent(plain)}"><span class="ms xs">content_copy</span> Copy</button>
+      <button class="acbtn" onclick="regenLast(this)"><span class="ms xs">refresh</span> Regenerate</button>
+    </div>
+  </div><div class="mts">${ts()}</div></div>`;
+  getChat().appendChild(d);scrollD();
+  Sounds.play('receive');
+}
+
+function appendErr(msg){const d=document.createElement('div');d.className='msg';d.innerHTML=`<div class="avatar ai"><span class="ms sm fill">cardiology</span></div><div class="bwrap"><div class="aic se"><div class="ctag se"><span class="ms xs">error</span> Error</div><div class="abody" style="padding:14px 16px;color:var(--danger)">${esc(msg)}</div></div></div>`;getChat().appendChild(d);scrollD();}
+
+function tts(text,btn){if(!('speechSynthesis'in window)){toast('TTS not supported.','warn');return;}if(speechSynthesis.speaking){speechSynthesis.cancel();btn.innerHTML='<span class="ms xs">volume_up</span> Read Aloud';return;}const u=new SpeechSynthesisUtterance(text);u.rate=0.95;u.onstart=()=>{btn.innerHTML='<span class="ms xs">stop_circle</span> Stop';};u.onend=u.onerror=()=>{btn.innerHTML='<span class="ms xs">volume_up</span> Read Aloud';};speechSynthesis.speak(u);}
+function cpyTxt(text,btn){navigator.clipboard.writeText(text).then(()=>{btn.innerHTML='<span class="ms xs">check_circle</span> Copied!';toast('Copied!','ok');hap(15);setTimeout(()=>{btn.innerHTML='<span class="ms xs">content_copy</span> Copy';},2000);});}
+
+function buildPrompt(text){
+  const fl=[];
+  const pregKeywords = ['pregnant','pregnancy','lactation','breastfeed','trimester','obstetric','antenatal'];
+  const autoPreg = pregKeywords.some(k => text.toLowerCase().includes(k));
+  if(F.preg || autoPreg) fl.push('PREGNANCY FILTER: State FDA Pregnancy Category (A/B/C/D/X) and PLLR safety data. Highlight teratogenic risks and safer alternatives.');
+  if(F.peds) fl.push('PEDIATRIC FILTER: Provide mg/kg dosing. Note age restrictions, weight-based calculations, and pediatric-specific contraindications.');
+  if(F.geri) fl.push('GERIATRIC FILTER: Cross-reference Beers Criteria. Flag falls risk, anticholinergic burden, CNS effects, QT prolongation. Suggest safer alternatives.');
+  if(F.steward) fl.push('ANTIBIOTIC STEWARDSHIP: For any antibiotic query, evaluate empiric vs targeted indication, de-escalation opportunity, IV-to-oral switch eligibility, and local resistance patterns.');
+  const lang=F.counsel?'LANGUAGE: Use clear, simple language for patients. Replace jargon \u2014 "xerostomia"\u2192"dry mouth".':'LANGUAGE: Use precise medical terminology. Include PK parameters (Vd, t\u00BD, protein binding, Tmax) for mechanism queries.';
+  return `You are PharmAI, a senior clinical pharmacist providing accurate, evidence-based drug information.\n${lang}\n${fl.length?'Active Filters:\n'+fl.join('\n'):''}\nRespond ONLY in this exact JSON (no markdown, no code fences):\n{"category":"<Side Effects|Dosage|Drug Interaction|Contraindication|Mechanism of Action|General Information>","summary":"<one precise sentence>","warning":"<moderate safety concern or null>","danger":"<critical risk or null>","details":"<HTML using p,ul,li,strong \u2014 2-4 paragraphs>","keyPoints":["<pt1>","<pt2>","<pt3>"],"sources":["<s1>","<s2>","<s3>"]}\nCite 2-4 from: FDA, WHO, PubMed, MedlinePlus, Drugs.com, DailyMed, BNF, ASHP, UpToDate, Beers Criteria, ACC/AHA, ACOG.`;
+}
+
+async function sendQ(imgBase64 = null){
+  if (Date.now() - lastSendTime < 2000) { toast('Please wait before sending again.', 'warn'); return; }
+  const text=document.getElementById('query').value.trim();if((!text && !imgBase64)||loading)return;
+  if(!groqKey){toast('API key not configured. Contact admin.','err');return;}
+  lastSendTime = Date.now();
+  loading=true;document.getElementById('sbtn').disabled=true;
+  lastQuery = text;
+  document.getElementById('query').value='';document.getElementById('query').style.height='auto';document.getElementById('cc').classList.remove('show');
+  Sounds.play('pop');
+  const ws=document.getElementById('ws');if(ws)ws.remove();
+  
+  appendUser(imgBase64 ? '📷 Uploaded Image: ' + text : text);
+  appendSkel();
+  
+  let msgs = [];
+  let modelToUse = GROQ_MODEL;
+  
+  if (imgBase64) {
+     modelToUse = VISION_MODEL;
+     msgs = [
+       {role:'user', content: [
+         {type: "text", text: text || "Identify this medication tablet/capsule from its physical appearance, color, shape, and any imprint code visible. Provide clinical details."},
+         {type: "image_url", image_url: {url: "data:image/jpeg;base64," + imgBase64}}
+       ]}
+     ];
+  } else {
+     msgs = [{role:'system',content:buildPrompt(text)},...hist.slice(-MAX_HIST*2),{role:'user',content:text}];
+  }
+
+  try{
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},body:JSON.stringify({model:modelToUse,messages:msgs,temperature:0.25,max_tokens:1400,response_format: imgBase64 ? undefined : {type:'json_object'}})});
+    const data=await res.json();
+    if(data.error) throw new Error(data.error.message);
+    
+    let raw=data.choices?.[0]?.message?.content||'{}';
+    
+    if (imgBase64) {
+      raw = JSON.stringify({ category: "General Information", summary: "Vision Analysis Complete", details: `<p>${raw}</p>` });
+    }
+    
+    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    remTyp();appendAI(parsed);hap(15);
+    
+    const slimRaw = raw.length > 500 ? '{"category": "System", "summary": "Previous complex report generated. Data excluded to save context."}' : raw;
+    hist.push({role:'user',content:text},{role:'assistant',content:slimRaw});
+    
+    saveHist();
+    if(hist.length===2 && !imgBase64) genTitle(text);
+    
+  }catch(e){
+    remTyp();
+    appendErr('Something went wrong: '+e.message);
+    toast('Request failed.','err');
+    hap(40);
+  }finally{
+    loading=false;
+    document.getElementById('sbtn').disabled=false;
+    document.getElementById('query').focus();
+  }
+}
+
+/* ══ MIC & CAMERA ══ */
+function initMic(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;recog=new SR();recog.continuous=false;recog.interimResults=false;recog.lang='en-US';recog.onresult=e=>{const t=e.results[0][0].transcript;const q=document.getElementById('query');q.value+=(q.value?' ':'')+t;autoR();q.focus();setMic(false);toast('Voice captured!','ok');};recog.onerror=()=>{setMic(false);toast('Microphone error.','err');};recog.onend=()=>setMic(false);}
+function toggleMic(){if(!recog){toast('Voice not supported in this browser.','warn');return;}if(micOn){recog.stop();setMic(false);}else{recog.start();setMic(true);hap(20);}}
+function setMic(on){micOn=on;const btn=document.getElementById('micbtn'),ico=document.getElementById('micico');ico.textContent=on?'mic_off':'mic';btn.classList.toggle('micon',on);}
+
+const vid=()=>document.getElementById('video');
+async function openCam(){document.getElementById('cm').classList.add('open');try{vid().srcObject=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280}}});}catch(e){toast('Camera access denied.','err');closeCam();}}
+function closeCam(){const s=vid().srcObject;if(s)s.getTracks().forEach(t=>t.stop());vid().srcObject=null;document.getElementById('cm').classList.remove('open');}
+
+async function capScan(){
+  const btn=document.getElementById('snapbtn');
+  const v=vid();
+  
+  if(v.videoWidth === 0 || v.videoHeight === 0) {
+    toast('Camera is still initializing, please wait.', 'warn');
+    return;
+  }
+
+  // Tesseract Lazy-Load Injection
+  if (typeof Tesseract === 'undefined' && document.getElementById('cam-mode').value === 'ocr') {
+    toast('Loading OCR Engine (First time only)...', 'info');
+    await new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = "https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js";
+      script.onload = resolve;
+      document.head.appendChild(script);
+    });
+  }
+
+  btn.disabled=true;
+  btn.innerHTML='<span class="ms md" style="animation:spin 1s linear infinite">progress_activity</span> Processing...';
+  
+  const c=document.getElementById('canvas');
+  c.width=v.videoWidth;
+  c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  const mode = document.getElementById('cam-mode').value;
+  
+  try{
+    if (mode === 'ocr') {
+      const r=await Tesseract.recognize(c,'eng');
+      const txt=r.data.text.trim();
+      if(txt&&txt.length>3){closeCam();document.getElementById('ocredit').value=txt;openM('opm');}
+      else{toast('No text detected. Try better lighting.','warn');}
+    } else {
+      const b64 = c.toDataURL('image/jpeg').split(',')[1];
+      closeCam();
+      sendQ(b64);
+    }
+  }catch(e){toast('Processing failed. Please try again.','err');}
+  btn.disabled=false;btn.innerHTML='<span class="ms md">document_scanner</span> Capture';
+}
+
+function confirmOCR(){const t=document.getElementById('ocredit').value.trim();if(!t)return;insertQ(t);closeM('opm');}

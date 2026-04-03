@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="css/style.css" />  
+  <link rel="manifest" href="manifest.json"/>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover"/>
+  <meta name="theme-color" content="#000000" id="tcm"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <title>PharmAI</title>
+  
+  <script>
+    (function() {
+      try {
+        var s = localStorage.getItem('pharmai_S');
+        var theme = s ? JSON.parse(s).theme : 'auto';
+        if (theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.style.backgroundColor = '#000000';
+        }
+      } catch(e) {}
+    })();
+  </script>
+
+  <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet"/>
+</head>
+<body>
+
+<div id="tw"></div>
+<div id="splash"><div class="spl-logo"><span class="ms xxl fill">cardiology</span></div><div class="spl-text">PharmAI</div><div class="spl-sub">Clinical Assistant</div></div>
+<div id="auth-loading"><div class="auth-spinner"></div><div style="font-size:0.8rem;color:var(--muted);margin-top:16px;">Checking session...</div></div>
+
+<div id="onboarding-modal">
+  <div class="ob-slide active" id="ob-1">
+    <div class="ob-icon"><span class="ms xxl fill">smart_toy</span></div>
+    <div class="ob-title">Clinical AI</div>
+    <div class="ob-desc">Ask complex questions about drug interactions, dosages, and guidelines.</div>
+    <div class="ob-dots"><div class="ob-dot active"></div><div class="ob-dot"></div><div class="ob-dot"></div></div>
+    <button class="lbtn" style="width:200px;" onclick="nextOb(2)">Next</button>
+  </div>
+  <div class="ob-slide" id="ob-2">
+    <div class="ob-icon"><span class="ms xxl fill">calculate</span></div>
+    <div class="ob-title">Calculators</div>
+    <div class="ob-desc">Access high-stakes clinical formulas like Vancomycin AUC, MELD-Na, and CrCl instantly.</div>
+    <div class="ob-dots"><div class="ob-dot"></div><div class="ob-dot active"></div><div class="ob-dot"></div></div>
+    <button class="lbtn" style="width:200px;" onclick="nextOb(3)">Next</button>
+  </div>
+  <div class="ob-slide" id="ob-3">
+    <div class="ob-icon"><span class="ms xxl fill">local_hospital</span></div>
+    <div class="ob-title">Ward CDSS</div>
+    <div class="ob-desc">Manage patients, track vitals, and let the AI generate Comprehensive Medication Reviews.</div>
+    <div class="ob-dots"><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot active"></div></div>
+    <button class="lbtn" style="width:200px; background:var(--blue);" onclick="finishOb()">Get Started</button>
+  </div>
+</div>
+
+<div id="lp" style="display:none">
+  <div class="mesh"><div class="mb b1"></div><div class="mb b2"></div></div>
+  <div class="lcard">
+    <div class="llogo"><span class="ms xl fill">cardiology</span></div>
+    <h1>PharmAI</h1>
+    <p class="sub">Advanced clinical drug intelligence.<br/>Sign in to continue.</p>
+
+    <div id="auth-step">
+      <div class="lfield email"><input type="email" id="uname" placeholder="Email address" autocomplete="email" oninput="clearErr()"/></div>
+      <div class="lfield pass"><input type="password" id="ac" placeholder="Password (min 6 chars)" autocomplete="current-password" oninput="clearErr()"/></div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button class="lbtn" id="lbtn" onclick="doLogin()" style="flex:1;margin-bottom:0;"><span class="ms sm">login</span> Sign In</button>
+        <button class="lbtn" id="sbtn2" onclick="doSignUp()" style="flex:1;margin-bottom:0;background:var(--card2);color:var(--text);border:1.5px solid var(--b2);box-shadow:none;"><span class="ms sm">person_add</span> Sign Up</button>
+      </div>
+      <div style="text-align:center;margin-bottom:12px;">
+        <a onclick="forgotPassword()" style="font-size:0.78rem;color:var(--t2);cursor:pointer;text-decoration:underline;">Forgot password?</a>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin:4px 0 14px;">
+        <div style="flex:1;height:1px;background:var(--b2)"></div>
+        <span style="font-size:0.75rem;color:var(--muted)">OR</span>
+        <div style="flex:1;height:1px;background:var(--b2)"></div>
+      </div>
+      <button class="lbtn" id="google-btn" onclick="signInWithGoogle()" style="background:#fff;color:#1a1a1a;box-shadow:0 2px 8px rgba(0,0,0,0.15);border:none;margin-bottom:0;">
+        <svg style="width:18px;height:18px;flex-shrink:0" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Sign in with Google
+      </button>
+      <div id="lerr" style="display:none;align-items:center;justify-content:center;gap:6px;color:var(--danger);font-size:0.78rem;margin-top:14px;">
+        <span class="ms xs">error</span>&nbsp;<span id="err-text">Authentication error</span>
+      </div>
+      <div class="lfooter">Clinical reference only &mdash; not medical advice.</div>
+    </div>
+
+    <div id="name-step" style="display:none;text-align:center;">
+      <div style="font-size:1.5rem;margin-bottom:8px;">&#128075;</div>
+      <div style="font-size:1.1rem;font-weight:700;margin-bottom:6px;letter-spacing:-.02em;">Welcome to PharmAI!</div>
+      <div style="font-size:0.88rem;color:var(--t2);margin-bottom:28px;line-height:1.6;">What should we call you?</div>
+      <div class="lfield name"><input type="text" id="display-name" class="finp" placeholder="Your name or nickname" autocomplete="given-name" oninput="clearErr()"/></div>
+      <button class="lbtn" onclick="saveName()"><span class="ms sm">check</span> Continue</button>
+      <div id="name-err" style="display:none;align-items:center;justify-content:center;gap:6px;color:var(--danger);font-size:0.78rem;margin-top:12px;">
+        <span class="ms xs">error</span>&nbsp;Please enter your name.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="ap">
+  <div class="mac">
+    <header>
+      <div class="hleft">
+        <button class="hmenu" onclick="toggleSB();hap(10);"><span class="ms md">menu</span></button>
+        <div class="lmark" onclick="toggleSB();hap(10);"><span class="ms md fill">cardiology</span></div>
+        <div><div class="ltitle">PharmAI</div><div class="lsub">Clinical Assistant</div></div>
+      </div>
+      <div class="hright">
+        <button class="hbtn" id="navToggle" onclick="toggleAppMode();hap(10);" title="Ward Dashboard" style="position:relative;">
+          <span class="ms sm" id="navIcon">local_hospital</span>
+          <span id="ward-badge" style="display:none; position:absolute; top:-2px; right:-2px; width:16px; height:16px; background:var(--danger); border-radius:50%; font-size:9px; font-weight:700; color:#fff; align-items:center; justify-content:center;">0</span>
+        </button>
+        <button class="hbtn" onclick="openM('tm');hap(10);" title="Tools"><span class="ms sm">calculate</span></button>
+        <button class="hbtn" onclick="openM('sm');hap(10);" title="Settings"><span class="ms sm">settings</span></button>  
+        <div class="pc" id="hpc" onclick="toggleSB();hap(10);">?</div>
+      </div>
+    </header>
+    <div id="sb-ov" onclick="toggleSB()"></div>
+    <div id="sb">
+      <div class="sb-top">
+        <div class="sb-profile"><div class="sb-pc" id="sbpc">?</div><div class="sb-pi"><div class="name" id="sbnm">User</div><div class="role">Clinical User</div></div></div>
+        <button class="sb-new" onclick="newChat();hap(15);"><span class="ms sm">add</span> New Chat</button>
+      </div>
+      <div class="sb-list" id="sbl"></div>
+    </div>
+    <div id="fb">
+      <span class="flbl">Filters</span>
+      <div class="tw preg" id="t-preg" onclick="toggleF('preg')"><div class="tico"><span class="ms xs">pregnant_woman</span></div><div class="tsw"></div><span class="tlbl">Pregnancy</span></div>
+      <div class="tw peds" id="t-peds" onclick="toggleF('peds')"><div class="tico"><span class="ms xs">child_care</span></div><div class="tsw"></div><span class="tlbl">Pediatric</span></div>
+      <div class="tw geri" id="t-geri" onclick="toggleF('geri')"><div class="tico"><span class="ms xs">elderly</span></div><div class="tsw"></div><span class="tlbl">Geriatric</span></div>
+      <div class="fdiv"></div>
+      <div class="tw counsel" id="t-counsel" onclick="toggleF('counsel')"><div class="tico"><span class="ms xs">chat_bubble</span></div><div class="tsw"></div><span class="tlbl">Counseling</span></div>
+      <div class="fdiv"></div>
+      <div class="tw" id="t-steward" onclick="toggleF('steward')"><div class="tico"><span class="ms xs">shield</span></div><div class="tsw"></div><span class="tlbl">Stewardship</span></div>
+    </div>
+    
+    <div id="chat"></div>
+      
+    <div id="ward-overlay" onclick="closeWardMode()"></div>
+    <div id="cdss-view">
+      
+      <div class="cdss-dash" id="cdss-dash">
+        <div class="dash-hdr">
+          <div style="font-weight:700; font-size:1.1rem;">Ward Patients</div>
+          <button class="bkbtn exp" style="width:auto; min-height:36px; padding:0 16px; margin:0;" onclick="openCDSSWiz('admit');hap(10);"><span class="ms xs">person_add</span> Admit</button>
+        </div>
+        <div class="dash-tabs">
+          <button class="d-tab active" id="tab-active" onclick="switchWardTab('active')">Active Cases</button>
+          <button class="d-tab" id="tab-closed" onclick="switchWardTab('closed')">Closed Cases</button>
+        </div>
+        <div id="pt-list-container"></div>
+      </div>
+
+      <div class="cdss-wiz" id="cdss-file">
+        <div class="wiz-hdr">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button class="hbtn" onclick="closeCDSSFile();hap(10);" style="margin-left:-10px; background:none; border:none;"><span class="ms sm">arrow_back</span></button>
+            <div>
+              <div style="font-weight:700;" id="f-pt-name">Patient Name</div>
+              <div style="font-size:0.75rem; color:var(--t2);" id="f-pt-bed">Bed / ID</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:4px;">
+             <button class="hbtn" onclick="openADRModal();" title="Report ADR" style="background:none; border:none; color:var(--danger);"><span class="ms sm">report</span></button>
+             <button class="hbtn" onclick="window.print();" title="Export PDF" style="background:none; border:none;"><span class="ms sm">picture_as_pdf</span></button>
+          </div>
+        </div>
+        <div class="wiz-body" id="pt-timeline" style="padding-bottom:120px;"></div>
+        <div class="wiz-footer" id="file-actions"></div>
+      </div>
+
+      <div class="cdss-wiz" id="cdss-form">
+        <div class="wiz-hdr">
+          <div style="display:flex; align-items:center; gap:10px; font-weight:700;" id="wiz-title"><span class="ms md">person_add</span> Admit Patient</div>
+          <button class="hbtn" onclick="closeCDSSWiz();hap(10);" style="background:none; border:none;"><span class="ms sm">close</span></button>
+        </div>
+        <div class="wiz-body" style="padding-bottom:120px;">
+          
+          <div class="wcard open" id="wiz-sec-demo">
+            <div class="chdr" onclick="toggleWizC('wiz-sec-demo')"><div class="chdr-l"><span class="ms sm">badge</span> Demographics</div><span class="ms sm chev">expand_more</span></div>
+            <div class="cbody"><div class="cbwrap"><div class="cinn" style="padding-top:12px;">
+              <div class="fgrid">
+                <div class="fg"><span class="flbl">DOA</span><input type="date" id="w-doa" class="finp"></div>
+                <div class="fg"><span class="flbl">Name / Initials</span><input type="text" id="w-name" class="finp"></div>
+                <div class="fg"><span class="flbl">Case ID / Bed</span><input type="text" id="w-id" class="finp"></div>
+              </div>
+              <div class="fgrid">
+                <div class="fg"><span class="flbl">Age</span><input type="number" id="w-age" class="finp"></div>
+                <div class="fg"><span class="flbl">Sex</span><select id="w-sex" class="finp" onchange="togglePreg()"><option value="M">M</option><option value="F">F</option></select></div>
+              </div>
+              <div class="fgrid">
+                <div class="fg"><span class="flbl">Wt (kg)</span><input type="number" id="w-wt" class="finp" oninput="calcBMI()"></div>
+                <div class="fg"><span class="flbl">Ht (cm)</span><input type="number" id="w-ht" class="finp" oninput="calcBMI()"></div>
+                <div class="fg" style="justify-content:center;"><span class="flbl">BMI</span><div id="w-bmi" style="font-weight:700; color:var(--t2);">--</div></div>
+              </div>
+              <div class="fgrid" id="w-preg-fg" style="display:none; margin-top:4px;">
+                <div class="fg"><span class="flbl" style="color:var(--blue)"><span class="ms xs">pregnant_woman</span> Pregnancy Status / History</span><input type="text" id="w-preg" class="finp" placeholder="e.g., G2P1, 14 weeks pregnant, N/A"></div>
+              </div>
+            </div></div></div>
+          </div>
+
+          <div class="wcard" id="wiz-sec-hist">
+            <div class="chdr" onclick="toggleWizC('wiz-sec-hist')"><div class="chdr-l"><span class="ms sm">history_edu</span> Clinical History</div><span class="ms sm chev">expand_more</span></div>
+            <div class="cbody"><div class="cbwrap"><div class="cinn" style="padding-top:12px;">
+              <div class="fg"><span class="flbl" style="color:var(--text)">Primary Diagnosis *</span><input type="text" id="w-dx" class="finp" placeholder="Main reason for admission"></div>
+              <div class="fg"><span class="flbl">Chief Complaints</span><textarea id="w-cc" class="finp" placeholder="Symptoms..."></textarea></div>
+              <div class="fg"><span class="flbl">Past Medical History (PMH)</span><textarea id="w-pmh" class="finp"></textarea></div>
+              <div class="fg"><span class="flbl">Past Medication History (PMx)</span><textarea id="w-pmx" class="finp" placeholder="Drugs taken prior to admission..."></textarea></div>
+              <div class="fgrid">
+                <div class="fg"><span class="flbl" style="color:var(--danger)">Allergies</span><input type="text" id="w-alg" class="finp" placeholder="NKDA"></div>
+              </div>
+              <div class="fgrid">
+                <div class="fg"><span class="flbl">Social History</span><textarea id="w-soc" class="finp" placeholder="Tobacco, alcohol..."></textarea></div>
+                <div class="fg"><span class="flbl">Family History</span><textarea id="w-fam" class="finp"></textarea></div>
+              </div>
+            </div></div></div>
+          </div>
+
+          <div class="wcard" id="wiz-sec-fresh" style="display:none;">
+            <div class="chdr" onclick="toggleWizC('wiz-sec-fresh')"><div class="chdr-l" style="color:var(--warn)"><span class="ms sm">assignment_late</span> New Clinical Updates</div><span class="ms sm chev">expand_more</span></div>
+            <div class="cbody"><div class="cbwrap"><div class="cinn" style="padding-top:12px;">
+              <div class="fg"><span class="flbl">Fresh Complaints / Day Updates</span><textarea id="w-fresh" class="finp" placeholder="e.g., Developed mild fever overnight..."></textarea></div>
+            </div></div></div>
+          </div>
+
+          <div class="wcard" id="wiz-sec-vitals">
+            <div class="chdr" onclick="toggleWizC('wiz-sec-vitals')"><div class="chdr-l"><span class="ms sm">favorite</span> <span id="lbl-vitals">Baseline Vitals</span></div><span class="ms sm chev">expand_more</span></div>
+            <div class="cbody"><div class="cbwrap"><div class="cinn" style="padding-top:12px;">
+              <div class="fgrid">
+                <div class="fg"><span class="flbl">BP (mmHg)</span><input type="text" id="v-bp" class="finp" placeholder="120/80"></div>
+                <div class="fg"><span class="flbl">HR (bpm)</span><input type="number" id="v-hr" class="finp"></div>
+                <div class="fg"><span class="flbl">RR (/min)</span><input type="number" id="v-rr" class="finp"></div>
+              </div>
+              <div class="fgrid">
+                <div class="fg"><span class="flbl">Temp (°F)</span><input type="number" step="0.1" id="v-temp" class="finp"></div>
+                <div class="fg"><span class="flbl">SpO2 (%)</span><input type="number" id="v-spo2" class="finp"></div>
+              </div>
+              <div class="fgrid">
+                <div class="fg"><span class="flbl">CNS Exam</span><input type="text" id="v-cns" class="finp" placeholder="Conscious, oriented..."></div>
+                <div class="fg"><span class="flbl">Respiratory Exam</span><input type="text" id="v-resp" class="finp" placeholder="Clear air entry B/L..."></div>
+              </div>
+            </div></div></div>
+          </div>
+
+          <div class="wcard" id="wiz-sec-labs">
+            <div class="chdr" onclick="toggleWizC('wiz-sec-labs')"><div class="chdr-l"><span class="ms sm">science</span> Labs & Diagnostics</div><span class="ms sm chev">expand_more</span></div>
+            <div class="cbody"><div class="cbwrap"><div class="cinn" style="padding-top:12px;">
+              <span style="font-size:0.75rem; color:var(--muted); margin-bottom:8px; display:block;">(For Progress notes, leave anchors blank if unchanged)</span>
+              <div class="fgrid" style="background:rgba(245,158,11,0.05); padding:10px; border-radius:10px; border:1px solid var(--wdim);">
+                <div class="fg"><span class="flbl" style="color:var(--warn)">SCr (mg/dL)</span><input type="number" step="0.1" id="l-scr" class="finp"></div>
+                <div class="fg"><span class="flbl" style="color:var(--warn)">AST (U/L)</span><input type="number" id="l-ast" class="finp"></div>
+                <div class="fg"><span class="flbl" style="color:var(--warn)">ALT (U/L)</span><input type="number" id="l-alt" class="finp"></div>
+                <div class="fg"><span class="flbl" style="color:var(--warn)">Bilirubin</span><input type="number" step="0.1" id="l-bil" class="finp"></div>
+              </div>
+              <div class="lb-box">
+                <div class="sect-title">Add Specific Lab Panel Values</div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <select id="lab-sys" class="finp" style="flex:1; min-width:140px;" onchange="updLabParams()">
+                    <option value="">-- Select Category --</option>
+                    <option value="hemato">🩸 Hematology</option>
+                    <option value="biochem">🧪 Biochemistry / Lytes</option>
+                    <option value="cardio">🫀 Cardio / Coag</option>
+                  </select>
+                  <select id="lab-param" class="finp" style="flex:1; min-width:140px;"><option value="">-- Parameter --</option></select>
+                  <input type="text" id="lab-val" class="finp" style="width:80px;" placeholder="Value">
+                  <button class="rx-add" style="margin:0;" onclick="addLabTag()"><span class="ms sm">add</span></button>
+                </div>
+                <div class="rx-list" id="lab-tags" style="margin-top:12px; margin-bottom:0;"></div>
+              </div>
+              <div class="fg"><span class="flbl">Urine Microscopy</span><input type="text" id="l-urine" class="finp" placeholder="Pus cells, RBCs..."></div>
+              <div class="fg"><span class="flbl">Others / Imaging</span><textarea id="l-img" class="finp" placeholder="CXR, USG, ECG findings..."></textarea></div>
+            </div></div></div>
+          </div>
+
+          <div class="wcard" id="wiz-sec-tx">
+            <div class="chdr" onclick="toggleWizC('wiz-sec-tx')"><div class="chdr-l"><span class="ms sm">medication</span> Current Treatment</div><span class="ms sm chev">expand_more</span></div>
+            <div class="cbody"><div class="cbwrap"><div class="cinn" style="padding-top:12px; position:relative;">
+              <div class="lb-box">
+                <div class="tx-row">
+                  <input type="text" id="tx-drug" class="finp rx-ac-inp" placeholder="Drug Name" autocomplete="off" oninput="handleAC(this)">
+                  <div id="tx-drug-ac" class="rx-ac"></div>
+                  <input type="text" id="tx-dose" class="finp" placeholder="Dose">
+                  <input type="text" id="tx-freq" class="finp" placeholder="Freq (OD, BD)">
+                  <input type="text" id="tx-route" class="finp" placeholder="Route (PO, IV)">
+                  <button class="rx-add" style="margin:0;" onclick="addTxTag()"><span class="ms sm">add</span></button>
+                </div>
+                <div class="rx-list" id="tx-tags" style="flex-direction:column; margin-bottom:0;"></div>
+              </div>
+            </div></div></div>
+          </div>
+
+        </div>
+        <div class="wiz-footer">
+          <button class="btn-block" id="btn-gen-plan" onclick="genCarePlan()"><span class="ms sm">memory</span> Analyze & Generate</button>
+        </div>
+      </div>
+
+    </div>
+    
+    <div id="ia">
+      <div class="irow">
+        <button class="iibtn" onclick="openCam();hap(10);" title="Scan"><span class="ms md">photo_camera</span></button>
+        <button class="iibtn" id="micbtn" onclick="toggleMic();" title="Voice"><span class="ms md" id="micico">mic</span></button>
+        <textarea id="query" rows="1" placeholder="Type or scan a clinical query..."></textarea>
+        <div class="sw"><span class="ccount" id="cc">0</span><button id="sbtn" onclick="sendQ();hap(20);"><span class="ms sm">arrow_upward</span></button></div>
+      </div>
+      <div class="disc"><span class="ms xs" style="color:var(--t2);flex-shrink:0">info</span> Clinical reference only &mdash; always consult a licensed healthcare professional.</div>
+    </div>
+  </div>
+</div>
+
+<div class="mov" id="dc-confirm-modal" onclick="handleOC(event,'dc-confirm-modal')">
+  <div class="msh" style="max-width:340px; border-radius:24px;">
+    <div class="mhdr"><div class="mtitle"><span class="ms md" style="color:var(--danger)">warning</span> Close Case</div><button class="mclose" onclick="closeM('dc-confirm-modal');"><span class="ms sm">close</span></button></div>
+    <div class="mbody" style="text-align:center;">
+      <p style="margin-bottom:20px; color:var(--t2); font-size:0.95rem; line-height:1.5;">Are you sure you want to finalize and close this case? This action cannot be undone.</p>
+      <div style="display:flex; gap:10px;">
+        <button class="obtn sec" onclick="closeM('dc-confirm-modal')">Cancel</button>
+        <button class="obtn pri" style="background:var(--danger);" onclick="execProcessDischarge()"><span class="ms xs">check_circle</span> Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mov" id="adr-modal" onclick="handleOC(event,'adr-modal')">
+  <div class="msh">
+    <div class="mhdr"><div class="mtitle"><span class="ms md" style="color:var(--danger)">report</span> Report ADR (PvPI)</div><button class="mclose" onclick="closeM('adr-modal');"><span class="ms sm">close</span></button></div>
+    <div class="mbody">
+      <p style="font-size:0.8rem; color:var(--t2); margin-bottom:16px;">Generate a structured Adverse Drug Reaction report format for pharmacovigilance.</p>
+      <div class="fg"><span class="flbl">Patient Initials / ID</span><input type="text" id="adr-pt" class="finp" readonly></div>
+      <div class="fg"><span class="flbl">Suspected Drug(s)</span><input type="text" id="adr-drug" class="finp" placeholder="e.g. Amoxicillin 500mg"></div>
+      <div class="fg"><span class="flbl">Reaction Description</span><textarea id="adr-desc" class="finp" placeholder="Describe the adverse event..."></textarea></div>
+      <div class="fgrid">
+        <div class="fg"><span class="flbl">Date of Onset</span><input type="date" id="adr-date" class="finp"></div>
+        <div class="fg"><span class="flbl">Action Taken</span><select id="adr-action" class="finp"><option value="Drug withdrawn">Drug withdrawn</option><option value="Dose reduced">Dose reduced</option><option value="None">None</option></select></div>
+      </div>
+      <button class="btn-block" style="margin-top:12px;" onclick="generateADR()"><span class="ms sm">description</span> Generate Report</button>
+    </div>
+  </div>
+</div>
+
+<div class="mov" id="discharge-modal" onclick="handleOC(event,'discharge-modal')">
+  <div class="msh">
+    <div class="mhdr"><div class="mtitle"><span class="ms md">logout</span> Close Case</div><button class="mclose" onclick="closeM('discharge-modal');"><span class="ms sm">close</span></button></div>
+    <div class="mbody">
+      
+      <div class="fgrid">
+        <div class="fg"><span class="flbl">Outcome</span>
+          <select id="dc-outcome" class="finp" onchange="document.getElementById('dc-meds-sec').style.display = this.value === 'discharge' ? 'block' : 'none';">
+            <option value="discharge">Routine Discharge (Counseling Card)</option>
+            <option value="dama">DAMA (Against Medical Advice)</option>
+            <option value="lost">Transferred / Incomplete</option>
+          </select>
+        </div>
+        <div class="fg"><span class="flbl">Date of Discharge</span><input type="date" id="dc-dod" class="finp"></div>
+      </div>
+      
+      <div id="dc-meds-sec">
+        <div class="sect-title" style="margin-top:8px;"><span class="ms sm">medication</span> Discharge Medications</div>
+        <p style="font-size:0.8rem; color:var(--t2); margin-bottom:12px;">Generate a layman-friendly Patient Counseling Card.</p>
+        
+        <div class="lb-box">
+          <div class="rx-row" style="position:relative; margin-bottom:8px;">
+            <input type="text" id="dc-rx-inp" class="rx-inp rx-ac-inp" placeholder="e.g. Amoxicillin 500mg TDS" autocomplete="off" oninput="handleAC(this)" onkeypress="if(event.key==='Enter')addDcRx()">
+            <div id="dc-rx-ac" class="rx-ac"></div>
+            <button class="rx-add" onclick="addDcRx()"><span class="ms sm">add</span></button>
+          </div>
+          <div class="rx-list" id="dc-rx-list" style="margin-bottom:0;"></div>
+        </div>
+        
+        <div class="fgrid" style="margin-top:12px;">
+          <div class="fg">
+            <span class="flbl">Patient Language</span>
+            <select id="dc-lang" class="finp">
+              <option value="English">English</option>
+              <option value="Hindi">Hindi (हिंदी)</option>
+              <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <div class="fg" style="margin-top:12px;"><span class="flbl">Final Clinical Notes (Optional)</span><textarea id="dc-notes" class="finp" style="min-height:80px;" placeholder="Add any final case summaries..."></textarea></div>
+      
+      <button class="btn-block" style="margin-top:24px; background:var(--blue); color:#fff; box-shadow: 0 4px 14px var(--bmid);" onclick="processDischarge()"><span class="ms sm">check_circle</span> Finalize & Close Case</button>
+    </div>
+  </div>
+</div>
+
+<div class="mov" id="sm" onclick="handleOC(event,'sm')">
+  <div class="msh">
+    <div class="mhdr"><div class="mtitle"><span class="ms md">settings</span> Settings</div><button class="mclose" onclick="closeM('sm');"><span class="ms sm">close</span></button></div>
+    <div class="mbody">
+      <div class="sg">
+        <div class="sg-title">Appearance</div>
+        <div class="si">
+          <div class="si-l"><div class="si-label">Theme</div><div class="si-desc">Color scheme</div></div>
+          <div class="tpills">
+            <button class="tp-pill" id="th-auto" onclick="setTheme('auto')"><span class="ms xs">desktop_windows</span> Auto</button>
+            <button class="tp-pill" id="th-light" onclick="setTheme('light')"><span class="ms xs">light_mode</span> Light</button>
+            <button class="tp-pill" id="th-dark" onclick="setTheme('dark')"><span class="ms xs">dark_mode</span> Dark</button>
+          </div>
+        </div>
+      </div>
+      <div class="sg">
+        <div class="sg-title">Feedback</div>
+        <div class="si">
+          <div class="si-l"><div class="si-label">Haptic & Audio</div><div class="si-desc">Vibration and UI sounds</div></div>
+          <label class="stgl"><input type="checkbox" id="hap-t" checked onchange="toggleSet('haptic')"/><div class="stgl-t"></div><div class="stgl-th"></div></label>
+        </div>
+      </div>
+      <div class="sg">
+        <div class="sg-title">Data</div>
+        <button class="bkbtn exp" onclick="exportData()"><span class="ms sm">download</span> Export All Data (Backup)</button>
+        <div style="position:relative;margin-bottom:10px"><input type="file" id="importFile" accept=".json" onchange="importData(event)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;"/><button class="bkbtn imp" style="margin-bottom:0"><span class="ms sm">upload</span> Restore from Backup</button></div>
+        <div class="si"><div class="si-l"><div class="si-label" style="color:var(--danger)">Clear Chat History</div><div class="si-desc">Removes all conversations</div></div><button class="dbtn" onclick="clearChats()">Clear</button></div>
+      </div>
+      <div class="si" style="border-top:1px solid var(--b);padding-top:16px;margin-top:4px;">
+        <div class="si-l"><div class="si-label">Account</div><div class="si-desc" id="sui">—</div></div>
+        <button class="dbtn" onclick="doLogout()">Logout</button>
+      </div>
+      <div class="si">
+        <div class="si-l"><div class="si-label" style="color:var(--danger)">Delete Account</div><div class="si-desc">Permanently deletes your account &amp; all data</div></div>
+        <button class="dbtn" onclick="deleteAccount()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mov" id="tm" onclick="handleOC(event,'tm')">
+  <div class="msh">
+    <div class="mhdr"><div class="mtitle"><span class="ms md">stethoscope</span> Clinical Tools</div><button class="mclose" onclick="closeM('tm');"><span class="ms sm">close</span></button></div>
+    <div class="mtabs">
+      <button class="tbtn active" onclick="switchTab(event,'calc');"><span class="ms xs">calculate</span> Calculators</button>
+      <button class="tbtn" onclick="switchTab(event,'poly');"><span class="ms xs">monitor_heart</span> PolyRx</button>
+      <button class="tbtn" onclick="switchTab(event,'lab');"><span class="ms xs">science</span> Lab Values</button>
+      <button class="tbtn" onclick="switchTab(event,'preg');"><span class="ms xs">pregnant_woman</span> Preg. Cat.</button>
+    </div>
+    <div class="mbody">
+      
+      <div class="tp active" id="tp-calc">
+        <div class="ccard open" id="cc-ckd">
+          <div class="chdr" onclick="toggleC('cc-ckd');"><div class="chdr-l"><span class="ms sm">water_drop</span> CKD-EPI (eGFR)</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="crow2"><div class="flw"><input class="fl-in" id="ckd-age" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Age (years)</label></div><div class="flw"><input class="fl-in" id="ckd-scr" type="number" step="0.01" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">SCr (mg/dL)</label></div></div>
+            <div class="flw"><select class="fl-sel" id="ckd-sex" onchange="flU(this)" onfocus="flU(this)" onblur="flB(this)"><option value="">Sex</option><option value="M">Male</option><option value="F">Female</option></select><label class="fl-lbl">Sex</label></div>
+            <button class="cact" onclick="calcCKD();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-ckd"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-crcl">
+          <div class="chdr" onclick="toggleC('cc-crcl');"><div class="chdr-l"><span class="ms sm">water_drop</span> CrCl (Cockcroft-Gault)</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="crow2"><div class="flw"><input class="fl-in" id="c-age" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Age (years)</label></div><div class="flw"><input class="fl-in" id="c-wt" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Weight (kg)</label></div></div>
+            <div class="crow2"><div class="flw"><input class="fl-in" id="c-scr" type="number" step="0.01" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">SCr (mg/dL)</label></div><div class="flw"><select class="fl-sel" id="c-sex" onchange="flU(this)" onfocus="flU(this)" onblur="flB(this)"><option value="">Sex</option><option value="M">Male</option><option value="F">Female</option></select><label class="fl-lbl">Sex</label></div></div>
+            <button class="cact" onclick="calcCrCl();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-crcl"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-ped">
+          <div class="chdr" onclick="toggleC('cc-ped');"><div class="chdr-l"><span class="ms sm">child_care</span> Pediatric Dosing</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="crow2"><div class="flw"><input class="fl-in" id="p-wt" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Weight (kg)</label></div><div class="flw"><input class="fl-in" id="p-dose" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Dose (mg/kg)</label></div></div>
+            <button class="cact" onclick="calcPed();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-ped"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-bsa">
+          <div class="chdr" onclick="toggleC('cc-bsa');"><div class="chdr-l"><span class="ms sm">straighten</span> BSA (Mosteller)</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="crow2"><div class="flw"><input class="fl-in" id="bsa-ht" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Height (cm)</label></div><div class="flw"><input class="fl-in" id="bsa-wt" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Weight (kg)</label></div></div>
+            <button class="cact" onclick="calcBSA();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-bsa"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-ibw">
+          <div class="chdr" onclick="toggleC('cc-ibw');"><div class="chdr-l"><span class="ms sm">monitor_weight</span> IBW / ABW</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="crow2"><div class="flw"><input class="fl-in" id="ibw-ht" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Height (cm)</label></div><div class="flw"><input class="fl-in" id="ibw-wt" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Actual Weight (kg)</label></div></div>
+            <div class="flw"><select class="fl-sel" id="ibw-sex" onchange="flU(this)" onfocus="flU(this)" onblur="flB(this)"><option value="">Sex</option><option value="M">Male</option><option value="F">Female</option></select><label class="fl-lbl">Sex</label></div>
+            <button class="cact" onclick="calcIBW();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-ibw"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-ca">
+          <div class="chdr" onclick="toggleC('cc-ca');"><div class="chdr-l"><span class="ms sm">science</span> Corrected Calcium</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="crow2"><div class="flw"><input class="fl-in" id="ca-ca" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Serum Ca (mg/dL)</label></div><div class="flw"><input class="fl-in" id="ca-alb" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Albumin (g/dL)</label></div></div>
+            <button class="cact" onclick="calcCa();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-ca"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-cp">
+          <div class="chdr" onclick="toggleC('cc-cp');"><div class="chdr-l"><span class="ms sm">lab_research</span> Child-Pugh Score</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="crow2"><div class="flw"><input class="fl-in" id="cp-bil" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Bilirubin (mg/dL)</label></div><div class="flw"><input class="fl-in" id="cp-alb" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Albumin (g/dL)</label></div></div>
+            <div class="flw"><input class="fl-in" id="cp-inr" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">INR</label></div>
+            <div class="crow2"><div class="flw"><select class="fl-sel" id="cp-asc" onchange="flU(this)" onfocus="flU(this)" onblur="flB(this)"><option value="">Ascites</option><option value="1">None</option><option value="2">Mild</option><option value="3">Moderate/Severe</option></select><label class="fl-lbl">Ascites</label></div><div class="flw"><select class="fl-sel" id="cp-enc" onchange="flU(this)" onfocus="flU(this)" onblur="flB(this)"><option value="">Encephalopathy</option><option value="1">None</option><option value="2">Grade 1-2</option><option value="3">Grade 3-4</option></select><label class="fl-lbl">Encephalopathy</label></div></div>
+            <button class="cact" onclick="calcCP();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-cp"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-op">
+          <div class="chdr" onclick="toggleC('cc-op');"><div class="chdr-l"><span class="ms sm">medication</span> Opioid Equianalgesic</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="owarn"><span class="ms xs" style="flex-shrink:0">warning</span> For reference only. Always verify with a clinical pharmacist. Apply 25-30% dose reduction for incomplete cross-tolerance.</div>
+            <div class="crow2"><div class="flw"><select class="fl-sel" id="op-from" onchange="flU(this)" onfocus="flU(this)" onblur="flB(this)"><option value="">From drug</option><option value="1">Morphine PO</option><option value="3">Morphine IV/IM</option><option value="1.5">Oxycodone PO</option><option value="4">Hydromorphone PO</option><option value="20">Hydromorphone IV</option><option value="0.15">Codeine PO</option><option value="0.25">Tramadol PO</option></select><label class="fl-lbl">From drug</label></div><div class="flw"><input class="fl-in" id="op-dose" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Dose (mg)</label></div></div>
+            <div class="flw"><select class="fl-sel" id="op-to" onchange="flU(this)" onfocus="flU(this)" onblur="flB(this)"><option value="">To drug</option><option value="1">Morphine PO</option><option value="3">Morphine IV/IM</option><option value="1.5">Oxycodone PO</option><option value="4">Hydromorphone PO</option><option value="20">Hydromorphone IV</option><option value="0.15">Codeine PO</option><option value="0.25">Tramadol PO</option></select><label class="fl-lbl">To drug</label></div>
+            <button class="cact" onclick="calcOp();hap(20);"><span class="ms xs">play_arrow</span> Convert</button><div class="cres" id="r-op"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-meld">
+          <div class="chdr" onclick="toggleC('cc-meld');"><div class="chdr-l"><span class="ms sm">lab_research</span> MELD-Na Score</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="crow2"><div class="flw"><input class="fl-in" id="meld-bil" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Bilirubin (mg/dL)</label></div><div class="flw"><input class="fl-in" id="meld-inr" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">INR</label></div></div>
+            <div class="crow2"><div class="flw"><input class="fl-in" id="meld-scr" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">SCr (mg/dL)</label></div><div class="flw"><input class="fl-in" id="meld-na" type="number" step="1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Na+ (mEq/L)</label></div></div>
+            <button class="cact" onclick="calcMELD();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-meld"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-vanc">
+          <div class="chdr" onclick="toggleC('cc-vanc');"><div class="chdr-l"><span class="ms sm">medication</span> Vancomycin AUC24 (Steady)</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="owarn"><span class="ms xs" style="flex-shrink:0">warning</span> Simplified steady-state estimate. Not for AKI or unstable renal function. Target AUC/MIC 400-600.</div>
+            <div class="crow2"><div class="flw"><input class="fl-in" id="vanc-dose" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">24h Dose (mg)</label></div><div class="flw"><input class="fl-in" id="vanc-crcl" type="number" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">CrCl (mL/min)</label></div></div>
+            <button class="cact" onclick="calcVanc();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-vanc"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-pheny">
+          <div class="chdr" onclick="toggleC('cc-pheny');"><div class="chdr-l"><span class="ms sm">science</span> Phenytoin (Hypoalbuminemia)</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <div class="crow2"><div class="flw"><input class="fl-in" id="ph-obs" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Obs. Level (mcg/mL)</label></div><div class="flw"><input class="fl-in" id="ph-alb" type="number" step="0.1" placeholder=" " oninput="flU(this)" onfocus="flU(this)" onblur="flB(this)"/><label class="fl-lbl">Albumin (g/dL)</label></div></div>
+            <button class="cact" onclick="calcPheny();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-pheny"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-curb">
+          <div class="chdr" onclick="toggleC('cc-curb');"><div class="chdr-l"><span class="ms sm">coronavirus</span> CURB-65 (Pneumonia)</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <label class="chk-row"><input type="checkbox" id="cb-c"><div class="chk-lbl">Confusion (AMTS &le; 8)</div></label>
+            <label class="chk-row"><input type="checkbox" id="cb-u"><div class="chk-lbl">Urea > 7 mmol/L (BUN > 19 mg/dL)</div></label>
+            <label class="chk-row"><input type="checkbox" id="cb-r"><div class="chk-lbl">Respiratory Rate &ge; 30/min</div></label>
+            <label class="chk-row"><input type="checkbox" id="cb-b"><div class="chk-lbl">Blood Pressure (SBP &lt; 90 or DBP &le; 60)</div></label>
+            <label class="chk-row"><input type="checkbox" id="cb-65"><div class="chk-lbl">Age &ge; 65 years</div></label>
+            <button class="cact" onclick="calcCurb();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-curb"></div>
+          </div></div></div>
+        </div>
+        <div class="ccard" id="cc-wells">
+          <div class="chdr" onclick="toggleC('cc-wells');"><div class="chdr-l"><span class="ms sm">bloodtype</span> Wells Score (DVT)</div><span class="ms sm chev">expand_more</span></div>
+          <div class="cbody"><div class="cbwrap"><div class="cinn">
+            <label class="chk-row"><input type="checkbox" class="w-chk"><div class="chk-lbl">Active cancer (treatment ongoing or within 6 mo)</div></label>
+            <label class="chk-row"><input type="checkbox" class="w-chk"><div class="chk-lbl">Paralysis, paresis, or recent cast immobilization</div></label>
+            <label class="chk-row"><input type="checkbox" class="w-chk"><div class="chk-lbl">Recently bedridden > 3 days or major surgery within 4 weeks</div></label>
+            <label class="chk-row"><input type="checkbox" class="w-chk"><div class="chk-lbl">Localized tenderness along the deep venous system</div></label>
+            <label class="chk-row"><input type="checkbox" class="w-chk"><div class="chk-lbl">Entire leg swollen</div></label>
+            <label class="chk-row"><input type="checkbox" class="w-chk"><div class="chk-lbl">Calf swelling > 3 cm compared to asymptomatic leg</div></label>
+            <label class="chk-row"><input type="checkbox" class="w-chk"><div class="chk-lbl">Pitting edema confined to symptomatic leg</div></label>
+            <label class="chk-row"><input type="checkbox" class="w-chk"><div class="chk-lbl">Collateral superficial veins (non-varicose)</div></label>
+            <label class="chk-row"><input type="checkbox" id="w-alt" value="-2"><div class="chk-lbl">Alternative diagnosis at least as likely as DVT (Subtracts 2)</div></label>
+            <button class="cact" onclick="calcWells();hap(20);"><span class="ms xs">play_arrow</span> Calculate</button><div class="cres" id="r-wells"></div>
+          </div></div></div>
+        </div>
+      </div>
+      
+      <div class="tp" id="tp-poly">
+        <p style="font-size:0.85rem;color:var(--t2);margin-bottom:16px;line-height:1.6">Add multiple medications to generate a comprehensive polypharmacy interaction analysis.</p>
+        <div class="rx-row" style="position:relative;">
+          <input class="rx-inp rx-ac-inp" type="text" id="rx-input" placeholder="Enter drug name..." autocomplete="off" oninput="handleAC(this)" onkeypress="if(event.key==='Enter')addRx()"/>
+          <div id="rx-input-ac" class="rx-ac"></div>
+          <button class="rx-add" onclick="addRx();hap(10);"><span class="ms sm">add</span></button>
+        </div>
+        <div class="rx-list" id="rx-con"></div>
+        <label class="chk-row" style="margin-bottom:16px;"><input type="checkbox" id="poly-ctx"><div class="chk-lbl">Use active Ward patient context (CrCl, Age)</div></label>
+        <button class="cact" style="background:var(--text);border:none;color:var(--bg);" onclick="analyzeRx();hap(20);"><span class="ms sm">bolt</span> Analyze Interactions</button>
+      </div>
+      <div class="tp" id="tp-lab">
+        <table class="ltbl">
+          <thead><tr><th>Test</th><th>Normal Range</th></tr></thead>
+          <tbody>
+            <tr class="lsh"><td colspan="2">Electrolytes</td></tr>
+            <tr><td>Sodium (Na&sup+;)</td><td>135-145 mEq/L</td></tr><tr><td>Potassium (K&sup+;)</td><td>3.5-5.0 mEq/L</td></tr><tr><td>Chloride (Cl&sup-;)</td><td>95-105 mEq/L</td></tr><tr><td>Bicarbonate</td><td>22-28 mEq/L</td></tr><tr><td>Calcium</td><td>8.5-10.5 mg/dL</td></tr><tr><td>Magnesium</td><td>1.7-2.2 mg/dL</td></tr>
+            <tr class="lsh"><td colspan="2">Renal</td></tr>
+            <tr><td>BUN</td><td>8-20 mg/dL</td></tr><tr><td>Creatinine (M)</td><td>0.7-1.2 mg/dL</td></tr><tr><td>Creatinine (F)</td><td>0.5-1.0 mg/dL</td></tr><tr><td>eGFR</td><td>&ge;60 mL/min/1.73m&sup2;</td></tr>
+            <tr class="lsh"><td colspan="2">Hematology</td></tr>
+            <tr><td>Hemoglobin (M)</td><td>13.5-17.5 g/dL</td></tr><tr><td>Hemoglobin (F)</td><td>12.0-15.5 g/dL</td></tr><tr><td>WBC</td><td>4.5-11.0 k/&micro;L</td></tr><tr><td>Platelets</td><td>150-400 k/&micro;L</td></tr>
+            <tr class="lsh"><td colspan="2">Liver / Metabolic</td></tr>
+            <tr><td>ALT</td><td>7-56 U/L</td></tr><tr><td>AST</td><td>10-40 U/L</td></tr><tr><td>Total Bilirubin</td><td>0.2-1.2 mg/dL</td></tr><tr><td>Albumin</td><td>3.5-5.0 g/dL</td></tr><tr><td>Glucose (fasting)</td><td>70-100 mg/dL</td></tr><tr><td>HbA1c</td><td>&lt;5.7%</td></tr><tr><td>Lactic Acid</td><td>0.5-2.2 mmol/L</td></tr><tr><td>Procalcitonin</td><td>&lt;0.15 ng/mL</td></tr>
+            <tr class="lsh"><td colspan="2">Coagulation</td></tr>
+            <tr><td>PT</td><td>11-13.5 sec</td></tr><tr><td>INR</td><td>0.8-1.1 (therapeutic 2-3)</td></tr><tr><td>aPTT</td><td>30-40 sec</td></tr>
+            <tr class="lsh"><td colspan="2">Thyroid</td></tr>
+            <tr><td>TSH</td><td>0.4-4.0 mIU/L</td></tr><tr><td>Free T4</td><td>0.8-1.8 ng/dL</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tp" id="tp-preg">
+        <p style="font-size:0.85rem;color:var(--t2);margin-bottom:16px;line-height:1.6">FDA replaced letter categories in 2015 with the PLLR. Enable the Pregnancy toggle to auto-include FDA/PLLR safety data in AI responses.</p>
+        <table class="ltbl">
+          <thead><tr><th>Category</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><strong style="color:var(--ok)">A</strong></td><td>Adequate studies - no fetal risk demonstrated</td></tr>
+            <tr><td><strong style="color:var(--blue)">B</strong></td><td>Animal studies OK, no adequate human data</td></tr>
+            <tr><td><strong style="color:var(--warn)">C</strong></td><td>Animal risk shown - benefit may outweigh risk</td></tr>
+            <tr><td><strong style="color:var(--danger)">D</strong></td><td>Human fetal risk - benefit may justify use</td></tr>
+            <tr><td><strong style="color:#DC2626">X</strong></td><td>Fetal risk exceeds benefit - contraindicated</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="cm">
+  <div class="camhdr">
+    <h3><select id="cam-mode" class="finp" style="background:none; border:none; padding:0; color:#fff; font-weight:700; font-size:1.05rem;"><option value="ocr">Scan Text</option><option value="vision">Identify Pill/Drug</option></select></h3>
+    <button class="camcls" onclick="closeCam();"><span class="ms sm">close</span></button>
+  </div>
+  <div class="camvp"><video id="video" autoplay playsinline></video><div class="cambox"><div class="scanl"></div></div></div>
+  <div class="camft"><button id="snapbtn" onclick="capScan();hap(30);"><span class="ms md">document_scanner</span> Capture</button></div>
+  <canvas id="canvas"></canvas>
+</div>
+
+<div class="mov" id="opm" onclick="handleOC(event,'opm')">
+  <div class="msh" style="border-radius:24px;max-width:420px">
+    <div class="mhdr"><div class="mtitle"><span class="ms md">scan_text</span> Extracted Data</div><button class="mclose" onclick="closeM('opm');"><span class="ms sm">close</span></button></div>
+    <div class="mbody">
+      <p style="font-size:0.82rem;color:var(--t2);margin-bottom:12px;line-height:1.6">Review and edit the data before sending.</p>
+      <textarea id="ocredit" placeholder="Data will appear here..."></textarea>
+      <div class="oacts">
+        <button class="obtn sec" onclick="closeM('opm');"><span class="ms xs">close</span> Cancel</button>
+        <button class="obtn pri" onclick="confirmOCR();hap(20);"><span class="ms xs">send</span> Use Data</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/cdss.js"></script>
+<script src="js/calculators.js"></script>
+
+</body>
+</html>
