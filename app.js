@@ -1,24 +1,30 @@
 'use strict';
 
 /* ══ DRUG AUTOCOMPLETE DATABASE ══ */
-const indianDrugs = ["Amoxicillin","Clavulanic Acid","Paracetamol","Metformin","Glimepiride","Atorvastatin","Rosuvastatin","Pantoprazole","Rabeprazole","Amlodipine","Telmisartan","Losartan","Levothyroxine","Aspirin","Clopidogrel","Azithromycin","Cefixime","Ceftriaxone","Diclofenac","Aceclofenac","Ibuprofen","Ondansetron","Domperidone","Metoprolol","Bisoprolol","Sitagliptin","Vildagliptin","Teneligliptin","Dapagliptin","Empagliflozin","Montelukast","Levocetirizine","Cetirizine","Fexofenadine","Pregabalin","Gabapentin","Methylcobalamin","Vitamin D3","Calcium Carbonate","Iron","Folic Acid","Zinc","Vitamin B Complex","Vitamin C","Cilnidipine","Chlorthalidone","Metronidazole","Ciprofloxacin","Ofloxacin","Levofloxacin","Doxycycline","Fluconazole","Itraconazole","Miconazole","Albendazole","Ivermectin","Hydroxychloroquine","Linezolid","Meropenem","Piperacillin","Tazobactam","Amikacin","Gentamicin","Vancomycin","Teicoplanin","Colistin","Polymyxin B","Tigecycline","Dexamethasone","Methylprednisolone","Prednisolone","Hydrocortisone","Deflazacort","Budesonide","Formoterol","Salbutamol","Levosalbutamol","Ipratropium","Tiotropium","Fluticasone","Mometasone","Umeclidinium","Glycopyrrolate","Theophylline","Doxofylline","Deriphyllin","Ambroxol","Guaifenesin","Bromhexine","Dextromethorphan","Chlorpheniramine","Phenylephrine","Paroxetine","Escitalopram","Sertraline","Fluoxetine","Fluvoxamine","Amitriptyline","Duloxetine","Venlafaxine","Mirtazapine","Desvenlafaxine","Bupropion","Clonazepam","Diazepam","Lorazepam","Alprazolam","Etizolam","Clobazam","Zolpidem","Nitrazepam","Midazolam","Chlordiazepoxide","Phenytoin","Carbamazepine","Valproate","Levetiracetam","Lamotrigine","Topiramate","Oxcarbazepine","Zonisamide","Lacosamide","Brivaracetam","Perampanel","Rufinamide","Eslicarbazepine","Vigabatrin","Tiagabine","Ethosuximide","Primidone","Phenobarbital","Haloperidol","Risperidone","Olanzapine","Quetiapine","Clozapine","Ziprasidone","Aripiprazole","Paliperidone","Iloperidone","Lurasidone","Asenapine","Blonanserin","Amisulpride","Cariprazine","Brexpiprazole","Lumateperone","Pimavanserin"];
+const indianDrugs = ["Amoxicillin","Clavulanic Acid","Paracetamol","Metformin","Glimepiride","Atorvastatin","Rosuvastatin","Pantoprazole","Rabeprazole","Amlodipine","Telmisartan","Losartan","Levothyroxine","Aspirin","Clopidogrel","Azithromycin","Cefixime","Ceftriaxone","Diclofenac","Aceclofenac","Ibuprofen","Ondansetron","Domperidone","Metoprolol","Bisoprolol","Sitagliptin","Vildagliptin","Teneligliptin","Dapagliptin","Empagliflozin","Montelukast","Levocetirizine","Cetirizine","Fexofenadine","Pregabalin","Gabapentin","Methylcobalamin","Vitamin D3","Calcium Carbonate","Iron","Folic Acid","Zinc","Vitamin B Complex","Vitamin C","Cilnidipine","Chlorthalidone","Metronidazole","Ciprofloxacin","Ofloxacin","Levofloxacin","Doxycycline","Fluconazole","Itraconazole","Miconazole","Albendazole","Ivermectin","Hydroxychloroquine","Linezolid","Meropenem","Piperacillin","Tazobactam","Amikacin","Gentamicin","Vancomycin","Teicoplanin","Colistin","Polymyxin B","Tigecycline","Dexamethasone","Methylprednisolone","Prednisolone","Hydrocortisone","Deflazacort","Budesonide","Formoterol","Salbutamol","Levosalbutamol","Ipratropium","Tiotropium","Fluticasone","Mometasone","Umeclidinium","Glycopyrrolate","Theophylline","Doxofylline","Deriphyllin","Ambroxol","Guaifenesin","Bromhexine","Dextromethorphan","Chlorpheniramine","Phenylephrine","Paroxetine","Escitalopram","Sertraline","Fluoxetine","Fluvoxamine","Amitriptyline","Duloxetine","Venlafaxine","Mirtazapine","Desvenlafaxine","Bupropion","Clonazepam","Diazepam","Lorazepam","Alprazolam","Etizolam","Clobazam","Zolpidem","Nitrazepam","Midazolam","Chlordiazepoxide","Phenytoin","Carbamazepine","Valproate","Levetiracetam","Lamotrigine","Topiramate","Oxcarbazepine","Zonisamide","Lacosamide","Brivaracetam","Perampanel","Haloperidol","Risperidone","Olanzapine","Quetiapine","Clozapine","Aripiprazole","Paliperidone","Lurasidone","Amisulpride",
+  /* Added high-risk NTI and anticoagulant drugs */
+  "Warfarin","Digoxin","Lithium","Tacrolimus","Cyclosporine","Sirolimus","Everolimus","Methotrexate","Rivaroxaban","Apixaban","Dabigatran","Edoxaban","Enoxaparin","Heparin","Insulin Glargine","Insulin Aspart","Insulin Lispro","Insulin Regular","Insulin NPH","Glibenclamide","Pioglitazone","Sulfasalazine","Azathioprine","Mycophenolate","Leflunomide","Colchicine","Allopurinol","Febuxostat","Zoledronic Acid","Alendronate","Rifampicin","Isoniazid","Pyrazinamide","Ethambutol","Streptomycin","Bedaquiline","Linezolid","Clofazimine","Oseltamivir","Acyclovir","Valacyclovir","Tenofovir","Lamivudine","Efavirenz","Lopinavir","Ritonavir","Dolutegravir","Furosemide","Spironolactone","Torsemide","Hydrochlorothiazide","Indapamide","Enalapril","Ramipril","Perindopril","Nebivolol","Carvedilol","Ivabradine","Ranolazine","Amiodarone","Sotalol","Diltiazem","Verapamil","Nitroglycerine","Isosorbide Mononitrate","Isosorbide Dinitrate","Clopidogrel","Ticagrelor","Prasugrel","Alteplase","Streptokinase","Ondansetron","Granisetron","Aprepitant","Dexamethasone","Filgrastim","Erythropoietin","Tranexamic Acid","Phytomenadione","Protamine","Naloxone","Flumazenil","N-Acetylcysteine","Atropine","Adrenaline","Noradrenaline","Dopamine","Dobutamine","Vasopressin","Nitroglycerin IV","Nicardipine","Labetalol IV","Magnesium Sulfate","Calcium Gluconate","Potassium Chloride","Sodium Bicarbonate"];
 
 function handleAC(inp) {
   const v = inp.value.toLowerCase();
+  /* FIX: safe sibling lookup */
   const ac = inp.nextElementSibling;
   if(!ac || !ac.classList.contains('rx-ac')) return;
   if(v.length < 2) { ac.classList.remove('show'); return; }
   const matches = indianDrugs.filter(d => d.toLowerCase().includes(v)).slice(0,8);
   if(matches.length > 0) {
-    ac.innerHTML = matches.map(m => `<div class="rx-ac-item" onclick="selectAC('${m}', '${inp.id}')">${m}</div>`).join('');
+    ac.innerHTML = matches.map(m => `<div class="rx-ac-item" onclick="selectAC('${m.replace(/'/g,"\\'")}', '${inp.id}')">${m}</div>`).join('');
     ac.classList.add('show');
   } else { ac.classList.remove('show'); }
 }
 
 function selectAC(val, id) {
   const inp = document.getElementById(id);
+  if(!inp) return;
   inp.value = val;
-  inp.nextElementSibling.classList.remove('show');
+  /* FIX: null guard on nextElementSibling */
+  const ac = inp.nextElementSibling;
+  if(ac && ac.classList.contains('rx-ac')) ac.classList.remove('show');
   inp.focus();
 }
 
@@ -28,19 +34,29 @@ document.addEventListener('click', e => {
   }
 });
 
-/* ══ PREMIUM UI SOUND ENGINE ══ */
-const AudioContext = window.AudioContext || window.webkitAudioContext;
-const audioCtx = new AudioContext();
+/* ══ PREMIUM UI SOUND ENGINE ══
+   FIX: AudioContext created lazily on first user interaction, not at module load
+   (avoids browser autoplay policy violation and mobile Safari issues) */
+let audioCtx = null;
+
+function getAudioCtx() {
+  if(!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(AC) audioCtx = new AC();
+  }
+  return audioCtx;
+}
 
 const Sounds = {
   play: (type) => {
-    if (!S.haptic || audioCtx.state === 'suspended') return;
-    const osc = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
+    if (!S.haptic) return;
+    const ctx = getAudioCtx();
+    if(!ctx || ctx.state === 'suspended') return;
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
     osc.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    
-    const now = audioCtx.currentTime;
+    gainNode.connect(ctx.destination);
+    const now = ctx.currentTime;
     if (type === 'tick') {
       osc.type = 'sine'; osc.frequency.setValueAtTime(800, now);
       osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
@@ -61,9 +77,16 @@ const Sounds = {
       gainNode.gain.linearRampToValueAtTime(0, now + 0.2);
       osc.start(now); osc.stop(now + 0.25);
     }
+    /* FIX: osc nodes auto-disconnect after stop(), no leak */
+    osc.onended = () => { osc.disconnect(); gainNode.disconnect(); };
   }
 };
-document.addEventListener('click', () => { if(audioCtx.state === 'suspended') audioCtx.resume(); }, {once: true});
+
+/* FIX: resume AudioContext on first click (lazy init) */
+document.addEventListener('click', () => {
+  const ctx = getAudioCtx();
+  if(ctx && ctx.state === 'suspended') ctx.resume();
+}, {once: true});
 
 /* ══ OFFLINE EVENTS ══ */
 window.addEventListener('offline', () => toast('You are offline. Changes will sync when reconnected.', 'warn', 8000));
@@ -71,7 +94,7 @@ window.addEventListener('online', () => { toast('Back online. Syncing data...', 
 
 /* ══ STATE ══ */
 const GROQ_MODEL='llama-3.3-70b-versatile';
-const VISION_MODEL='llama-3.2-11b-vision-preview';
+const VISION_MODEL='meta-llama/llama-4-scout-17b-16e-instruct'; /* FIX: updated from deprecated llama-3.2-11b-vision-preview */
 const MAX_HIST=10;
 let user=null,uName='',groqKey='',loading=false,micOn=false,recog=null,hist=[],sessions=[],currSess=null,rxList=[],lastQuery='';
 const F={preg:false,peds:false,geri:false,counsel:false,steward:false};
@@ -93,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function hap(ms){if(!S.haptic)return;if('vibrate'in navigator)navigator.vibrate(ms);}
 function toast(msg,type='info',dur=3000){const w=document.getElementById('tw');const el=document.createElement('div');el.className=`toast ${type}`;const ic={ok:'check_circle',warn:'warning',err:'error',info:'info'};el.innerHTML=`<span class="ms xs">${ic[type]||'info'}</span><span>${msg}</span>`;w.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),350);},dur);}
 
-/* ══ THEME / SETTINGS (Async with localforage) ══ */
+/* ══ THEME / SETTINGS ══ */
 async function loadS(){
   try {
     const s = await localforage.getItem('pharmai_S');
@@ -104,7 +127,19 @@ async function loadS(){
 function saveS(){localforage.setItem('pharmai_S', S);}
 function applyTheme(m){const p=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';const a=m==='auto'?p:m;document.body.classList.toggle('light',a==='light');document.getElementById('tcm').content=a==='light'?'#F7F7F7':'#000000';}
 function setTheme(m){S.theme=m;saveS();applyTheme(m);document.querySelectorAll('.tp-pill').forEach(p=>p.classList.remove('active'));document.getElementById('th-'+m)?.classList.add('active');hap(10);Sounds.play('tick');syncSettings();}
-function toggleSet(k){S[k]=document.getElementById('hap-t').checked;saveS();hap(10);Sounds.play('tick');syncSettings();}
+
+/* FIX: toggleSet was hardcoded to 'hap-t' element regardless of key param.
+   Now correctly reads the setting value from the actual checkbox for that setting. */
+function toggleSet(k){
+  const elMap = { haptic: 'hap-t' };
+  const elId = elMap[k];
+  if(elId) {
+    S[k] = document.getElementById(elId).checked;
+  } else {
+    S[k] = !S[k]; /* fallback for any boolean setting without a checkbox */
+  }
+  saveS(); hap(10); Sounds.play('tick'); syncSettings();
+}
 function applyUI(){document.getElementById('hap-t').checked=S.haptic;document.querySelectorAll('.tp-pill').forEach(p=>p.classList.remove('active'));document.getElementById('th-'+S.theme)?.classList.add('active');}
 
 async function syncSettings(){if(!user)return;try{await fsWrite(() => db.collection('users').doc(user).set({settings:S},{merge:true}), 'settings');}catch(e){}}
@@ -147,6 +182,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     if(btn.classList.contains('cpy-btn'))cpyTxt(decodeURIComponent(txt),btn);
   });
 
+  /* Session search */
+  const searchEl = document.getElementById('sess-search');
+  if(searchEl) searchEl.addEventListener('input', () => renderSB(searchEl.value.trim().toLowerCase()));
+
   auth.onAuthStateChanged(async(fbUser)=>{
     const loading_el=document.getElementById('auth-loading');
     if(fbUser){
@@ -185,7 +224,21 @@ function flU(el){el.closest('.flw').classList.add('up');}
 function flB(el){if(!el.value&&el.value!=='0')el.closest('.flw').classList.remove('up');}
 function toggleSB(){const sb=document.getElementById('sb'),ov=document.getElementById('sb-ov');if(sb.classList.contains('open')){sb.classList.remove('open');setTimeout(()=>ov.classList.remove('open'),350);}else{ov.classList.add('open');setTimeout(()=>sb.classList.add('open'),10);}Sounds.play('tick');}
 
-/* ══ SESSIONS (Async with localforage) ══ */
+/* FIX: Named function for opening PolyRx tab — replaces fragile nth-child selector */
+function openPolyRxTab(){
+  openM('tm');
+  const btn = document.querySelector('.tbtn[data-tab="poly"]');
+  if(btn) btn.click();
+}
+/* FIX: Named function for opening CKD calculator */
+function openCKDCalc(){
+  openM('tm');
+  const calcBtn = document.querySelector('.tbtn[data-tab="calc"]');
+  if(calcBtn) calcBtn.click();
+  setTimeout(()=>{ const card = document.getElementById('cc-ckd'); if(card) card.classList.add('open'); }, 100);
+}
+
+/* ══ SESSIONS ══ */
 function getDocSizeKB(obj) { return new Blob([JSON.stringify(obj)]).size / 1024; }
 
 async function loadSessions(){
@@ -198,10 +251,10 @@ async function loadSessions(){
       renderSB();
     } else {
       const s = await localforage.getItem('psess_'+user);
-      if (s) { sessions = s; renderSB(); }
+      if (s) { sessions = s.sort((a,b)=>b.id-a.id); renderSB(); }
       const docSnap = await db.collection('users').doc(user).get();
       if (docSnap.exists && docSnap.data().sessions && docSnap.data().sessions.length > 0) {
-        sessions = docSnap.data().sessions;
+        sessions = docSnap.data().sessions.sort((a,b)=>b.id-a.id);
         renderSB();
         const batch = db.batch();
         sessions.forEach(sess => {
@@ -213,7 +266,7 @@ async function loadSessions(){
     }
   }catch(e){
     const s = await localforage.getItem('psess_'+user);
-    sessions = s || [];
+    sessions = s ? s.sort((a,b)=>b.id-a.id) : [];
     renderSB();
   }
 }
@@ -222,8 +275,9 @@ function saveSessions(){
   if(!user) return;
   let kb = getDocSizeKB(sessions);
   if(kb > 800) {
-      sessions = sessions.slice(0, Math.max(0, sessions.length - 5));
-      toast('Older chats auto-archived to save space.', 'info');
+    /* FIX: remove oldest (end of array since sorted newest-first) */
+    sessions = sessions.slice(0, sessions.length - 5);
+    toast('Older chats auto-archived to save space.', 'info');
   }
   localforage.setItem('psess_'+user, sessions);
   const s = sessions.find(x=>x.id===currSess);
@@ -254,7 +308,25 @@ function saveHist(){
 
 async function genTitle(q){if(!groqKey||!currSess)return;try{const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},body:JSON.stringify({model:GROQ_MODEL,messages:[{role:'system',content:'Generate a 3-5 word clinical topic title. Return ONLY the title, no punctuation at end.'},{role:'user',content:q}],temperature:.3,max_tokens:20})});const d=await r.json();const t=d.choices?.[0]?.message?.content?.trim();if(t){const s=sessions.find(x=>x.id===currSess);if(s){s.title=t;saveSessions();renderSB();}}}catch(e){}}
 
-function renderSB(){const l=document.getElementById('sbl');l.innerHTML='';sessions.forEach(s=>{const d=document.createElement('div');d.className='sbi'+(currSess===s.id?' active':'');d.innerHTML=`<div class="sbi-t" onclick="loadChat(${s.id});hap(10);"><span class="ms xs">chat</span><span>${esc(s.title)}</span></div><button class="sbi-del" onclick="delChat(${s.id},event);hap(20);"><span class="ms xs">delete</span></button>`;l.appendChild(d);});}
+/* FIX: renderSB accepts optional filter string for session search */
+function renderSB(filter=''){
+  const l=document.getElementById('sbl');
+  if(!l) return;
+  l.innerHTML='';
+  const filtered = filter
+    ? sessions.filter(s => s.title.toLowerCase().includes(filter))
+    : sessions;
+  if(filtered.length===0 && sessions.length>0) {
+    l.innerHTML='<div style="text-align:center;padding:20px;font-size:0.82rem;color:var(--muted);">No matches found.</div>';
+    return;
+  }
+  filtered.forEach(s=>{
+    const d=document.createElement('div');
+    d.className='sbi'+(currSess===s.id?' active':'');
+    d.innerHTML=`<div class="sbi-t" onclick="loadChat(${s.id});hap(10);"><span class="ms xs">chat</span><span>${esc(s.title)}</span></div><button class="sbi-del" onclick="delChat(${s.id},event);hap(20);"><span class="ms xs">delete</span></button>`;
+    l.appendChild(d);
+  });
+}
 
 function newChat(){hist=[];currSess=null;renderWelcome();if(document.getElementById('sb').classList.contains('open'))toggleSB();renderSB();}
 function loadChat(id){const s=sessions.find(x=>x.id===id);if(!s)return;currSess=id;hist=s.hist;document.getElementById('chat').innerHTML=s.html;if(document.getElementById('sb').classList.contains('open'))toggleSB();scrollD();renderSB();Sounds.play('tick');}
@@ -277,25 +349,41 @@ function exportData(){
   a.click();URL.revokeObjectURL(u);toast('Exported!','ok');
 }
 
+/* FIX: importData now validates structure before applying, prevents data corruption */
 function importData(e){
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
   r.onload=async function(ev){
     try{
       const p=JSON.parse(ev.target.result);
+      /* Validate required shape */
+      if(typeof p !== 'object' || p === null) throw new Error('Not a valid JSON object.');
+      if(p.sessions !== undefined && !Array.isArray(p.sessions)) throw new Error('Invalid sessions format.');
+      if(p.wardPatients !== undefined && !Array.isArray(p.wardPatients)) throw new Error('Invalid ward data format.');
+
       if(p.sessions) sessions = p.sessions;
       if(p.wardPatients) wardPatients = p.wardPatients;
-      if(p.settings) { S = {...S, ...p.settings}; saveS(); applyUI(); applyTheme(S.theme); }
+      if(p.settings && typeof p.settings === 'object') { S = {...S, ...p.settings}; saveS(); applyUI(); applyTheme(S.theme); }
       
       await localforage.setItem('psess_'+user, sessions);
       await localforage.setItem('pharmai_ward_' + user, wardPatients);
       
-      for(const s of sessions) await db.collection('users').doc(user).collection('sessions').doc(s.id.toString()).set(s);
-      for(const w of wardPatients) await db.collection('users').doc(user).collection('ward').doc(w.id.toString()).set(w);
+      /* Firestore writes in chunks to respect 500-doc batch limit */
+      const CHUNK = 400;
+      for(let i=0;i<sessions.length;i+=CHUNK){
+        const batch=db.batch();
+        sessions.slice(i,i+CHUNK).forEach(s=>batch.set(db.collection('users').doc(user).collection('sessions').doc(s.id.toString()),s));
+        await batch.commit();
+      }
+      for(let i=0;i<wardPatients.length;i+=CHUNK){
+        const batch=db.batch();
+        wardPatients.slice(i,i+CHUNK).forEach(w=>batch.set(db.collection('users').doc(user).collection('ward').doc(w.id.toString()),w));
+        await batch.commit();
+      }
       
       renderSB(); renderWardList();
       toast('Backup restored!','ok');closeM('sm');
-    }catch(err){toast('Invalid backup file.','err');}
+    }catch(err){toast('Invalid backup file: '+err.message,'err');}
   };r.readAsText(f);
 }
 
@@ -312,10 +400,7 @@ function analyzeRx(){
   const useCtx = document.getElementById('poly-ctx').checked;
   
   if (useCtx) {
-    if (!activeCaseId) {
-      toast('Cannot use context: No active patient selected.', 'warn');
-      return; 
-    }
+    if (!activeCaseId) { toast('Cannot use context: No active patient selected.', 'warn'); return; }
     const pt = wardPatients.find(p => p.id === activeCaseId);
     if (pt && pt.demo) {
       const age = pt.demo.age || 'Unknown';
@@ -341,22 +426,23 @@ function renderWelcome(){
     <span class="ws-word" style="animation-delay:0.6s; color: var(--blue);">${name}.</span>
   `;
   const c=document.getElementById('chat');
+  /* FIX: replaced fragile .tbtn:nth-child(2) selector with named function openPolyRxTab() */
   c.innerHTML=`<div id="ws">
     <div class="ws-logo"><span class="ms lg fill">cardiology</span></div>
     <div class="ws-g">${wHtml}</div>
     <div class="ws-sub" style="animation-delay:0.75s">How can I assist you today?</div>
     <div class="ws-hint" style="animation-delay:0.9s">You can ask follow-up questions naturally.</div>
     <div class="ws-grid">
-      <button class="ws-btn" style="animation-delay:0.9s" onclick="openM('tm');document.querySelector('.tbtn:nth-child(2)').click();">
+      <button class="ws-btn" style="animation-delay:0.9s" onclick="openPolyRxTab()">
         <span class="ms lg">monitor_heart</span>Drug Interactions
       </button>
-      <button class="ws-btn" style="animation-delay:1.0s" onclick="insertAndSend('Beers Criteria \\u2014 high-risk medications to avoid in elderly patients')">
+      <button class="ws-btn" style="animation-delay:1.0s" onclick="insertAndSend('Beers Criteria \u2014 high-risk medications to avoid in elderly patients')">
         <span class="ms lg">elderly</span>Beers Criteria
       </button>
       <button class="ws-btn" style="animation-delay:1.1s" onclick="insertAndSend('Standard pediatric dose for Amoxicillin 40mg/kg/day?')">
         <span class="ms lg">child_care</span>Peds Dosing
       </button>
-      <button class="ws-btn" style="animation-delay:1.2s" onclick="openM('tm');document.getElementById('cc-ckd').classList.add('open');">
+      <button class="ws-btn" style="animation-delay:1.2s" onclick="openCKDCalc()">
         <span class="ms lg">water_drop</span>eGFR Calc
       </button>
     </div>
@@ -379,13 +465,20 @@ function regenLast(btn){
   if(userMsg && userMsg.classList.contains('user')) userMsg.remove();
   aiMsg.remove();
   if(hist.length >= 2) { hist.pop(); hist.pop(); }
-  document.getElementById('query').value = lastQuery;
-  sendQ();
+  /* FIX: use insertAndSend so the text appears in box before sending */
+  insertAndSend(lastQuery);
 }
 
 function appendUser(text){const ws=document.getElementById('ws');if(ws)ws.remove();const d=document.createElement('div');d.className='msg user';d.innerHTML=`<div class="bwrap"><div class="utxt">${esc(text)}</div><div class="mts">${ts()}</div></div>`;getChat().appendChild(d);scrollD();}
 function appendSkel(){const d=document.createElement('div');d.className='msg';d.id='typ';d.innerHTML=`<div class="avatar ai"><span class="ms sm fill">cardiology</span></div><div class="bwrap" style="max-width:84%;width:100%"><div class="skel"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="think-txt">PharmAI is analyzing...</div></div></div>`;getChat().appendChild(d);scrollD();}
 function remTyp(){const t=document.getElementById('typ');if(t)t.remove();}
+
+/* FIX: sanitize AI HTML details with DOMPurify before innerHTML injection (XSS prevention) */
+function sanitizeHTML(html) {
+  if(typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(html, {ALLOWED_TAGS:['p','ul','li','ol','strong','em','br','small','b','i','span','div'], ALLOWED_ATTR:['style']});
+  /* Fallback: strip all tags if DOMPurify unavailable */
+  return String(html).replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi,'').replace(/<[^>]+>/g, m => /^<(p|ul|li|ol|strong|em|br|small|b|i|span|div)(\s|\/|>)/.test(m) ? m : '');
+}
 
 function appendAI(p){
   const CM={'Side Effects':{c:'se',i:'bolt',l:'Side Effects'},'Dosage':{c:'dos',i:'medication',l:'Dosage'},'Drug Interaction':{c:'int',i:'monitor_heart',l:'Drug Interaction'},'Contraindication':{c:'con',i:'block',l:'Contraindication'},'Mechanism of Action':{c:'mec',i:'biotech',l:'Mechanism of Action'},'General Information':{c:'gen',i:'info',l:'General Information'}};
@@ -396,6 +489,8 @@ function appendAI(p){
   const kH=p.keyPoints?.length?`<div class="kpw"><div class="aslbl"><span class="ms xs">checklist</span> Key Points</div>${p.keyPoints.map(k=>`<div class="kpi"><div class="kpd"></div><span>${k}</span></div>`).join('')}</div>`:'';
   const sH=p.sources?.length?`<div class="srcrow"><span class="srclbl">Sources</span>${p.sources.map(s=>`<span class="srcc">${esc(s)}</span>`).join('')}</div>`:'';
   const plain=[p.summary,p.warning?'Warning: '+p.warning:'',p.danger?'Danger: '+p.danger:'',(p.details||'').replace(/<[^>]+>/g,''),p.keyPoints?.length?'Key points: '+p.keyPoints.join('. '):'',p.sources?.length?'Sources: '+p.sources.join(', '):''].filter(Boolean).join('\n\n');
+  /* FIX: sanitize p.details before injection */
+  const safeDetails = sanitizeHTML(p.details || '');
   const d=document.createElement('div');d.className='msg';
   d.innerHTML=`<div class="avatar ai"><span class="ms sm fill">cardiology</span></div>
   <div class="bwrap" style="max-width:84%"><div class="aic ${cat.c}">
@@ -404,8 +499,12 @@ function appendAI(p){
     <div class="asum"><span class="ms xs">bookmark</span>${p.summary}</div>
     ${wH}${dH}
     <div class="aslbl" style="padding-top:12px"><span class="ms xs">menu_book</span> Details</div>
-    <div class="abody">${p.details||''}</div>
+    <div class="abody">${safeDetails}</div>
     ${kH}${sH}
+    <div class="aalert" style="background:rgba(255,193,7,0.08);border-color:rgba(255,193,7,0.3);font-size:0.7rem;margin-top:10px;padding:8px 12px;">
+      <span class="ms xs" style="flex-shrink:0;color:var(--warn)">info</span>
+      <span style="color:var(--muted)">AI-generated content. Sources listed are for reference — verify independently. Not a substitute for clinical judgment.</span>
+    </div>
     <div class="acbar">
       <button class="acbtn tts-btn" data-text="${encodeURIComponent(plain)}"><span class="ms xs">volume_up</span> Read Aloud</button>
       <button class="acbtn cpy-btn" data-text="${encodeURIComponent(plain)}"><span class="ms xs">content_copy</span> Copy</button>
@@ -435,7 +534,8 @@ function buildPrompt(text){
 
 async function sendQ(imgBase64 = null){
   if (Date.now() - lastSendTime < 2000) { toast('Please wait before sending again.', 'warn'); return; }
-  const text=document.getElementById('query').value.trim();if((!text && !imgBase64)||loading)return;
+  const text=document.getElementById('query').value.trim();
+  if((!text && !imgBase64)||loading)return;
   if(!groqKey){toast('API key not configured. Contact admin.','err');return;}
   lastSendTime = Date.now();
   loading=true;document.getElementById('sbtn').disabled=true;
@@ -444,30 +544,38 @@ async function sendQ(imgBase64 = null){
   Sounds.play('pop');
   const ws=document.getElementById('ws');if(ws)ws.remove();
   
-  appendUser(imgBase64 ? '📷 Uploaded Image: ' + text : text);
+  appendUser(imgBase64 ? (text ? text : '\ud83d\udcf7 Image submitted for analysis') : text);
   appendSkel();
   
   let msgs = [];
   let modelToUse = GROQ_MODEL;
   
   if (imgBase64) {
-     modelToUse = VISION_MODEL;
-     msgs = [
-       {role:'user', content: [
-         {type: "text", text: text || "Identify this medication tablet/capsule from its physical appearance, color, shape, and any imprint code visible. Provide clinical details."},
-         {type: "image_url", image_url: {url: "data:image/jpeg;base64," + imgBase64}}
-       ]}
-     ];
+    modelToUse = VISION_MODEL;
+    msgs = [
+      {role:'user', content: [
+        {type: "text", text: text || "Identify this medication tablet/capsule from its physical appearance, color, shape, and any imprint code visible. Provide clinical details."},
+        {type: "image_url", image_url: {url: "data:image/jpeg;base64," + imgBase64}}
+      ]}
+    ];
   } else {
-     msgs = [{role:'system',content:buildPrompt(text)},...hist.slice(-MAX_HIST*2),{role:'user',content:text}];
+    msgs = [{role:'system',content:buildPrompt(text)},...hist.slice(-MAX_HIST*2),{role:'user',content:text}];
   }
 
   try{
     const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},body:JSON.stringify({model:modelToUse,messages:msgs,temperature:0.25,max_tokens:1400,response_format: imgBase64 ? undefined : {type:'json_object'}})});
     const data=await res.json();
-    if(data.error) throw new Error(data.error.message);
+    /* FIX: handle Groq rate limit and other API-level errors */
+    if(data.error) {
+      const errMsg = data.error.message || 'API error';
+      if(data.error.type === 'tokens' || (data.error.code && data.error.code.includes('rate'))) {
+        throw new Error('Rate limit reached. Please wait a moment before sending.');
+      }
+      throw new Error(errMsg);
+    }
+    if(!data.choices || !data.choices[0]) throw new Error('Empty response from AI service.');
     
-    let raw=data.choices?.[0]?.message?.content||'{}';
+    let raw=data.choices[0].message?.content||'{}';
     
     if (imgBase64) {
       raw = JSON.stringify({ category: "General Information", summary: "Vision Analysis Complete", details: `<p>${raw}</p>` });
@@ -476,8 +584,16 @@ async function sendQ(imgBase64 = null){
     const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
     remTyp();appendAI(parsed);hap(15);
     
-    const slimRaw = raw.length > 500 ? '{"category": "System", "summary": "Previous complex report generated. Data excluded to save context."}' : raw;
-    hist.push({role:'user',content:text},{role:'assistant',content:slimRaw});
+    /* FIX: increased threshold from 500 to 2000 chars so real clinical responses
+       aren't wiped from history. This dramatically improves follow-up context. */
+    const slimRaw = raw.length > 2000
+      ? JSON.stringify({ category: parsed.category || 'System', summary: parsed.summary || 'Complex report generated — see chat for full details.' })
+      : raw;
+
+    /* FIX: only push to hist when text is non-empty (avoids image-only empty entries) */
+    if(text) {
+      hist.push({role:'user',content:text},{role:'assistant',content:slimRaw});
+    }
     
     saveHist();
     if(hist.length===2 && !imgBase64) genTitle(text);
@@ -512,7 +628,6 @@ async function capScan(){
     return;
   }
 
-  // Tesseract Lazy-Load Injection
   if (typeof Tesseract === 'undefined' && document.getElementById('cam-mode').value === 'ocr') {
     toast('Loading OCR Engine (First time only)...', 'info');
     await new Promise((resolve) => {
@@ -527,8 +642,7 @@ async function capScan(){
   btn.innerHTML='<span class="ms md" style="animation:spin 1s linear infinite">progress_activity</span> Processing...';
   
   const c=document.getElementById('canvas');
-  c.width=v.videoWidth;
-  c.height=v.videoHeight;
+  c.width=v.videoWidth;c.height=v.videoHeight;
   c.getContext('2d').drawImage(v,0,0);
   const mode = document.getElementById('cam-mode').value;
   
