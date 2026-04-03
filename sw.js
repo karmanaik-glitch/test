@@ -1,20 +1,17 @@
-const CACHE_NAME = 'pharmai-cache-v3';
+const CACHE_NAME = 'pharmai-cache-v4';
 
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json',
-  // NEW: Added the split CSS and JS files
-  './css/style.css',
-  './js/app.js',
-  './js/auth.js',
-  './js/cdss.js',
-  './js/calculators.js',
-  // External assets
+  './style.css',        // Removed the /css/ folder path
+  './app.js',           // Removed the /js/ folder paths
+  './auth.js',
+  './cdss.js',
+  './calculators.js',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block',
   'https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js'
 ];
-
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
