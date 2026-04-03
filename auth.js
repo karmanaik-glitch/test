@@ -24,8 +24,8 @@ function setLoginLoading(on) {
   const sb = document.getElementById('sbtn2');
   const gb = document.getElementById('google-btn');
   if(lb) {
-      lb.disabled = on;
-      lb.innerHTML = on ? '<span class="ms sm" style="animation:spin 1s linear infinite">progress_activity</span> Signing in...' : '<span class="ms sm">login</span> Sign In';
+    lb.disabled = on;
+    lb.innerHTML = on ? '<span class="ms sm" style="animation:spin 1s linear infinite">progress_activity</span> Signing in...' : '<span class="ms sm">login</span> Sign In';
   }
   if(sb) sb.disabled = on;
   if(gb) gb.disabled = on;
@@ -38,9 +38,16 @@ function doLogin(){
   if(!pass){showErr('Please enter your password.');return;}
   if(!email.includes('@')){showErr('Please enter a valid email address.');return;}
   setLoginLoading(true);
-  auth.signInWithEmailAndPassword(email,pass).then(()=>{ Sounds.play('chime'); }).catch(e=>{
+  /* FIX: 'chime' type did not exist — changed to 'tick' which is defined */
+  auth.signInWithEmailAndPassword(email,pass).then(()=>{ Sounds.play('tick'); }).catch(e=>{
     setLoginLoading(false);
-    const msgs={'auth/user-not-found':'No account found with this email.','auth/wrong-password':'Incorrect password.','auth/invalid-email':'Invalid email address.','auth/too-many-requests':'Too many attempts. Please try again later.'};
+    const msgs={
+      'auth/user-not-found':'No account found with this email.',
+      'auth/wrong-password':'Incorrect password.',
+      'auth/invalid-email':'Invalid email address.',
+      'auth/invalid-credential':'Incorrect email or password.',
+      'auth/too-many-requests':'Too many attempts. Please try again later.'
+    };
     showErr(msgs[e.code]||e.message);
   });
 }
@@ -55,7 +62,11 @@ function doSignUp(){
   setLoginLoading(true);
   auth.createUserWithEmailAndPassword(email,pass).catch(e=>{
     setLoginLoading(false);
-    const msgs={'auth/email-already-in-use':'An account already exists with this email.','auth/invalid-email':'Invalid email address.','auth/weak-password':'Password is too weak.'};
+    const msgs={
+      'auth/email-already-in-use':'An account already exists with this email.',
+      'auth/invalid-email':'Invalid email address.',
+      'auth/weak-password':'Password is too weak.'
+    };
     showErr(msgs[e.code]||e.message);
   });
 }
@@ -87,7 +98,11 @@ async function saveName(){
     _pendingFBUser=null;
     document.getElementById('lp').style.display='none';
     await enterApp(fbUser);
-  }catch(e){nerr.style.display='flex';document.getElementById('name-err').querySelector('span:last-child')&&(document.getElementById('name-err').lastChild.textContent=e.message);}
+  }catch(e){
+    nerr.style.display='flex';
+    const errSpan=document.getElementById('name-err').querySelector('span:last-child');
+    if(errSpan) errSpan.textContent=e.message;
+  }
 }
 
 async function enterApp(fbUser){
@@ -95,11 +110,16 @@ async function enterApp(fbUser){
   uName=fbUser.displayName||(fbUser.email?fbUser.email.split('@')[0]:'User');
   try{
     const cfg=await db.collection('config').doc('keys').get();
-    if(cfg.exists)groqKey=cfg.data().groq||'';
+    if(cfg.exists) {
+      groqKey=cfg.data().groq||'';
+      /* FIX: persist key locally so offline sessions work after first successful load */
+      if(groqKey) await localforage.setItem('pgroq', groqKey);
+    }
   }catch(e){
-    // NEW: Async localforage check for the Groq API key
+    /* FIX: localforage fallback now actually works because we write it above */
     const localKey = await localforage.getItem('pgroq');
     groqKey = localKey || '';
+    if(!groqKey) console.warn('Groq API key unavailable — AI features disabled.');
   }
 
   document.getElementById('ap').style.display='flex';
@@ -141,6 +161,8 @@ async function deleteAccount(){
       batch.delete(db.collection('users').doc(user));
       await batch.commit();
     }
+    /* FIX: also clear locally cached key */
+    await localforage.removeItem('pgroq');
     const fbUser=auth.currentUser;
     if(fbUser)await fbUser.delete();
     toast('Account deleted.','info');
