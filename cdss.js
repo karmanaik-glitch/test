@@ -420,6 +420,10 @@ async function genCarePlan() {
 
 async function callCDSSAI(payload, mode, lang = 'English') {
   if(!groqKey) { toast('API key not configured.', 'err'); return; }
+
+  /* Demo limit gate — CDSS reports count the same as chat queries */
+  if(!demoCheck()) { showLimitModal(); return; }
+
   const pt = wardPatients.find(p => p.id === activeCaseId); if(pt) pt.htmlTimeline = pt.htmlTimeline || '';
 
   let sysPrompt = "";
@@ -667,7 +671,7 @@ Output ONLY valid JSON:
       </div>`;
     }
 
-    if(pt) { pt.htmlTimeline = html + pt.htmlTimeline; saveWardData(); openCDSSFile(activeCaseId); }
+    if(pt) { pt.htmlTimeline = html + pt.htmlTimeline; saveWardData(); demoIncrement(); openCDSSFile(activeCaseId); }
   } catch(e) {
     const loaderEl = document.getElementById(loaderId);
     if(loaderEl) loaderEl.innerHTML = `<div class="aalert dng"><span class="ms sm">error</span><div><strong>Analysis Failed</strong><br>${esc(e.message || 'The AI returned an error. Please try again.')}</div></div>`;
