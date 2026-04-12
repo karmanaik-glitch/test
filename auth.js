@@ -3,9 +3,35 @@ const firebaseConfig={apiKey:"AIzaSyAe1xX20eBj2Zb5HVZR3jsh7Aa1fp-mu_A",authDomai
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+/* SESSION PERSISTENCE — use SESSION so credentials don't survive a closed browser tab.
+   On shared clinical workstations this prevents the next user from inheriting an open session. */
+auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+
 db.enablePersistence().catch(function(err) {
   console.log("Offline persistence failed to enable", err);
+});
+
+/* ══ IDLE TIMEOUT — auto-logout after 30 min of inactivity ══
+   FIX: prevents abandoned sessions exposing PHI on shared workstations */
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+let _idleTimer = null;
+
+function _resetIdleTimer() {
+  clearTimeout(_idleTimer);
+  /* Only arm the timer when a user is actually logged in */
+  if (!auth.currentUser) return;
+  _idleTimer = setTimeout(async () => {
+    if (auth.currentUser) {
+      toast('Session expired due to inactivity. Please sign in again.', 'warn', 6000);
+      await doLogout();
+    }
+  }, IDLE_TIMEOUT_MS);
+}
+
+/* Attach to all common interaction events (passive listeners — no performance impact) */
+['mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(evt => {
+  document.addEventListener(evt, _resetIdleTimer, { passive: true });
 });
 
 async function fsWrite(fn, label='') {
@@ -38,7 +64,6 @@ function doLogin(){
   if(!pass){showErr('Please enter your password.');return;}
   if(!email.includes('@')){showErr('Please enter a valid email address.');return;}
   setLoginLoading(true);
-  /* FIX: 'chime' type did not exist — changed to 'tick' which is defined */
   auth.signInWithEmailAndPassword(email,pass).then(()=>{ Sounds.play('tick'); }).catch(e=>{
     setLoginLoading(false);
     const msgs={
@@ -112,15 +137,17 @@ async function enterApp(fbUser){
     const cfg=await db.collection('config').doc('keys').get();
     if(cfg.exists) {
       groqKey=cfg.data().groq||'';
-      /* FIX: persist key locally so offline sessions work after first successful load */
+      /* Persist key locally so offline sessions work after first successful load */
       if(groqKey) await localforage.setItem('pgroq', groqKey);
     }
   }catch(e){
-    /* FIX: localforage fallback now actually works because we write it above */
     const localKey = await localforage.getItem('pgroq');
     groqKey = localKey || '';
     if(!groqKey) console.warn('Groq API key unavailable — AI features disabled.');
   }
+
+  /* Arm the idle timer now that the user is authenticated */
+  _resetIdleTimer();
 
   document.getElementById('ap').style.display='flex';
   document.getElementById('lp').style.display='none';
@@ -139,8 +166,23 @@ async function enterApp(fbUser){
 }
 
 async function doLogout(){
+  /* FIX: capture uid before clearing, so we can remove the correct localforage keys */
+  const uid = user;
+  clearTimeout(_idleTimer);
   await auth.signOut();
-  user=null;uName='';groqKey='';hist=[];sessions=[];currSess=null;
+
+  /* Clear in-memory state */
+  user=null; uName=''; groqKey=''; hist=[]; sessions=[]; currSess=null;
+
+  /* FIX: clear all cached PHI and the API key from browser storage on every logout.
+     Previously only deleteAccount() removed pgroq — regular logout left PHI and the
+     key accessible to the next person who opens the app on a shared device. */
+  if(uid) {
+    await localforage.removeItem('pharmai_ward_' + uid);
+    await localforage.removeItem('psess_' + uid);
+  }
+  await localforage.removeItem('pgroq');
+
   document.getElementById('ap').style.display='none';
   document.getElementById('lp').style.display='flex';
   document.getElementById('auth-step').style.display='block';
@@ -161,12 +203,17 @@ async function deleteAccount(){
       batch.delete(db.collection('users').doc(user));
       await batch.commit();
     }
-    /* FIX: also clear locally cached key */
+    const uid = user;
     await localforage.removeItem('pgroq');
+    if(uid) {
+      await localforage.removeItem('pharmai_ward_' + uid);
+      await localforage.removeItem('psess_' + uid);
+    }
     const fbUser=auth.currentUser;
     if(fbUser)await fbUser.delete();
     toast('Account deleted.','info');
-    user=null;uName='';groqKey='';hist=[];sessions=[];currSess=null;
+    clearTimeout(_idleTimer);
+    user=null; uName=''; groqKey=''; hist=[]; sessions=[]; currSess=null;
     document.getElementById('ap').style.display='none';
     document.getElementById('lp').style.display='flex';
     document.getElementById('auth-step').style.display='block';
