@@ -451,7 +451,7 @@ Output ONLY valid JSON in this exact SOAP schema:
     },
     "A": {
       "clinical_correlations": ["Connect objective findings to medications — e.g. hyponatremia likely SIADH from sertraline."],
-      "drug_related_problems": [ { "category": "Contraindication | Drug-Drug Interaction | Drug-Disease Interaction | Dosing Error | Polypharmacy | Adverse Effect | Untreated Indication | Unnecessary Drug", "issue": "Specific, patient-contextualised clinical description.", "severity": "Critical | High | Moderate | Low", "actionable_solution": "Precise, implementable clinical intervention." } ]
+      "drug_related_problems": [ { "category": "Contraindication | Drug-Drug Interaction | Drug-Disease Interaction | Dosing Error | Polypharmacy | Adverse Effect | Untreated Indication | Unnecessary Drug", "drug_pair": "For Drug-Drug Interaction ONLY — exact names of both drugs e.g. 'Warfarin ↔ Fluconazole'. Null for all other categories.", "issue": "Specific, patient-contextualised clinical description including mechanism for DDIs.", "severity": "Critical | High | Moderate | Low", "actionable_solution": "Precise, implementable clinical intervention." } ]
     },
     "P": {
       "pharmacist_interventions": ["Numbered, prioritised actions directly addressing each DRP."],
@@ -605,8 +605,17 @@ Output ONLY valid JSON:
         ? sA.drug_related_problems.map(drp => {
             const badgeClass = (drp.severity === 'Critical' || drp.severity === 'High') ? 'dng' : 'warn';
             const badgeText  = esc(drp.severity ? drp.severity.toUpperCase() : 'UNKNOWN');
+            /* Drug-pair badge — only rendered for Drug-Drug Interaction entries that
+               have the drug_pair field populated. Shows as a prominent pill e.g.
+               "Warfarin ↔ Fluconazole" so the specific interaction is immediately visible. */
+            const isDDI = drp.category === 'Drug-Drug Interaction';
+            const pairBadge = isDDI && drp.drug_pair
+              ? `<div style="display:inline-flex;align-items:center;gap:6px;margin:6px 0 2px;padding:4px 10px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.35);border-radius:6px;font-size:0.78rem;font-weight:700;color:var(--danger);letter-spacing:0.01em;">
+                  <span style="font-size:13px;line-height:1;">⚡</span>${esc(drp.drug_pair)}
+                </div>` : '';
             return `<div class="aalert ${badgeClass}" style="margin-bottom:8px;flex-direction:column;">
               <div style="font-weight:700;text-transform:uppercase;font-size:0.7rem;">${esc(drp.category||'Issue')} [${badgeText} RISK]</div>
+              ${pairBadge}
               <div style="margin:4px 0;color:var(--text);"><strong>Issue:</strong> ${esc(drp.issue||'-')}</div>
               <div style="color:var(--text);"><strong>Intervention:</strong> ${esc(drp.actionable_solution||'-')}</div>
             </div>`;
@@ -676,4 +685,89 @@ function qDoseCheck(id) {
   toggleAppMode();
   const q = `Patient: ${pt.age || '?'}y ${pt.sex || ''}, weight ${pt.weight || '?'}kg. Current Regimen: ${tx}. Check dose appropriateness. Suggest renal/hepatic adjustments if required based on these vitals and recent labs.`;
   insertAndSend(q);
+}
+
+/* ══ PRINT / PDF — REPORT ONLY ══
+   Opens a clean print window containing only the patient header and SOAP timeline reports.
+   All app chrome (sidebar, nav, buttons, sparklines, file actions) is excluded.
+   The print dialog opens automatically; the window closes itself after printing. */
+function printSOAP() {
+  const pt = activeCaseId ? wardPatients.find(p => p.id === activeCaseId) : null;
+  const timelineEl = document.getElementById('pt-timeline');
+  if(!timelineEl || !pt) { toast('Open a patient file first.', 'warn'); return; }
+
+  const reports = Array.from(timelineEl.querySelectorAll('.cdss-report'));
+  if(!reports.length) { toast('No reports to print.', 'warn'); return; }
+
+  const reportHTML = reports.map(el => el.outerHTML).join('');
+  const printDate  = new Date().toLocaleString([], {dateStyle:'medium', timeStyle:'short'});
+  const ptName     = esc(pt.name || 'Unknown');
+  const ptBed      = esc(pt.bedId || '\u2014');
+  const ptInfo     = esc(`${pt.age||'?'}y ${pt.sex||''} \u00B7 ${pt.weight||'?'} kg`);
+  const reporter   = esc(uName || '');
+
+  const win = window.open('', '_blank', 'width=900,height=700');
+  if(!win) { toast('Pop-up blocked \u2014 allow pop-ups and try again.', 'warn', 5000); return; }
+
+  win.document.write(`<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<title>PharmAI SOAP Report \u2014 ${ptName}</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  @page { size: A4; margin: 15mm 12mm; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+         font-size: 11px; color: #111; background: #fff; line-height: 1.55; }
+  .print-hdr { display: flex; justify-content: space-between; align-items: flex-start;
+               padding-bottom: 10px; border-bottom: 2px solid #111; margin-bottom: 18px; }
+  .print-hdr-left h1 { font-size: 16px; font-weight: 800; letter-spacing: -0.02em; }
+  .print-hdr-left .sub { font-size: 11px; color: #555; margin-top: 3px; }
+  .print-hdr-right { text-align: right; font-size: 10px; color: #555; line-height: 1.7; }
+  .print-hdr-right strong { color: #111; }
+  .cdss-report { border: 1px solid #ccc; border-radius: 6px; padding: 14px;
+                 margin-bottom: 22px; page-break-inside: avoid; background: #fff;
+                 border-left: 4px solid #333; }
+  .rep-hdr { font-size: 12px; font-weight: 800; border-bottom: 1.5px solid #111;
+             padding-bottom: 6px; margin-bottom: 10px; color: #111; }
+  table { width: 100%; border-collapse: collapse; font-size: 10px;
+          margin: 8px 0 12px; page-break-inside: auto; }
+  th { background: #eee; color: #111; font-weight: 700; padding: 5px 7px;
+       border: 1px solid #aaa; text-align: left;
+       -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  td { padding: 5px 7px; border: 1px solid #ccc; color: #111; vertical-align: top; }
+  tr:nth-child(even) td { background: #f9f9f9; }
+  tr { page-break-inside: avoid; }
+  .aalert { border: 1px solid #ccc; background: #f5f5f5; padding: 8px 10px;
+            border-radius: 6px; margin-bottom: 6px; color: #111;
+            display: flex; flex-direction: column; gap: 2px;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .aalert.dng { border-color: #e88; background: #fff0f0; }
+  .aalert.warn { border-color: #e8c060; background: #fffbf0; }
+  button, .ms { display: none !important; }
+  ul { padding-left: 16px; }
+  li { margin-bottom: 3px; }
+  strong { font-weight: 700; }
+  .print-footer { margin-top: 20px; padding-top: 8px; border-top: 1px solid #ccc;
+                  font-size: 9px; color: #888; display: flex;
+                  justify-content: space-between; }
+</style>
+</head><body>
+  <div class="print-hdr">
+    <div class="print-hdr-left">
+      <h1>PharmAI \u2014 Pharmacist SOAP Report</h1>
+      <div class="sub">${ptName} &nbsp;\u00B7&nbsp; Bed ${ptBed} &nbsp;\u00B7&nbsp; ${ptInfo}</div>
+    </div>
+    <div class="print-hdr-right">
+      <div><strong>Printed:</strong> ${printDate}</div>
+      <div><strong>Pharmacist:</strong> ${reporter}</div>
+      <div><strong>App:</strong> PharmAI Clinical Assistant</div>
+    </div>
+  </div>
+  ${reportHTML}
+  <div class="print-footer">
+    <span>PharmAI \u2014 AI-assisted Clinical Decision Support. Verify all findings independently before acting.</span>
+    <span>${printDate}</span>
+  </div>
+<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();};}<\/script>
+</body></html>`);
+  win.document.close();
 }
