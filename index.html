@@ -1388,6 +1388,73 @@ let S={haptic:true,theme:'auto'};
 let _pendingFBUser=null;
 let lastSendTime = 0;
 
+/* ══ DEMO USAGE LIMIT ══
+   Free public demo — 5 AI queries per account per day.
+   Stored in Firestore so it survives cache clears and device switches.
+   Resets automatically at midnight. */
+const DEMO_DAILY_LIMIT = 5;
+let _demoCount = 0;
+let _demoDate  = '';
+
+function _todayStr() { return new Date().toISOString().slice(0, 10); }
+
+async function loadDemoUsage() {
+  if(!user) return;
+  try {
+    const doc = await db.collection('users').doc(user).get();
+    if(doc.exists) {
+      const d = doc.data();
+      _demoDate  = d.demo_date  || '';
+      _demoCount = d.demo_count || 0;
+    }
+  } catch(e) {}
+  if(_demoDate !== _todayStr()) { _demoCount = 0; _demoDate = _todayStr(); }
+  renderDemoCounter();
+}
+
+function _saveDemoUsage() {
+  if(!user) return;
+  fsWrite(() => db.collection('users').doc(user).set(
+    { demo_date: _demoDate, demo_count: _demoCount }, { merge: true }
+  ), 'demoUsage');
+}
+
+function demoCheck() {
+  if(_demoDate !== _todayStr()) { _demoCount = 0; _demoDate = _todayStr(); }
+  return _demoCount < DEMO_DAILY_LIMIT;
+}
+
+function demoIncrement() {
+  if(_demoDate !== _todayStr()) { _demoCount = 0; _demoDate = _todayStr(); }
+  _demoCount++;
+  _saveDemoUsage();
+  renderDemoCounter();
+}
+
+function renderDemoCounter() {
+  const el = document.getElementById('demo-counter');
+  if(!el) return;
+  const remaining = Math.max(0, DEMO_DAILY_LIMIT - _demoCount);
+  const pct = _demoCount / DEMO_DAILY_LIMIT;
+  const textSpan = el.querySelector('span:last-child');
+  if(textSpan) textSpan.textContent = remaining + ' / ' + DEMO_DAILY_LIMIT;
+  el.style.background   = pct < 0.6 ? 'rgba(16,185,129,0.15)' : pct < 1 ? 'rgba(245,158,11,0.18)' : 'rgba(239,68,68,0.18)';
+  el.style.color        = pct < 0.6 ? 'var(--ok)'   : pct < 1 ? 'var(--warn)'   : 'var(--danger)';
+  el.style.borderColor  = pct < 0.6 ? 'rgba(16,185,129,0.3)' : pct < 1 ? 'rgba(245,158,11,0.35)' : 'rgba(239,68,68,0.35)';
+}
+
+function showLimitModal() {
+  const now = new Date(), midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  const diff = midnight - now;
+  const hrs  = Math.floor(diff / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  const el = document.getElementById('demo-reset-time');
+  if(el) el.textContent = hrs > 0 ? hrs + 'h ' + mins + 'm' : mins + ' minutes';
+  openM('demo-limit-modal');
+  hap(40);
+}
+
 /* ══ SIDEBAR SWIPE LOGIC ══ */
 let touchStartX = 0;
 document.addEventListener('DOMContentLoaded', () => {
@@ -1951,6 +2018,7 @@ async function sendQ(imgBase64 = null){
   if (Date.now() - lastSendTime < 2000) { toast('Please wait before sending again.', 'warn'); return; }
   const text=document.getElementById('query').value.trim();if((!text && !imgBase64)||loading)return;
   if(!groqKey){toast('API key not configured. Contact admin.','err');return;}
+  if(!demoCheck()){ showLimitModal(); return; }
   lastSendTime = Date.now();
   loading=true;document.getElementById('sbtn').disabled=true;
   lastQuery = text;
@@ -1990,6 +2058,7 @@ async function sendQ(imgBase64 = null){
     const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
     remTyp();appendAI(parsed);
     if(parsed.in_scope !== false){ hap(15); }
+    demoIncrement();
     
     if(parsed.in_scope !== false){
       const slimRaw = raw.length > 500 ? '{"category": "System", "summary": "Previous complex report generated. Data excluded to save context."}' : raw;
@@ -2180,6 +2249,7 @@ async function enterApp(fbUser){
   await loadSettingsFromFirestore();
   await loadWardData(); 
   await loadSessions();
+  await loadDemoUsage();
   newChat();
   checkOnboarding();
 }
@@ -2559,6 +2629,7 @@ async function genCarePlan() {
 
 async function callCDSSAI(payload, mode, lang = 'English') {
   if(!groqKey) { toast('API key not configured.', 'err'); return; }
+  if(!demoCheck()){ showLimitModal(); return; }
   const pt = wardPatients.find(p => p.id === activeCaseId); if(pt) pt.htmlTimeline = pt.htmlTimeline || '';
 
   let sysPrompt = "";
@@ -2738,7 +2809,7 @@ Output ONLY valid JSON matching this exact structure:
         </div>
       </div>`;
     }
-    if(pt) { pt.htmlTimeline = html + pt.htmlTimeline; saveWardData(); openCDSSFile(activeCaseId); }
+    if(pt) { pt.htmlTimeline = html + pt.htmlTimeline; saveWardData(); demoIncrement(); openCDSSFile(activeCaseId); }
   } catch(e) { document.getElementById(loaderId).innerHTML = `<div class="aalert dng"><span class="ms sm">error</span><div><strong>Analysis Failed</strong><br>The AI returned improperly formatted data. Please try generating the plan again.</div></div>`; }
 }
 function qDoseCheck(id) {
