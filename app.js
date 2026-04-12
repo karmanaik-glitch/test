@@ -97,6 +97,99 @@ let S={haptic:true,theme:'auto'};
 let _pendingFBUser=null;
 let lastSendTime = 0;
 
+/* ══ DEMO USAGE LIMIT ══
+   Free public demo — 5 AI queries per account per day.
+   Count is stored in Firestore so it persists across devices and browsers.
+   Resets automatically at midnight on the next query attempt. */
+const DEMO_DAILY_LIMIT = 5;
+let _demoCount = 0;   /* queries used today */
+let _demoDate  = '';  /* YYYY-MM-DD of the current count */
+
+function _todayStr() {
+  return new Date().toISOString().slice(0, 10); /* "YYYY-MM-DD" */
+}
+
+/* Load usage from Firestore into _demoCount / _demoDate.
+   Called once after login. */
+async function loadDemoUsage() {
+  if(!user) return;
+  try {
+    const doc = await db.collection('users').doc(user).get();
+    if(doc.exists) {
+      const d = doc.data();
+      _demoDate  = d.demo_date  || '';
+      _demoCount = d.demo_count || 0;
+    }
+  } catch(e) { /* offline — stay at 0, gate will re-check on next online session */ }
+  /* If stored date isn't today, treat as fresh day */
+  if(_demoDate !== _todayStr()) { _demoCount = 0; _demoDate = _todayStr(); }
+  renderDemoCounter();
+}
+
+/* Persist current count to Firestore (fire-and-forget) */
+function _saveDemoUsage() {
+  if(!user) return;
+  fsWrite(() => db.collection('users').doc(user).set(
+    { demo_date: _demoDate, demo_count: _demoCount }, { merge: true }
+  ), 'demoUsage');
+}
+
+/* Returns true if the user still has queries remaining.
+   Also resets the counter if the stored date is stale (new day). */
+function demoCheck() {
+  if(_demoDate !== _todayStr()) { _demoCount = 0; _demoDate = _todayStr(); }
+  return _demoCount < DEMO_DAILY_LIMIT;
+}
+
+/* Increment counter, persist, and refresh the UI pill */
+function demoIncrement() {
+  if(_demoDate !== _todayStr()) { _demoCount = 0; _demoDate = _todayStr(); }
+  _demoCount++;
+  _saveDemoUsage();
+  renderDemoCounter();
+}
+
+/* Update the "X / 5 queries" pill in the header */
+function renderDemoCounter() {
+  const el = document.getElementById('demo-counter');
+  if(!el) return;
+  const remaining = Math.max(0, DEMO_DAILY_LIMIT - _demoCount);
+  const pct = _demoCount / DEMO_DAILY_LIMIT;
+  /* Target only the text span — the bolt icon span must not be overwritten */
+  const textSpan = el.querySelector('span:last-child');
+  if(textSpan) textSpan.textContent = `${remaining} / ${DEMO_DAILY_LIMIT}`;
+  el.style.background = pct < 0.6
+    ? 'rgba(16,185,129,0.15)'
+    : pct < 1
+    ? 'rgba(245,158,11,0.18)'
+    : 'rgba(239,68,68,0.18)';
+  el.style.color = pct < 0.6
+    ? 'var(--ok)'
+    : pct < 1
+    ? 'var(--warn)'
+    : 'var(--danger)';
+  el.style.borderColor = pct < 0.6
+    ? 'rgba(16,185,129,0.3)'
+    : pct < 1
+    ? 'rgba(245,158,11,0.35)'
+    : 'rgba(239,68,68,0.35)';
+}
+
+/* Show the limit-reached modal with hours-until-midnight countdown */
+function showLimitModal() {
+  const now      = new Date();
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  const diffMs  = midnight - now;
+  const hrs     = Math.floor(diffMs / 3_600_000);
+  const mins    = Math.floor((diffMs % 3_600_000) / 60_000);
+  const resetIn = hrs > 0 ? `${hrs}h ${mins}m` : `${mins} minutes`;
+  const el = document.getElementById('demo-reset-time');
+  if(el) el.textContent = resetIn;
+  openM('demo-limit-modal');
+  hap(40);
+}
+
 /* ══ SIDEBAR SWIPE ══ */
 let touchStartX = 0;
 document.addEventListener('DOMContentLoaded', () => {
@@ -571,6 +664,10 @@ async function sendQ(imgBase64 = null){
   const text=document.getElementById('query').value.trim();
   if((!text && !imgBase64)||loading)return;
   if(!groqKey){toast('API key not configured. Contact admin.','err');return;}
+
+  /* Demo limit gate */
+  if(!demoCheck()) { showLimitModal(); return; }
+
   lastSendTime = Date.now();
   loading=true;document.getElementById('sbtn').disabled=true;
   lastQuery = text;
@@ -611,15 +708,14 @@ async function sendQ(imgBase64 = null){
     let raw=data.choices[0].message?.content||'{}';
     
     if (imgBase64) {
-      /* FIX: escape the raw vision model output before embedding it in HTML.
-         Previously `raw` was interpolated directly as <p>${raw}</p>, meaning any HTML
-         the vision model happened to output (or was prompted to output) would be injected
-         into the DOM. esc() ensures it renders as plain text regardless of content. */
       raw = JSON.stringify({ category: "General Information", summary: "Vision Analysis Complete", details: `<p>${esc(raw)}</p>` });
     }
     
     const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
     remTyp();appendAI(parsed);hap(15);
+
+    /* Count only on successful AI response */
+    demoIncrement();
     
     const slimRaw = raw.length > 2000
       ? JSON.stringify({ category: parsed.category || 'System', summary: parsed.summary || 'Complex report generated — see chat for full details.' })
