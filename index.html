@@ -597,6 +597,65 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
   .ms { display:none!important; }
 }
 
+
+/* ══ CLINICAL RESPONSE CARD ══ */
+.clin-card { background:var(--card); border:1px solid var(--b); border-radius:4px 18px 18px 18px; overflow:hidden; border-left:3px solid var(--cc,var(--text)); }
+.clin-card.se{--cc:#EF4444}.clin-card.int{--cc:#F59E0B}.clin-card.con{--cc:#8B5CF6}.clin-card.mec{--cc:#F97316}.clin-card.dos{--cc:var(--text)}.clin-card.gen{--cc:#10B981}
+.clin-tag { display:flex; align-items:center; justify-content:space-between; padding:9px 14px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; background:rgba(255,255,255,.025); border-bottom:1px solid var(--b); }
+.clin-tag-l { display:flex; align-items:center; gap:7px; }
+.clin-bbw { background:var(--danger); color:#fff; padding:2px 8px; border-radius:4px; font-size:0.64rem; font-weight:700; letter-spacing:0.05em; animation:bbwPulse 2s ease-in-out infinite; }
+@keyframes bbwPulse { 0%,100%{opacity:1} 50%{opacity:.7} }
+.ev-badge { padding:2px 8px; border-radius:4px; font-size:0.64rem; font-weight:700; letter-spacing:0.05em; }
+.ev-a { background:rgba(16,185,129,.2); color:#34D399; border:1px solid rgba(16,185,129,.3); }
+.ev-b { background:rgba(56,189,248,.15); color:var(--blue); border:1px solid rgba(56,189,248,.25); }
+.ev-c { background:rgba(245,158,11,.15); color:var(--warn); border:1px solid rgba(245,158,11,.25); }
+.ev-d { background:rgba(239,68,68,.15); color:var(--danger); border:1px solid rgba(239,68,68,.25); }
+.clin-summary { padding:13px 14px; font-weight:600; font-size:0.92rem; line-height:1.5; border-bottom:1px solid var(--b); display:flex; align-items:flex-start; gap:9px; }
+.clin-summary .ms { color:var(--text); flex-shrink:0; margin-top:2px; }
+.clin-bbw-bar { margin:10px 14px 0; padding:10px 12px; border-radius:9px; font-size:0.78rem; display:flex; gap:9px; align-items:flex-start; line-height:1.6; font-weight:500; background:var(--ddim); border:1px solid rgba(239,68,68,.35); color:var(--danger); }
+.clin-sec { border-top:1px solid var(--b); }
+.clin-sec-hdr { display:flex; align-items:center; gap:7px; padding:8px 14px 6px; font-size:0.63rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--t2); }
+.clin-sec-hdr .ms { font-size:14px; }
+.clin-body { padding:2px 14px 12px; font-size:0.87rem; line-height:1.7; color:var(--t2); }
+.clin-body p { margin-bottom:9px; } .clin-body p:last-child{margin-bottom:0} .clin-body strong { color:var(--text); font-weight:600; }
+.clin-body ul,.clin-body ol { padding-left:18px; margin-bottom:9px; } .clin-body li { margin-bottom:5px; }
+.pk-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--b); margin:2px 14px 12px; border-radius:8px; overflow:hidden; border:1px solid var(--b); }
+.pk-cell { background:var(--card2); padding:8px 10px; }
+.pk-lbl { font-size:0.62rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:3px; }
+.pk-val { font-size:0.82rem; color:var(--text); font-family:var(--fm); font-weight:500; }
+.mon-tbl { width:100%; border-collapse:collapse; font-size:0.78rem; margin:2px 0 0; }
+.mon-tbl th { padding:6px 10px; text-align:left; font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); border-bottom:1px solid var(--b); }
+.mon-tbl td { padding:7px 10px; border-bottom:1px solid var(--b); color:var(--t2); line-height:1.4; }
+.mon-tbl tr:last-child td { border-bottom:none; }
+.mon-tbl td:first-child { color:var(--text); font-weight:600; }
+.int-row { padding:9px 12px; border-bottom:1px solid var(--b); display:flex; flex-direction:column; gap:4px; }
+.int-row:last-child { border-bottom:none; }
+.int-sev { display:inline-flex; align-items:center; gap:4px; font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:2px 7px; border-radius:4px; }
+.int-sev.major { background:var(--ddim); color:var(--danger); border:1px solid rgba(239,68,68,.3); }
+.int-sev.moderate { background:var(--wdim); color:var(--warn); border:1px solid rgba(245,158,11,.3); }
+.int-sev.minor { background:rgba(16,185,129,.1); color:var(--ok); border:1px solid rgba(16,185,129,.2); }
+.int-drug { font-size:0.84rem; font-weight:700; color:var(--text); }
+.int-mech { font-size:0.78rem; color:var(--t2); }
+.int-mgmt { font-size:0.78rem; color:var(--text); font-style:italic; }
+.dose-adj { display:flex; flex-direction:column; gap:5px; padding:2px 14px 12px; }
+.dose-row { display:flex; gap:8px; align-items:flex-start; font-size:0.82rem; line-height:1.45; }
+.dose-lbl { font-size:0.64rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:2px 6px; border-radius:4px; flex-shrink:0; margin-top:1px; }
+.dose-lbl.renal { background:rgba(56,189,248,.15); color:var(--blue); }
+.dose-lbl.hepatic { background:rgba(245,158,11,.12); color:var(--warn); }
+.dose-lbl.other { background:rgba(255,255,255,.07); color:var(--t2); }
+.kp-row { display:flex; gap:9px; align-items:flex-start; font-size:0.84rem; padding:5px 0; border-bottom:1px solid var(--b); color:var(--t2); line-height:1.55; }
+.kp-row:last-child{border-bottom:none}
+.kp-num { width:20px; height:20px; border-radius:50%; background:var(--ibg); border:1px solid var(--b2); color:var(--text); font-size:0.65rem; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+.clin-refs { padding:8px 14px 10px; display:flex; flex-wrap:wrap; gap:5px; align-items:center; background:rgba(0,0,0,.12); border-top:1px solid var(--b); }
+.ref-tag { font-size:0.63rem; padding:2px 8px; border-radius:4px; border:1px solid var(--b2); color:var(--t2); background:var(--card2); }
+.clin-acbar { display:flex; border-top:1px solid var(--b); }
+.clin-acbar .acbtn { flex:1; min-height:40px; }
+/* Out of scope card */
+.oos-card { background:var(--card2); border:1px solid var(--b); border-radius:4px 18px 18px 18px; padding:18px; display:flex; gap:12px; align-items:flex-start; }
+.oos-icon { width:36px; height:36px; border-radius:9px; background:var(--ddim); border:1px solid rgba(239,68,68,.25); display:flex; align-items:center; justify-content:center; color:var(--danger); flex-shrink:0; }
+.oos-title { font-weight:700; font-size:0.9rem; color:var(--text); margin-bottom:4px; }
+.oos-body { font-size:0.82rem; color:var(--t2); line-height:1.6; }
+
 </style>
 </head>
 <body>
@@ -744,7 +803,7 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
           </div>
           <div style="display:flex; gap:4px;">
              <button class="hbtn" onclick="openADRModal();" title="Report ADR" style="background:none; border:none; color:var(--danger);"><span class="ms sm">report</span></button>
-             <button class="hbtn" onclick="window.print();" title="Export PDF" style="background:none; border:none;"><span class="ms sm">picture_as_pdf</span></button>
+             <button class="hbtn" onclick="printSOAP();" title="Export PDF" style="background:none; border:none;"><span class="ms sm">picture_as_pdf</span></button>
           </div>
         </div>
         <div class="wiz-body" id="pt-timeline" style="padding-bottom:120px;"></div>
@@ -1614,30 +1673,184 @@ function appendSkel(){const d=document.createElement('div');d.className='msg';d.
 function remTyp(){const t=document.getElementById('typ');if(t)t.remove();}
 
 function appendAI(p){
-  const CM={'Side Effects':{c:'se',i:'bolt',l:'Side Effects'},'Dosage':{c:'dos',i:'medication',l:'Dosage'},'Drug Interaction':{c:'int',i:'monitor_heart',l:'Drug Interaction'},'Contraindication':{c:'con',i:'block',l:'Contraindication'},'Mechanism of Action':{c:'mec',i:'biotech',l:'Mechanism of Action'},'General Information':{c:'gen',i:'info',l:'General Information'}};
-  const cat=CM[p.category]||{c:'gen',i:'info',l:p.category||'Response'};
-  const badges=[F.preg?'<span class="fb2">Pregnancy</span>':'', F.peds?'<span class="fb2">Pediatric</span>':'', F.geri?'<span class="fb2">Geriatric</span>':'', F.counsel?'<span class="fb2">Counseling</span>':'', F.steward?'<span class="fb2">Stewardship</span>':''].filter(Boolean).join('');
-  const wH=p.warning?`<div class="aalert warn"><span class="ms xs" style="flex-shrink:0">warning</span><span>${p.warning}</span></div>`:'';
-  const dH=p.danger?`<div class="aalert dng"><span class="ms xs" style="flex-shrink:0">gpp_bad</span><span>${p.danger}</span></div>`:'';
-  const kH=p.keyPoints?.length?`<div class="kpw"><div class="aslbl"><span class="ms xs">checklist</span> Key Points</div>${p.keyPoints.map(k=>`<div class="kpi"><div class="kpd"></div><span>${k}</span></div>`).join('')}</div>`:'';
-  const sH=p.sources?.length?`<div class="srcrow"><span class="srclbl">Sources</span>${p.sources.map(s=>`<span class="srcc">${esc(s)}</span>`).join('')}</div>`:'';
-  const plain=[p.summary,p.warning?'Warning: '+p.warning:'',p.danger?'Danger: '+p.danger:'',(p.details||'').replace(/<[^>]+>/g,''),p.keyPoints?.length?'Key points: '+p.keyPoints.join('. '):'',p.sources?.length?'Sources: '+p.sources.join(', '):''].filter(Boolean).join('\n\n');
+  // Handle out-of-scope response
+  if(p.in_scope === false){
+    const d=document.createElement('div');d.className='msg';
+    d.innerHTML=`<div class="avatar ai"><span class="ms sm fill">cardiology</span></div>
+    <div class="bwrap" style="max-width:85%">
+      <div class="oos-card">
+        <div class="oos-icon"><span class="ms sm">block</span></div>
+        <div>
+          <div class="oos-title">Outside Clinical Scope</div>
+          <div class="oos-body">PharmAI is a clinical decision support tool for licensed medical professionals. This query falls outside the scope of medicine, pharmacology, or clinical science and cannot be answered here.</div>
+        </div>
+      </div>
+      <div class="mts">${ts()}</div>
+    </div>`;
+    getChat().appendChild(d);scrollD();
+    return;
+  }
+
+  // Category map
+  const CM={
+    'Pharmacokinetics':{c:'mec',i:'science',l:'Pharmacokinetics'},
+    'Drug Interaction':{c:'int',i:'monitor_heart',l:'Drug Interaction'},
+    'Dosage & Administration':{c:'dos',i:'medication',l:'Dosage & Administration'},
+    'Adverse Effects':{c:'se',i:'bolt',l:'Adverse Effects'},
+    'Contraindication':{c:'con',i:'block',l:'Contraindication'},
+    'Mechanism of Action':{c:'mec',i:'biotech',l:'Mechanism of Action'},
+    'Clinical Therapeutics':{c:'gen',i:'local_hospital',l:'Clinical Therapeutics'},
+    'Monitoring':{c:'dos',i:'monitoring',l:'Monitoring'},
+    'Antimicrobial':{c:'int',i:'coronavirus',l:'Antimicrobial'},
+    'General Clinical':{c:'gen',i:'info',l:'General Clinical'},
+  };
+  const cat=CM[p.category]||{c:'gen',i:'info',l:p.category||'Clinical Response'};
+
+  // Evidence grade badge
+  const evClass={'A':'ev-a','B':'ev-b','C':'ev-c','D':'ev-d'}[p.evidence_grade]||'ev-c';
+  const evBadge=p.evidence_grade?`<span class="ev-badge ${evClass}">Evidence ${p.evidence_grade}</span>`:'';
+
+  // Filter badges
+  const badges=[F.preg?'<span class="fb2">Pregnancy</span>':'',F.peds?'<span class="fb2">Paediatric</span>':'',F.geri?'<span class="fb2">Geriatric</span>':'',F.counsel?'<span class="fb2">Counselling</span>':'',F.steward?'<span class="fb2">Stewardship</span>':''].filter(Boolean).join('');
+
+  // BBW bar
+  const bbwBar=p.bbw?`<div class="clin-bbw-bar"><span class="ms xs" style="flex-shrink:0">warning</span><span><strong>BLACK BOX WARNING:</strong> ${p.bbw}</span></div>`:'';
+
+  // Pharmacokinetics grid
+  let pkHtml='';
+  if(p.pharmacokinetics){
+    const pk=p.pharmacokinetics;
+    const pkFields=[
+      {l:'Bioavailability',v:pk.bioavailability},{l:'T<sub>max</sub>',v:pk.tmax},
+      {l:'V<sub>d</sub>',v:pk.vd},{l:'Protein Binding',v:pk.protein_binding},
+      {l:'Half-life (t½)',v:pk.half_life},{l:'Metabolism',v:pk.metabolism},
+      {l:'Excretion',v:pk.excretion}
+    ].filter(f=>f.v&&f.v!=='null'&&f.v!==null);
+    if(pkFields.length>0){
+      pkHtml=`<div class="clin-sec">
+        <div class="clin-sec-hdr"><span class="ms xs">science</span> Pharmacokinetics</div>
+        <div class="pk-grid">${pkFields.map(f=>`<div class="pk-cell"><div class="pk-lbl">${f.l}</div><div class="pk-val">${f.v}</div></div>`).join('')}</div>
+      </div>`;
+    }
+  }
+
+  // Clinical details
+  const detailsHtml=p.clinical_details?`<div class="clin-sec">
+    <div class="clin-sec-hdr"><span class="ms xs">menu_book</span> Clinical Overview</div>
+    <div class="clin-body">${p.clinical_details}</div>
+  </div>`:'';
+
+  // Monitoring table
+  let monHtml='';
+  if(p.monitoring&&p.monitoring.length>0){
+    monHtml=`<div class="clin-sec">
+      <div class="clin-sec-hdr"><span class="ms xs">monitoring</span> Monitoring Parameters</div>
+      <div style="overflow-x:auto;padding:0 14px 12px;">
+        <table class="mon-tbl">
+          <thead><tr><th>Parameter</th><th>Frequency</th><th>Target / Threshold</th></tr></thead>
+          <tbody>${p.monitoring.map(m=>`<tr><td>${m.parameter||'-'}</td><td>${m.frequency||'-'}</td><td>${m.target||'-'}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  // Interactions
+  let intHtml='';
+  if(p.interactions&&p.interactions.length>0){
+    intHtml=`<div class="clin-sec">
+      <div class="clin-sec-hdr"><span class="ms xs">compare_arrows</span> Drug Interactions</div>
+      <div style="padding:0 14px 12px;">
+        ${p.interactions.map(i=>{
+          const sc=(i.severity||'').toLowerCase();
+          const sevCls=sc==='major'?'major':sc==='moderate'?'moderate':'minor';
+          return `<div class="int-row">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span class="int-drug">${i.drug||'-'}</span>
+              <span class="int-sev ${sevCls}"><span class="ms xs">warning</span>${i.severity||'Unknown'}</span>
+            </div>
+            <div class="int-mech"><strong>Mechanism:</strong> ${i.mechanism||'-'}</div>
+            <div class="int-mgmt"><span class="ms xs" style="font-size:12px;vertical-align:middle">arrow_forward</span> ${i.management||'-'}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  // Dose adjustments
+  let doseHtml='';
+  const da=p.dose_adjustments;
+  if(da&&(da.renal||da.hepatic||da.other)){
+    const rows=[];
+    if(da.renal&&da.renal!=='null') rows.push(`<div class="dose-row"><span class="dose-lbl renal">Renal</span><span>${da.renal}</span></div>`);
+    if(da.hepatic&&da.hepatic!=='null') rows.push(`<div class="dose-row"><span class="dose-lbl hepatic">Hepatic</span><span>${da.hepatic}</span></div>`);
+    if(da.other&&da.other!=='null') rows.push(`<div class="dose-row"><span class="dose-lbl other">Other</span><span>${da.other}</span></div>`);
+    if(rows.length>0){
+      doseHtml=`<div class="clin-sec">
+        <div class="clin-sec-hdr"><span class="ms xs">tune</span> Dose Adjustments</div>
+        <div class="dose-adj">${rows.join('')}</div>
+      </div>`;
+    }
+  }
+
+  // Key clinical points
+  let kpHtml='';
+  if(p.key_points&&p.key_points.length>0){
+    kpHtml=`<div class="clin-sec">
+      <div class="clin-sec-hdr"><span class="ms xs">checklist</span> Clinical Pearls</div>
+      <div style="padding:4px 14px 12px;">
+        ${p.key_points.map((k,i)=>`<div class="kp-row"><div class="kp-num">${i+1}</div><span>${k}</span></div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // References
+  const refsHtml=p.references&&p.references.length>0?
+    `<div class="clin-refs"><span style="font-size:0.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:3px;">Refs</span>${p.references.map(r=>`<span class="ref-tag">${esc(r)}</span>`).join('')}</div>`:'';
+
+  // Plain text for TTS/copy
+  const plain=[
+    p.summary,
+    p.bbw?'BLACK BOX WARNING: '+p.bbw:'',
+    p.clinical_details?p.clinical_details.replace(/<[^>]+>/g,''):'',
+    p.monitoring&&p.monitoring.length?'Monitoring: '+p.monitoring.map(m=>m.parameter+' ('+m.target+')').join('; '):'',
+    p.interactions&&p.interactions.length?'Interactions: '+p.interactions.map(i=>i.drug+' — '+i.severity).join('; '):'',
+    p.key_points&&p.key_points.length?'Clinical Pearls: '+p.key_points.join('. '):'',
+    p.references&&p.references.length?'References: '+p.references.join(', '):'',
+  ].filter(Boolean).join('\n\n');
+
   const d=document.createElement('div');d.className='msg';
   d.innerHTML=`<div class="avatar ai"><span class="ms sm fill">cardiology</span></div>
-  <div class="bwrap" style="max-width:84%"><div class="aic ${cat.c}">
-    <div class="ctag ${cat.c}"><span class="ms xs">${cat.i}</span> ${cat.l}</div>
-    ${badges?`<div class="fbadges">${badges}</div>`:''}
-    <div class="asum"><span class="ms xs">bookmark</span>${p.summary}</div>
-    ${wH}${dH}
-    <div class="aslbl" style="padding-top:12px"><span class="ms xs">menu_book</span> Details</div>
-    <div class="abody">${p.details||''}</div>
-    ${kH}${sH}
-    <div class="acbar">
-      <button class="acbtn tts-btn" data-text="${encodeURIComponent(plain)}"><span class="ms xs">volume_up</span> Read Aloud</button>
-      <button class="acbtn cpy-btn" data-text="${encodeURIComponent(plain)}"><span class="ms xs">content_copy</span> Copy</button>
-      <button class="acbtn" onclick="regenLast(this)"><span class="ms xs">refresh</span> Regenerate</button>
+  <div class="bwrap" style="max-width:87%">
+    <div class="clin-card ${cat.c}">
+      <div class="clin-tag">
+        <div class="clin-tag-l">
+          <span class="ms xs">${cat.i}</span>
+          <span style="color:var(--cc,var(--text))">${cat.l}</span>
+          ${p.drug_name&&p.drug_name!=='null'?`<span style="color:var(--t2);font-weight:400">— ${esc(p.drug_name)}</span>`:''}
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;">
+          ${p.bbw?'<span class="clin-bbw">BBW</span>':''}
+          ${evBadge}
+        </div>
+      </div>
+      ${badges?`<div class="fbadges">${badges}</div>`:''}
+      <div class="clin-summary"><span class="ms xs">bookmark</span>${p.summary}</div>
+      ${bbwBar}
+      ${pkHtml}
+      ${detailsHtml}
+      ${monHtml}
+      ${intHtml}
+      ${doseHtml}
+      ${kpHtml}
+      ${refsHtml}
+      <div class="clin-acbar acbar">
+        <button class="acbtn tts-btn" data-text="${encodeURIComponent(plain)}"><span class="ms xs">volume_up</span> Read</button>
+        <button class="acbtn cpy-btn" data-text="${encodeURIComponent(plain)}"><span class="ms xs">content_copy</span> Copy</button>
+        <button class="acbtn" onclick="regenLast(this)"><span class="ms xs">refresh</span> Regenerate</button>
+      </div>
     </div>
-  </div><div class="mts">${ts()}</div></div>`;
+    <div class="mts">${ts()}</div>
+  </div>`;
   getChat().appendChild(d);scrollD();
   Sounds.play('receive');
 }
@@ -1649,14 +1862,63 @@ function cpyTxt(text,btn){navigator.clipboard.writeText(text).then(()=>{btn.inne
 
 function buildPrompt(text){
   const fl=[];
-  const pregKeywords = ['pregnant','pregnancy','lactation','breastfeed','trimester','obstetric','antenatal'];
-  const autoPreg = pregKeywords.some(k => text.toLowerCase().includes(k));
-  if(F.preg || autoPreg) fl.push('PREGNANCY FILTER: State FDA Pregnancy Category (A/B/C/D/X) and PLLR safety data. Highlight teratogenic risks and safer alternatives.');
-  if(F.peds) fl.push('PEDIATRIC FILTER: Provide mg/kg dosing. Note age restrictions, weight-based calculations, and pediatric-specific contraindications.');
-  if(F.geri) fl.push('GERIATRIC FILTER: Cross-reference Beers Criteria. Flag falls risk, anticholinergic burden, CNS effects, QT prolongation. Suggest safer alternatives.');
-  if(F.steward) fl.push('ANTIBIOTIC STEWARDSHIP: For any antibiotic query, evaluate empiric vs targeted indication, de-escalation opportunity, IV-to-oral switch eligibility, and local resistance patterns.');
-  const lang=F.counsel?'LANGUAGE: Use clear, simple language for patients. Replace jargon \u2014 "xerostomia"\u2192"dry mouth".':'LANGUAGE: Use precise medical terminology. Include PK parameters (Vd, t\u00BD, protein binding, Tmax) for mechanism queries.';
-  return `You are PharmAI, a senior clinical pharmacist providing accurate, evidence-based drug information.\n${lang}\n${fl.length?'Active Filters:\n'+fl.join('\n'):''}\nRespond ONLY in this exact JSON (no markdown, no code fences):\n{"category":"<Side Effects|Dosage|Drug Interaction|Contraindication|Mechanism of Action|General Information>","summary":"<one precise sentence>","warning":"<moderate safety concern or null>","danger":"<critical risk or null>","details":"<HTML using p,ul,li,strong \u2014 2-4 paragraphs>","keyPoints":["<pt1>","<pt2>","<pt3>"],"sources":["<s1>","<s2>","<s3>"]}\nCite 2-4 from: FDA, WHO, PubMed, MedlinePlus, Drugs.com, DailyMed, BNF, ASHP, UpToDate, Beers Criteria, ACC/AHA, ACOG.`;
+  const pregKeywords=['pregnant','pregnancy','lactation','breastfeed','trimester','obstetric','antenatal'];
+  const autoPreg=pregKeywords.some(k=>text.toLowerCase().includes(k));
+  if(F.preg||autoPreg) fl.push('PREGNANCY SPECIALIST MODE: State FDA PLLR data across all three sections (Pregnancy/Lactation/Reproductive). Specify trimester-specific risks, teratogenic mechanisms, and evidence-graded safer alternatives with dosing. Reference ACOG guidelines.');
+  if(F.peds) fl.push('PAEDIATRIC SPECIALIST MODE: Provide age-stratified and weight-based dosing (mg/kg and absolute cap). Note neonatal vs infant vs child PK differences, off-label status, and paediatric-specific toxicities. Reference BNFc and AAP guidelines.');
+  if(F.geri) fl.push('GERIATRIC SPECIALIST MODE: Apply Beers Criteria (2023 AGS), STOPP/START criteria. Quantify anticholinergic burden (ACB score). Flag polypharmacy cascade risks, fall risk, QTc prolongation with specific QTc thresholds, and age-related PK changes (reduced Vd, CrCl, hepatic clearance).');
+  if(F.steward) fl.push('ANTIMICROBIAL STEWARDSHIP MODE: Classify as empiric vs. targeted therapy. State spectrum, PD/PK target attainment (AUC/MIC, T>MIC, Cmax/MIC), de-escalation criteria, IV-to-oral switch eligibility (OPAT criteria), and recommended total duration per IDSA/local guidelines. Note local resistance patterns.');
+  if(F.counsel) fl.push('COUNSELLING MODE: Translate all clinical information to patient-appropriate language (5th grade reading level). Replace all jargon with simple equivalents. Use actionable instructions.');
+
+  const filters=fl.length?`\nSPECIALIST FILTERS ACTIVE:\n${fl.join('\n')}`:'';
+
+  return `You are PharmAI, an AI clinical decision support system functioning at the level of a Senior Clinical Pharmacist and Physician. Your audience is exclusively licensed medical professionals (physicians, pharmacists, nurses, allied health). Responses must be evidence-based, precise, and clinically actionable.
+
+SCOPE GATE (MANDATORY, EVALUATED FIRST): If the query is not related to medicine, pharmacology, clinical sciences, pharmacy, diagnostics, therapeutics, or allied health — set "in_scope": false and return nothing else. Do NOT answer out-of-scope questions under any framing.
+
+CLINICAL DEPTH REQUIREMENTS:
+- State mechanisms at receptor/molecular/enzyme level where relevant
+- Provide full pharmacokinetic parameters when clinically relevant
+- Grade all evidence (Level A = RCT/meta-analysis; Level B = cohort/case-control; Level C = expert consensus/case reports)
+- Cite specific guideline names with year (e.g. "ACC/AHA 2023 HF Guidelines", "BNF 88", "IDSA 2022")
+- Flag Black Box Warnings explicitly
+- State drug interactions with ASHP severity classification (Major/Moderate/Minor) and mechanistic basis
+- Provide dose adjustments with specific CrCl and Child-Pugh thresholds
+- Include monitoring parameters with exact target ranges and sampling timing
+${filters}
+
+Respond ONLY in this exact JSON (no markdown, no code fences, no extra fields):
+{
+  "in_scope": true,
+  "category": "<Pharmacokinetics|Drug Interaction|Dosage & Administration|Adverse Effects|Contraindication|Mechanism of Action|Clinical Therapeutics|Monitoring|Antimicrobial|General Clinical>",
+  "drug_name": "<Primary drug or topic name, or null>",
+  "evidence_grade": "<A|B|C>",
+  "bbw": "<Exact Black Box Warning text or null>",
+  "summary": "<One precise, clinically dense sentence — include drug class, primary mechanism, and key clinical context>",
+  "pharmacokinetics": {
+    "bioavailability": "<% and route or null>",
+    "tmax": "<time to peak or null>",
+    "vd": "<L/kg or null>",
+    "protein_binding": "<% or null>",
+    "half_life": "<hours or null>",
+    "metabolism": "<CYP enzymes, phase I/II, active metabolites or null>",
+    "excretion": "<renal/hepatic %, unchanged or metabolite or null>"
+  },
+  "clinical_details": "<Structured HTML using h4,p,ul,li,strong,em — minimum 3-4 clinically dense paragraphs covering mechanism, clinical use, evidence base, comparative efficacy>",
+  "monitoring": [
+    {"parameter": "<lab/clinical param>", "frequency": "<timing>", "target": "<range or threshold>"}
+  ],
+  "interactions": [
+    {"drug": "<interacting drug>", "severity": "<Major|Moderate|Minor>", "mechanism": "<PK/PD mechanism>", "management": "<specific clinical action>"}
+  ],
+  "dose_adjustments": {
+    "renal": "<specific CrCl thresholds and dose modifications or null>",
+    "hepatic": "<Child-Pugh class and dose modifications or null>",
+    "other": "<age/weight/dialysis or null>"
+  },
+  "key_points": ["<Clinical pearl 1>","<Clinical pearl 2>","<Clinical pearl 3>"],
+  "references": ["<Specific guideline/source with year>","<Source 2>","<Source 3>"]
+}`;
 }
 
 async function sendQ(imgBase64 = null){
@@ -1700,10 +1962,13 @@ async function sendQ(imgBase64 = null){
     }
     
     const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
-    remTyp();appendAI(parsed);hap(15);
+    remTyp();appendAI(parsed);
+    if(parsed.in_scope !== false){ hap(15); }
     
-    const slimRaw = raw.length > 500 ? '{"category": "System", "summary": "Previous complex report generated. Data excluded to save context."}' : raw;
-    hist.push({role:'user',content:text},{role:'assistant',content:slimRaw});
+    if(parsed.in_scope !== false){
+      const slimRaw = raw.length > 500 ? '{"category": "System", "summary": "Previous complex report generated. Data excluded to save context."}' : raw;
+      hist.push({role:'user',content:text},{role:'assistant',content:slimRaw});
+    }
     
     saveHist();
     if(hist.length===2 && !imgBase64) genTitle(text);
@@ -2272,28 +2537,76 @@ async function callCDSSAI(payload, mode, lang = 'English') {
 
   let sysPrompt = "";
   if (mode === 'baseline' || mode === 'progress') {
-    sysPrompt = `You are PharmAI, an elite Senior Clinical Pharmacist. Perform a rigorous, multi-variable Comprehensive Medication Review (CMR).
-UNIVERSAL CLINICAL RULES:
-1. CUMULATIVE TOXICITY: Explicitly calculate and flag Anticholinergic burden, Serotonin Syndrome risk, combined CNS depression, QTc prolongation, and stacked bleeding risks. IF multiple agents stack risk, trigger "Polypharmacy / Cumulative Risk".
-2. RENAL/HEPATIC: The calculated CrCl has been pre-computed and is provided in the payload as 'calculated_CrCl'. Use ONLY this value for all renal dosing assessments.
-3. PHARMACOKINETICS: Scan for enzyme inhibitors/inducers interacting with NTI drugs.
-4. DRUG-DISEASE: Cross-reference all medications against active PMH, Diagnoses, AND Social History.
-5. ALLERGIES: Categorize known allergies strictly as "Contraindication" (Severity: Critical).
-6. NTI DRUGS: If ANY narrow therapeutic index drug is present ALWAYS flag in the monitoring column.
-7. WEIGHT-BASED DOSING: Verify that the prescribed dose is appropriate for the patient's actual body weight.
+    sysPrompt = `You are PharmAI, operating as a Senior Clinical Pharmacist and Clinical Pharmacologist conducting a Comprehensive Medication Review (CMR). Your output is read by licensed physicians and pharmacists making live clinical decisions. Every finding must be evidence-based, cited, and actionable.
 
-Sort all drug_related_problems in descending severity order: Critical first, then High, then Moderate, then Low.
+MANDATORY CLINICAL ANALYSIS SEQUENCE — EXECUTE ALL IN ORDER:
 
-Output ONLY valid JSON matching this exact structure:
+1. RENAL DOSING VERIFICATION (NON-NEGOTIABLE):
+   - The pre-calculated CrCl is provided as 'calculated_CrCl' in the payload. Use ONLY this value.
+   - Cross-reference EVERY drug against its manufacturer renal dosing table.
+   - If CrCl is below a drug's contraindication threshold → categorize as "Contraindication" [Critical]. Do NOT suggest dose reduction — recommend DISCONTINUATION and alternative.
+   - If CrCl requires dose adjustment → categorize as "Dosing Error" [High] if current dose exceeds the adjusted threshold.
+
+2. HEPATIC DOSING VERIFICATION:
+   - Use AST/ALT/Bilirubin/Albumin/INR to infer Child-Pugh class where calculable.
+   - Cross-reference hepatically cleared drugs (high first-pass or extensive hepatic metabolism) against Child-Pugh thresholds.
+
+3. CUMULATIVE SYSTEMIC TOXICITY (MANDATORY — DO NOT SKIP):
+   - Anticholinergic Burden: Calculate cumulative ACB score across ALL agents. If ≥3 → flag as "Polypharmacy / Cumulative Risk" [High/Critical].
+   - Serotonergic Risk: Identify all serotonergic agents. If ≥2 present → flag Serotonin Syndrome risk with Hunter Criteria reference.
+   - QTc Prolongation Cascade: Identify all QTc-prolonging agents (per CredibleMeds/AZCert.org classification). Stack risk accordingly.
+   - CNS Depression Stack: Flag combined sedative/opioid/benzodiazepine burden.
+   - Bleeding Risk Stack: Identify all anticoagulant, antiplatelet, SSRI, NSAID combinations. Quantify cumulative risk.
+
+4. CYP450 / P-GLYCOPROTEIN INTERACTIONS:
+   - Identify all CYP450 inhibitors and inducers in the regimen.
+   - Flag NTI drug substrates of affected enzymes (Warfarin, Digoxin, Phenytoin, Cyclosporine, Tacrolimus, Lithium, Theophylline, Methotrexate, Vancomycin, Aminoglycosides).
+   - State predicted direction and magnitude of interaction (e.g., "CYP3A4 inhibition → 2-3x increase in substrate AUC").
+
+5. NTI DRUG THERAPEUTIC DRUG MONITORING:
+   - If ANY NTI drug is present, MANDATORY monitoring entry required with: target serum level, sampling timing (trough/AUC), frequency, and toxicity signs.
+
+6. DRUG-DISEASE CONTRAINDICATIONS:
+   - Cross-reference all medications against ALL active diagnoses, PMH, and social history.
+   - E.g., Beta-blocker in severe asthma, metformin in AKI, NSAIDs in CKD/heart failure.
+
+7. ALLERGY CROSS-REACTIVITY:
+   - Verify documented allergies against prescribed agents AND structural analogues (e.g., cephalosporin cross-reactivity in penicillin allergy).
+
+8. WEIGHT-BASED DOSING VERIFICATION:
+   - For weight-dependent drugs (aminoglycosides, LMWH, vancomycin, immunosuppressants), verify prescribed dose against patient weight and renal function.
+
+SORT ALL DRPs: Critical → High → Moderate → Low.
+
+Output ONLY valid JSON — no markdown, no preamble:
 {
-  "patient_demographics_history": "Exact demographics, DOA, diagnosis, chief complaints, social history, and PMH. Highlight Red Flags.",
-  "baseline_vitals_labs": "Exact baseline vitals and labs. Explicitly state the calculated CrCl and evaluate hemodynamic stability.",
-  "current_therapy": [ { "drug": "Name", "dose": "Dose", "freq": "Freq", "indication": "Inferred Indication", "moa": "Brief MOA", "monitoring": "Params", "side_effects": "Key SEs" } ],
-  "clinical_correlations": ["Correlate symptoms/labs with medications."],
-  "drug_related_problems": [ { "category": "Contraindication | Drug-Drug Interaction | Drug-Disease Interaction | Dosing Error | Polypharmacy | Adverse Effect", "issue": "Specific clinical description", "severity": "Critical | High | Moderate | Low", "actionable_solution": "Precise clinical intervention" } ],
-  "pharmacist_interventions": ["Specific steps addressing the DRPs."],
-  "references": ["Cite specific guidelines"]
-}`;
+  "patient_demographics_history": "Structured summary: Name/Age/Sex/Weight/DOA. Diagnosis. PMH with clinical severity. Social history. Allergies. Calculated CrCl. Red Flags highlighted.",
+  "baseline_vitals_labs": "All vitals with clinical interpretation (e.g., MAP, haemodynamic stability). All labs with reference ranges. Explicit CrCl value and CKD stage. Hepatic function assessment. Inflammatory markers.",
+  "current_therapy": [
+    {
+      "drug": "Name",
+      "dose": "Dose + route + frequency",
+      "indication": "Evidence-based indication",
+      "moa": "Receptor/enzyme-level mechanism",
+      "pk_notes": "Relevant PK: half-life, CYP, renal/hepatic clearance %",
+      "monitoring": "Specific parameters, target levels, sampling timing",
+      "side_effects": "Clinically significant ADRs with incidence where known",
+      "renal_dose_check": "Appropriate / Requires adjustment / Contraindicated at current CrCl"
+    }
+  ],
+  "clinical_correlations": ["Mechanistic correlation between lab/symptom and medication"],
+  "drug_related_problems": [
+    {
+      "category": "Contraindication | Drug-Drug Interaction | Drug-Disease Interaction | Dosing Error | Polypharmacy / Cumulative Risk | Adverse Drug Reaction | Subtherapeutic Dosing | Unnecessary Drug",
+      "issue": "Precise clinical description with drug names, mechanism, and quantified risk where possible",
+      "severity": "Critical | High | Moderate | Low",
+      "clinical_rationale": "Evidence basis for this classification with guideline citation",
+      "actionable_solution": "Specific intervention: drug name, dose, route, frequency, or discontinue + alternative"
+    }
+  ],
+  "pharmacist_interventions": ["Specific, prioritised, time-sensitive clinical actions"],
+  "references": ["Specific guideline with year, e.g. KDIGO 2023, ACC/AHA 2022, BNF 88, ASHP, Micromedex"]
+}`
   } else if (mode === 'discharge') {
     sysPrompt = `You are an elite Patient Educator and Geriatric Care Specialist. Generate a highly specific, actionable discharge counseling card.
 CRITICAL DIRECTIVES:
