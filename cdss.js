@@ -5,13 +5,12 @@ let activeTab = 'active';
 let cdssTempLabs = [];
 let cdssTempTx = [];
 let currentWardMode = 'admit';
-let _wardFormDirty = false; /* FIX: track unsaved form state */
+let _wardFormDirty = false;
 
 // ══ WARD DATA LOAD / SAVE ══
 async function loadWardData() {
   if (!user) return;
 
-  /* FIX: Show skeleton while loading */
   const container = document.getElementById('pt-list-container');
   if(container) container.innerHTML = `<div style="text-align:center;padding:30px 20px;color:var(--muted);">
     <span class="ms sm" style="animation:spin 1s linear infinite">progress_activity</span><br>
@@ -32,7 +31,6 @@ async function loadWardData() {
       if (docSnap.exists && docSnap.data().wardPatients && docSnap.data().wardPatients.length > 0) {
         wardPatients = docSnap.data().wardPatients;
         renderWardList();
-        /* FIX: chunk batch writes to stay under Firestore 500-doc limit */
         const CHUNK = 400;
         for(let i=0;i<wardPatients.length;i+=CHUNK){
           const batch = db.batch();
@@ -44,7 +42,7 @@ async function loadWardData() {
         localforage.setItem('pharmai_ward_' + user, wardPatients);
       }
     }
-    if(!wardPatients.length) renderWardList(); /* clear skeleton if no patients */
+    if(!wardPatients.length) renderWardList();
   } catch(e) {
     console.warn("Failed to load ward data", e);
     renderWardList();
@@ -59,7 +57,6 @@ function saveWardData() {
   clearTimeout(wardSaveTimer);
   wardSaveTimer = setTimeout(async () => {
     try { 
-      /* FIX: chunk batch to avoid 500-doc Firestore limit */
       const CHUNK = 400;
       for(let i=0;i<wardPatients.length;i+=CHUNK){
         const batch = db.batch();
@@ -140,17 +137,16 @@ function renderWardList() {
   }
 
   container.innerHTML = filtered.map(p => {
-    /* FIX: null-safe .cc access — a restored backup may have missing fields */
     const cc = p.cc ? String(p.cc).substring(0, 30) : 'No details';
     return `
-    <div class="pat-card ${p.status}" onclick="openCDSSFile('${p.id}');hap(10);">
+    <div class="pat-card ${p.status}" onclick="openCDSSFile('${esc(p.id)}');hap(10);">
       <div class="pc-head">
         <div class="pc-name">${esc(p.name || 'Unknown')}</div>
         <div class="pc-badge">${esc(p.bedId || '—')}</div>
       </div>
       <div class="pc-details">
-        <span>${p.age || '?'}y ${p.sex || ''}</span>
-        <span>${p.weight || '?'} kg</span>
+        <span>${esc(String(p.age || '?'))}y ${esc(p.sex || '')}</span>
+        <span>${esc(String(p.weight || '?'))} kg</span>
         <span>CC: ${esc(cc)}${p.cc && p.cc.length > 30 ? '…' : ''}</span>
       </div>
     </div>`;
@@ -204,13 +200,11 @@ function openCDSSWiz(mode) {
     renderCDSSTx();
   }
 
-  /* Track form changes to warn before accidental close */
   document.querySelectorAll('#cdss-form .finp').forEach(el => {
     el.addEventListener('input', () => { _wardFormDirty = true; }, { once: true });
   });
 }
 
-/* FIX: warn before closing form if unsaved data exists */
 function closeCDSSWiz() {
   if(_wardFormDirty && !confirm('You have unsaved changes. Discard and close?')) return;
   _wardFormDirty = false;
@@ -226,7 +220,7 @@ const cdssLabOpts = {
 function updLabParams() {
   const sys = document.getElementById('lab-sys').value, paramSelect = document.getElementById('lab-param');
   paramSelect.innerHTML = '<option value="">-- Parameter --</option>';
-  if (sys && cdssLabOpts[sys]) cdssLabOpts[sys].forEach(p => { paramSelect.innerHTML += `<option value="${p}">${p}</option>`; });
+  if (sys && cdssLabOpts[sys]) cdssLabOpts[sys].forEach(p => { paramSelect.innerHTML += `<option value="${esc(p)}">${esc(p)}</option>`; });
 }
 
 function addLabTag() {
@@ -235,7 +229,7 @@ function addLabTag() {
   cdssTempLabs.push({ param, val }); document.getElementById('lab-val').value = ''; renderCDSSLabs(); hap(10);
   _wardFormDirty = true;
 }
-function renderCDSSLabs() { document.getElementById('lab-tags').innerHTML = cdssTempLabs.map((l, i) => `<div class="rx-tag">${l.param}: <b>${esc(l.val)}</b> <button class="rx-del" onclick="remLabTag(${i});hap(10);"><span class="ms xs">close</span></button></div>`).join(''); }
+function renderCDSSLabs() { document.getElementById('lab-tags').innerHTML = cdssTempLabs.map((l, i) => `<div class="rx-tag">${esc(l.param)}: <b>${esc(l.val)}</b> <button class="rx-del" onclick="remLabTag(${i});hap(10);"><span class="ms xs">close</span></button></div>`).join(''); }
 function remLabTag(i) { cdssTempLabs.splice(i, 1); renderCDSSLabs(); }
 
 function addTxTag() {
@@ -289,10 +283,10 @@ function openCDSSFile(id) {
   
   const fa = document.getElementById('file-actions');
   if(pt.status === 'closed') {
-    fa.innerHTML = `<button class="btn-block sec" onclick="reopenCase('${id}')"><span class="ms sm">lock_open</span> Reopen Case</button>`;
+    fa.innerHTML = `<button class="btn-block sec" onclick="reopenCase('${esc(id)}')"><span class="ms sm">lock_open</span> Reopen Case</button>`;
     fa.style.display = 'flex';
   } else {
-    fa.innerHTML = `<button class="btn-block sec" onclick="qDoseCheck('${id}')"><span class="ms sm">vaccines</span> Dose Check</button><button class="btn-block sec" onclick="openCDSSWiz('progress');hap(10);"><span class="ms sm">edit_note</span> Add Progress</button><button class="btn-block" onclick="openDischargeModal();hap(10);" style="background:var(--danger); color:#fff; box-shadow:none;"><span class="ms sm">logout</span> Close Case</button>`;
+    fa.innerHTML = `<button class="btn-block sec" onclick="qDoseCheck('${esc(id)}')"><span class="ms sm">vaccines</span> Dose Check</button><button class="btn-block sec" onclick="openCDSSWiz('progress');hap(10);"><span class="ms sm">edit_note</span> Add Progress</button><button class="btn-block" onclick="openDischargeModal();hap(10);" style="background:var(--danger); color:#fff; box-shadow:none;"><span class="ms sm">logout</span> Close Case</button>`;
     fa.style.display = 'flex';
   }
 }
@@ -300,6 +294,7 @@ function openCDSSFile(id) {
 function reopenCase(id) { const pt = wardPatients.find(p => p.id === id); if(pt) { pt.status = 'active'; saveWardData(); openCDSSFile(id); toast('Case reopened', 'ok'); } }
 function closeCDSSFile() { activeCaseId = null; document.getElementById('cdss-file').classList.remove('open'); document.getElementById('cdss-dash').style.display = 'block'; renderWardList(); }
 function openDischargeModal() { dcRxList = []; renderDcRx(); document.getElementById('discharge-modal').classList.add('open'); }
+
 function renderDcRx() { document.getElementById('dc-rx-list').innerHTML = dcRxList.map((r,i) => `<div class="rx-tag">${esc(r)}<button class="rx-del" onclick="remDcRx(${i})"><span class="ms xs">close</span></button></div>`).join(''); }
 function remDcRx(i) { dcRxList.splice(i, 1); renderDcRx(); }
 function addDcRx() { const v = document.getElementById('dc-rx-inp').value.trim(); if(!v) return; dcRxList.push(v); document.getElementById('dc-rx-inp').value = ''; renderDcRx(); }
@@ -320,7 +315,7 @@ async function execProcessDischarge() {
       const payload = { discharge_medications: dcRxList, clinical_notes: notes, dod: dod, patient_context: { social_history: pt?.hist?.soc, allergies: pt?.hist?.alg, age: pt?.demo?.age, sex: pt?.demo?.sex } };
       closeM('discharge-modal'); await callCDSSAI(payload, 'discharge', lang);
     } else {
-      if(pt) { pt.htmlTimeline = pt.htmlTimeline || ''; pt.htmlTimeline = `<div class="cdss-report" style="border-left:4px solid var(--t2)"><div class="rep-hdr">Case Closed: ${outcome.toUpperCase()} ${dod ? `<span style="float:right; color:var(--text); font-size:0.85rem;">DOD: ${dod}</span>` : ''}</div><p>${esc(notes)}</p></div>` + pt.htmlTimeline; }
+      if(pt) { pt.htmlTimeline = pt.htmlTimeline || ''; pt.htmlTimeline = `<div class="cdss-report" style="border-left:4px solid var(--t2)"><div class="rep-hdr">Case Closed: ${esc(outcome.toUpperCase())} ${dod ? `<span style="float:right; color:var(--text); font-size:0.85rem;">DOD: ${esc(dod)}</span>` : ''}</div><p>${esc(notes)}</p></div>` + pt.htmlTimeline; }
       saveWardData(); closeM('discharge-modal'); openCDSSFile(activeCaseId); 
     }
   } finally { btn.disabled = false; btn.innerHTML = ogText; }
@@ -339,15 +334,33 @@ function generateADR() {
   const desc = document.getElementById('adr-desc').value;
   if(!drug || !desc) { toast('Please fill suspected drug and description.', 'warn'); return; }
   const r = `PvPI Adverse Drug Reaction Report\nDate: ${new Date().toLocaleDateString()}\nPatient: ${ptInfo}\nSuspected Drug: ${drug}\nOnset Date: ${document.getElementById('adr-date').value}\nReaction Description: ${desc}\nAction Taken: ${document.getElementById('adr-action').value}\nReporter: ${uName} (Clinical Pharmacist)\n\nNote: Submit this report at pvpi.gov.in or via VigiFlow for official pharmacovigilance recording.`;
-  navigator.clipboard.writeText(r).then(() => {
-    toast('Report Copied! Submit at pvpi.gov.in', 'ok', 5000);
-    closeM('adr-modal');
-  });
+
+  /* FIX: save ADR report to the patient's timeline before attempting clipboard copy.
+     Previously the report was clipboard-only — if writeText() was rejected (permission
+     denied, iframe, focus loss) the modal closed silently and the report was lost. */
+  const pt = wardPatients.find(p => p.id === activeCaseId);
+  if(pt) {
+    pt.htmlTimeline = `<div class="cdss-report" style="border-left:4px solid var(--warn);">
+      <div class="rep-hdr"><span class="ms sm">warning</span> ADR Report — ${esc(drug)} (${new Date().toLocaleDateString()})</div>
+      <pre style="font-size:0.8rem;white-space:pre-wrap;color:var(--text);font-family:var(--font-sans);">${esc(r)}</pre>
+    </div>` + (pt.htmlTimeline || '');
+    saveWardData();
+  }
+
+  /* FIX: added .catch() so a clipboard failure shows a message instead of silent data loss */
+  navigator.clipboard.writeText(r)
+    .then(() => {
+      toast('Report copied & saved to timeline. Submit at pvpi.gov.in', 'ok', 5000);
+      closeM('adr-modal');
+    })
+    .catch(() => {
+      toast('Report saved to patient timeline. Copy manually if needed.', 'warn', 6000);
+      closeM('adr-modal');
+    });
 }
 
 async function genCarePlan() {
   const isUpdate = (currentWardMode === 'progress');
-  /* FIX: safe pt lookup with null guard throughout */
   let pt = activeCaseId ? wardPatients.find(p => p.id === activeCaseId) : null;
   const currentDOA = document.getElementById('w-doa') ? document.getElementById('w-doa').value : '';
   const payload = {
@@ -363,7 +376,10 @@ async function genCarePlan() {
   let age = parseFloat(payload.demographics.age), wt = parseFloat(payload.demographics.wt), scr = parseFloat(payload.labs.anchors.scr), sex = payload.demographics.sex;
   if (!isNaN(age) && !isNaN(wt) && !isNaN(scr) && scr > 0) {
     let crcl = ((140 - age) * wt) / (72 * scr); if (sex === 'F') crcl *= 0.85;
-    payload.labs.calculated_CrCl = crcl.toFixed(1) + " mL/min";
+    /* FIX: renamed from calculated_CrCl to calculated_CrCl_CG to make explicit that this
+       is a Cockcroft-Gault estimate for drug dosing, not an eGFR for CKD staging.
+       The system prompt is updated to match — the AI will no longer conflate the two. */
+    payload.labs.calculated_CrCl_CG = crcl.toFixed(1) + " mL/min (Cockcroft-Gault, for drug dosing only)";
   }
   if(isUpdate && pt && pt.demo && pt.demo.doa) { payload.demographics.doa = pt.demo.doa; }
 
@@ -372,14 +388,17 @@ async function genCarePlan() {
 
   try {
     if(!isUpdate && !activeCaseId) {
-      activeCaseId = 'PT-' + Date.now();
+      /* FIX: append a random suffix to prevent ID collision when two patients are
+         admitted within the same millisecond (e.g. via rapid import or double-tap).
+         Previously Date.now() alone could produce the same ID for both, causing the
+         second patient to silently overwrite the first in Firestore. */
+      activeCaseId = 'PT-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
       pt = { id: activeCaseId, status: 'active', name: payload.demographics.name || 'Unknown', bedId: payload.demographics.id || 'TBD', age: payload.demographics.age, sex: payload.demographics.sex, weight: payload.demographics.wt, cc: payload.history.dx || payload.history.cc || 'No complaints', htmlTimeline: '', currentTx: cdssTempTx, demo: payload.demographics, hist: payload.history, vitalsHistory: [] };
       wardPatients.unshift(pt);
     } else if (pt) {
       pt.currentTx = cdssTempTx;
     }
     
-    /* FIX: null guard — pt can still be null if isUpdate is true but patient was deleted */
     if(!pt) {
       toast('Patient record not found. Please re-admit.', 'err');
       btn.disabled = false; btn.innerHTML = ogText;
@@ -405,10 +424,12 @@ async function callCDSSAI(payload, mode, lang = 'English') {
 
   let sysPrompt = "";
   if (mode === 'baseline' || mode === 'progress') {
+    /* FIX: updated to reference calculated_CrCl_CG and explicitly distinguish it from
+       eGFR-based CKD staging, preventing the AI from conflating the two metrics. */
     sysPrompt = `You are PharmAI, an elite Senior Clinical Pharmacist. Perform a rigorous, multi-variable Comprehensive Medication Review (CMR).
 UNIVERSAL CLINICAL RULES:
 1. CUMULATIVE TOXICITY: Explicitly calculate and flag Anticholinergic burden, Serotonin Syndrome risk, combined CNS depression, QTc prolongation, and stacked bleeding risks.
-2. RENAL/HEPATIC: Use the pre-computed 'calculated_CrCl' from the payload for all renal dosing assessments.
+2. RENAL/HEPATIC: Use 'calculated_CrCl_CG' from the payload for drug dose adjustments. This is a Cockcroft-Gault estimate for DRUG DOSING only — do NOT use it to stage CKD (CKD staging requires CKD-EPI eGFR which is not provided here).
 3. PHARMACOKINETICS: Scan for enzyme inhibitors/inducers interacting with NTI drugs.
 4. DRUG-DISEASE: Cross-reference all medications against active PMH, Diagnoses, AND Social History.
 5. ALLERGIES: Categorize known allergies strictly as "Contraindication" (Severity: Critical).
@@ -420,7 +441,7 @@ Sort drug_related_problems in descending severity: Critical first, then High, Mo
 Output ONLY valid JSON:
 {
   "patient_demographics_history": "Exact demographics, DOA, diagnosis, chief complaints, social history, PMH. Highlight Red Flags.",
-  "baseline_vitals_labs": "Exact baseline vitals and labs. Explicitly state the calculated CrCl and evaluate hemodynamic stability.",
+  "baseline_vitals_labs": "Exact baseline vitals and labs. Explicitly state the calculated CrCl (CG) and evaluate hemodynamic stability.",
   "current_therapy": [ { "drug": "Name", "dose": "Dose", "freq": "Freq", "indication": "Inferred Indication", "moa": "Brief MOA", "monitoring": "Params", "side_effects": "Key SEs" } ],
   "clinical_correlations": ["Correlate symptoms/labs with medications."],
   "drug_related_problems": [ { "category": "Contraindication | Drug-Drug Interaction | Drug-Disease Interaction | Dosing Error | Polypharmacy | Adverse Effect", "issue": "Specific clinical description", "severity": "Critical | High | Moderate | Low", "actionable_solution": "Precise clinical intervention" } ],
@@ -458,7 +479,6 @@ Output ONLY valid JSON:
     });
     const data = await res.json();
 
-    /* FIX: null-check on API response before accessing .choices */
     if(data.error) throw new Error(data.error.message || 'API error');
     if(!data.choices || !data.choices[0] || !data.choices[0].message) throw new Error('Empty response from AI service.');
 
@@ -473,31 +493,48 @@ Output ONLY valid JSON:
     const loaderEl = document.getElementById(loaderId);
     if(loaderEl) loaderEl.remove();
 
-    let html = '';
-    const dodDisplay = payload.dod ? `<span style="float:right; color:var(--text); font-size:0.85rem; font-weight:600;">DOD: ${payload.dod}</span>` : '';
-    const doaDisplay = payload.demographics && payload.demographics.doa ? `<span style="float:right; color:var(--text); font-size:0.85rem; font-weight:600;">DOA: ${payload.demographics.doa}</span>` : '';
+    /* ══ FIX: ALL AI-SUPPLIED FIELDS ESCAPED BEFORE innerHTML INJECTION ══
+       Previously every field from result.* was interpolated raw into the HTML
+       template strings below. A prompt-injection attack (or a hallucination) could
+       produce a result field containing <script> tags or event-handler attributes,
+       which would execute in the browser with full access to the Groq API key and
+       patient data. Every string from result.* is now passed through esc() before
+       injection. Only the static structural HTML around them is trusted. */
 
-    /* FIX: AI disclaimer appended to every generated report */
+    let html = '';
+
+    /* Payload values (user form input) also escaped — they arrive as strings */
+    const safeDod = esc(payload.dod || '');
+    const safeDoa = esc((payload.demographics && payload.demographics.doa) ? payload.demographics.doa : '');
+
+    const dodDisplay = safeDod ? `<span style="float:right; color:var(--text); font-size:0.85rem; font-weight:600;">DOD: ${safeDod}</span>` : '';
+    const doaDisplay = safeDoa ? `<span style="float:right; color:var(--text); font-size:0.85rem; font-weight:600;">DOA: ${safeDoa}</span>` : '';
+
     const aiDisclaimer = `<div style="margin-top:15px; padding:8px 12px; background:rgba(255,193,7,0.07); border:1px solid rgba(255,193,7,0.25); border-radius:8px; font-size:0.7rem; color:var(--muted); line-height:1.5;">
       <strong style="color:var(--warn);">&#9888; Clinical Decision Support Only:</strong> This AI-generated report is intended to assist a qualified clinical pharmacist. Always verify drug-related problems, doses, and recommendations against current formulary, local protocols, and the patient's full clinical picture before acting. Cited references are AI-suggested — verify independently.
     </div>`;
 
     if(mode === 'discharge') {
       html = `<div class="cdss-report" style="border-left:4px solid var(--ok); background:rgba(16,185,129,0.05);">
-        <div class="rep-hdr" style="color:var(--ok)"><span class="ms sm">home</span> ${result.title} (${lang}) ${dodDisplay}</div>
-        <p style="margin-bottom:15px; line-height:1.6;"><strong>Overview:</strong> ${result.diagnosis_simple}</p>
+        <div class="rep-hdr" style="color:var(--ok)"><span class="ms sm">home</span> ${esc(result.title || 'Discharge Instructions')} (${esc(lang)}) ${dodDisplay}</div>
+        <p style="margin-bottom:15px; line-height:1.6;"><strong>Overview:</strong> ${esc(result.diagnosis_simple || '')}</p>
         <div style="font-weight:700; color:var(--ok); margin-bottom:8px;"><span class="ms sm">medication</span> Your Medications</div>
         <div style="width:100%; overflow-x:auto; margin-bottom:15px; border-radius:8px; border:1px solid var(--b);">
           <table class="rep-tbl" style="min-width: 600px; margin:0;"><tr><th>Medicine</th><th>Purpose</th><th>How to Take</th><th>Specific Warnings</th></tr>
-          ${(result.medications||[]).map(m => `<tr><td><strong>${m.name||'-'}</strong></td><td>${m.purpose||'-'}</td><td>${m.schedule||'-'}</td><td>${m.warnings||'-'}</td></tr>`).join('')}</table>
+          ${(result.medications||[]).map(m => `<tr>
+            <td><strong>${esc(m.name||'-')}</strong></td>
+            <td>${esc(m.purpose||'-')}</td>
+            <td>${esc(m.schedule||'-')}</td>
+            <td>${esc(m.warnings||'-')}</td>
+          </tr>`).join('')}</table>
         </div>
         <div style="margin-top:15px;">
-          <div style="font-weight:700; color:var(--text); margin-bottom:8px;"><span class="ms sm">restaurant_menu</span> Diet & Lifestyle</div>
-          <ul style="font-size:0.85rem; margin-left:20px; margin-bottom:15px;">${(result.lifestyle_and_diet||[]).map(t => `<li>${t}</li>`).join('')}</ul>
+          <div style="font-weight:700; color:var(--text); margin-bottom:8px;"><span class="ms sm">restaurant_menu</span> Diet &amp; Lifestyle</div>
+          <ul style="font-size:0.85rem; margin-left:20px; margin-bottom:15px;">${(result.lifestyle_and_diet||[]).map(t => `<li>${esc(t)}</li>`).join('')}</ul>
         </div>
         <div style="margin-top:15px; padding-top:15px; border-top: 1px solid var(--b);">
           <div style="font-weight:700; color:var(--danger); margin-bottom:8px;"><span class="ms sm">warning</span> When to Call the Doctor</div>
-          <ul style="font-size:0.85rem; margin-left:20px;">${(result.when_to_call_doctor||[]).map(w => `<li>${w}</li>`).join('')}</ul>
+          <ul style="font-size:0.85rem; margin-left:20px;">${(result.when_to_call_doctor||[]).map(w => `<li>${esc(w)}</li>`).join('')}</ul>
         </div>
         ${aiDisclaimer}
       </div>`;
@@ -508,26 +545,42 @@ Output ONLY valid JSON:
         drpHtml = `<div style="margin-top:15px; border-top: 1px solid var(--b); padding-top: 15px;">
           <div style="color:var(--danger); font-weight:700; margin-bottom:8px;"><span class="ms sm">warning</span> Drug-Related Problems (DRPs)</div>
           ${result.drug_related_problems.map(drp => {
-            let badgeClass = drp.severity === 'Critical' || drp.severity === 'High' ? 'dng' : 'warn';
-            let badgeText = drp.severity ? drp.severity.toUpperCase() : 'UNKNOWN';
+            /* badgeClass is derived from a strict comparison — safe, not injected directly.
+               badgeText IS injected — escaped. */
+            const badgeClass = (drp.severity === 'Critical' || drp.severity === 'High') ? 'dng' : 'warn';
+            const badgeText = esc(drp.severity ? drp.severity.toUpperCase() : 'UNKNOWN');
             return `<div class="aalert ${badgeClass}" style="margin-bottom:8px; flex-direction:column;">
-              <div style="font-weight:700; text-transform:uppercase; font-size:0.7rem;">${drp.category || 'Issue'} [${badgeText} RISK]</div>
-              <div style="margin:4px 0; color:var(--text);"><strong>Issue:</strong> ${drp.issue || '-'}</div>
-              <div style="color:var(--text);"><strong>Intervention:</strong> ${drp.actionable_solution || '-'}</div>
-            </div>`;}).join('')}
+              <div style="font-weight:700; text-transform:uppercase; font-size:0.7rem;">${esc(drp.category || 'Issue')} [${badgeText} RISK]</div>
+              <div style="margin:4px 0; color:var(--text);"><strong>Issue:</strong> ${esc(drp.issue || '-')}</div>
+              <div style="color:var(--text);"><strong>Intervention:</strong> ${esc(drp.actionable_solution || '-')}</div>
+            </div>`;
+          }).join('')}
         </div>`;
       }
+
       const currentTherapyHtml = Array.isArray(result.current_therapy) && result.current_therapy.length > 0 ? 
-        result.current_therapy.map(c => `<tr><td><strong>${c.drug || '-'}</strong></td><td>${c.dose || '-'}</td><td>${c.freq || '-'}</td><td>${c.indication || '-'}</td><td>${c.moa || '-'}</td><td>${c.monitoring || '-'}</td><td>${c.side_effects || '-'}</td></tr>`).join('') 
+        result.current_therapy.map(c => `<tr>
+          <td><strong>${esc(c.drug || '-')}</strong></td>
+          <td>${esc(c.dose || '-')}</td>
+          <td>${esc(c.freq || '-')}</td>
+          <td>${esc(c.indication || '-')}</td>
+          <td>${esc(c.moa || '-')}</td>
+          <td>${esc(c.monitoring || '-')}</td>
+          <td>${esc(c.side_effects || '-')}</td>
+        </tr>`).join('') 
         : '<tr><td colspan="7" style="text-align:center;">No current therapy active.</td></tr>';
+
       const correlationsHtml = Array.isArray(result.clinical_correlations) && result.clinical_correlations.length > 0 ?
-        `<div style="font-size:0.85rem; color:var(--text); margin-bottom:12px; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px;"><strong>Clinical Correlations:</strong><ul style="margin:5px 0 0 20px;">${result.clinical_correlations.map(c=>`<li>${c}</li>`).join('')}</ul></div>` : '';
+        `<div style="font-size:0.85rem; color:var(--text); margin-bottom:12px; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px;"><strong>Clinical Correlations:</strong><ul style="margin:5px 0 0 20px;">${result.clinical_correlations.map(c=>`<li>${esc(c)}</li>`).join('')}</ul></div>` : '';
+
+      /* References: map each to esc() before joining, rather than joining raw and injecting */
+      const referencesHtml = (result.references||[]).map(r => esc(r)).join('<br>');
 
       html = `<div class="cdss-report">
-        <div class="rep-hdr">${mode === 'baseline' ? 'Admission CMR Report' : 'Daily Progress CMR'} - ${new Date().toLocaleDateString()} at ${ts()} ${doaDisplay}</div>
+        <div class="rep-hdr">${mode === 'baseline' ? 'Admission CMR Report' : 'Daily Progress CMR'} - ${esc(new Date().toLocaleDateString())} at ${ts()} ${doaDisplay}</div>
         <div style="font-size:0.85rem; color:var(--text); margin-bottom:12px; line-height: 1.5;">
-          <strong>Demographics & History:</strong> ${result.patient_demographics_history || 'Not provided.'}<br><br>
-          <strong>Baseline Vitals & Labs:</strong> ${result.baseline_vitals_labs || 'Not provided.'}
+          <strong>Demographics &amp; History:</strong> ${esc(result.patient_demographics_history || 'Not provided.')}<br><br>
+          <strong>Baseline Vitals &amp; Labs:</strong> ${esc(result.baseline_vitals_labs || 'Not provided.')}
         </div>
         <div style="font-weight:700; color:var(--text); margin-bottom:8px;"><span class="ms sm">medication</span> Current Therapy Assessment</div>
         <div style="width:100%; overflow-x:auto; margin-bottom:15px; border-radius:8px; border:1px solid var(--b);">
@@ -539,14 +592,15 @@ Output ONLY valid JSON:
         ${correlationsHtml} ${drpHtml}
         <div style="margin-top:15px; padding-top:15px; border-top: 1px solid var(--b);">
            <div style="font-weight:700; color:var(--ok); margin-bottom:8px;"><span class="ms sm">check_circle</span> Pharmacist Interventions</div>
-           <ul style="font-size:0.85rem; margin-left:20px;">${(result.pharmacist_interventions||['No interventions required at this time.']).map(i=>`<li>${i}</li>`).join('')}</ul>
+           <ul style="font-size:0.85rem; margin-left:20px;">${(result.pharmacist_interventions||['No interventions required at this time.']).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
         </div>
         <div style="margin-top:15px; font-size:0.7rem; color:var(--muted); border-top: 1px dashed var(--b); padding-top:10px;">
-          <strong>Evidence-Based References:</strong><br>${(result.references||[]).join('<br>')}
+          <strong>Evidence-Based References:</strong><br>${referencesHtml}
         </div>
         ${aiDisclaimer}
       </div>`;
     }
+
     if(pt) { pt.htmlTimeline = html + pt.htmlTimeline; saveWardData(); openCDSSFile(activeCaseId); }
   } catch(e) {
     const loaderEl = document.getElementById(loaderId);
@@ -554,7 +608,6 @@ Output ONLY valid JSON:
   }
 }
 
-/* FIX: null/array check on currentTx before mapping */
 function qDoseCheck(id) {
   const pt = wardPatients.find(p=>p.id===id);
   if(!pt) return;
