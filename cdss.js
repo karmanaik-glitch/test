@@ -424,9 +424,8 @@ async function callCDSSAI(payload, mode, lang = 'English') {
 
   let sysPrompt = "";
   if (mode === 'baseline' || mode === 'progress') {
-    /* FIX: updated to reference calculated_CrCl_CG and explicitly distinguish it from
-       eGFR-based CKD staging, preventing the AI from conflating the two metrics. */
-    sysPrompt = `You are PharmAI, an elite Senior Clinical Pharmacist. Perform a rigorous, multi-variable Comprehensive Medication Review (CMR).
+    sysPrompt = `You are PharmAI, an elite Senior Clinical Pharmacist. Perform a rigorous, multi-variable Comprehensive Medication Review (CMR) and output it as a structured SOAP note.
+
 UNIVERSAL CLINICAL RULES:
 1. CUMULATIVE TOXICITY: Explicitly calculate and flag Anticholinergic burden, Serotonin Syndrome risk, combined CNS depression, QTc prolongation, and stacked bleeding risks.
 2. RENAL/HEPATIC: Use 'calculated_CrCl_CG' from the payload for drug dose adjustments. This is a Cockcroft-Gault estimate for DRUG DOSING only — do NOT use it to stage CKD (CKD staging requires CKD-EPI eGFR which is not provided here).
@@ -438,15 +437,29 @@ UNIVERSAL CLINICAL RULES:
 
 Sort drug_related_problems in descending severity: Critical first, then High, Moderate, Low.
 
-Output ONLY valid JSON:
+Output ONLY valid JSON in this exact SOAP schema:
 {
-  "patient_demographics_history": "Exact demographics, DOA, diagnosis, chief complaints, social history, PMH. Highlight Red Flags.",
-  "baseline_vitals_labs": "Exact baseline vitals and labs. Explicitly state the calculated CrCl (CG) and evaluate hemodynamic stability.",
-  "current_therapy": [ { "drug": "Name", "dose": "Dose", "freq": "Freq", "indication": "Inferred Indication", "moa": "Brief MOA", "monitoring": "Params", "side_effects": "Key SEs" } ],
-  "clinical_correlations": ["Correlate symptoms/labs with medications."],
-  "drug_related_problems": [ { "category": "Contraindication | Drug-Drug Interaction | Drug-Disease Interaction | Dosing Error | Polypharmacy | Adverse Effect", "issue": "Specific clinical description", "severity": "Critical | High | Moderate | Low", "actionable_solution": "Precise clinical intervention" } ],
-  "pharmacist_interventions": ["Specific steps addressing the DRPs."],
-  "references": ["Cite specific guidelines"]
+  "soap": {
+    "S": {
+      "chief_complaint": "Primary reason for admission or today's visit in one sentence.",
+      "history": "Demographics (name, age, sex, weight, DOA), diagnosis, PMH, surgical/medication history, allergies (flag as RED FLAGS), social history, family history. For progress notes include patient-reported updates and symptom changes since last review."
+    },
+    "O": {
+      "vitals": "All vitals with brief interpretation — flag abnormals explicitly (e.g. HR 112 — tachycardic, SpO2 94% — borderline hypoxic).",
+      "labs": "All lab values with reference-range flags. State calculated_CrCl_CG explicitly. Note trends if progress note.",
+      "current_therapy": [ { "drug": "Name", "dose": "Dose", "freq": "Frequency", "route": "Route", "indication": "Inferred Indication", "moa": "Brief MOA", "monitoring": "Required monitoring parameters", "side_effects": "Key adverse effects to watch" } ]
+    },
+    "A": {
+      "clinical_correlations": ["Connect objective findings to medications — e.g. hyponatremia likely SIADH from sertraline."],
+      "drug_related_problems": [ { "category": "Contraindication | Drug-Drug Interaction | Drug-Disease Interaction | Dosing Error | Polypharmacy | Adverse Effect | Untreated Indication | Unnecessary Drug", "issue": "Specific, patient-contextualised clinical description.", "severity": "Critical | High | Moderate | Low", "actionable_solution": "Precise, implementable clinical intervention." } ]
+    },
+    "P": {
+      "pharmacist_interventions": ["Numbered, prioritised actions directly addressing each DRP."],
+      "monitoring_plan": ["Specific parameter, target value, and frequency — e.g. Serum K+ — target 3.5–5.0 mEq/L — recheck in 48h."],
+      "follow_up": "Clear follow-up timeline and handoff instructions.",
+      "references": ["Specific guideline or evidence source for each intervention."]
+    }
+  }
 }`;
   } else if (mode === 'discharge') {
     sysPrompt = `You are an elite Patient Educator and Geriatric Care Specialist. Generate a highly specific, actionable discharge counseling card.
@@ -485,43 +498,51 @@ Output ONLY valid JSON:
     let rawContent = data.choices[0].message.content.trim().replace(/^```json/gi, '').replace(/^```/gi, '').replace(/```$/g, '').trim();
     const result = JSON.parse(rawContent);
 
-    if(Array.isArray(result.drug_related_problems)) {
+    /* Sort DRPs — now nested under soap.A */
+    const soap = result.soap || {};
+    const sA = soap.A || {};
+    if(Array.isArray(sA.drug_related_problems)) {
       const sevOrder = { 'Critical': 1, 'High': 2, 'Moderate': 3, 'Low': 4 };
-      result.drug_related_problems.sort((a,b) => (sevOrder[a.severity] || 99) - (sevOrder[b.severity] || 99));
+      sA.drug_related_problems.sort((a,b) => (sevOrder[a.severity] || 99) - (sevOrder[b.severity] || 99));
     }
-    
+
     const loaderEl = document.getElementById(loaderId);
     if(loaderEl) loaderEl.remove();
 
-    /* ══ FIX: ALL AI-SUPPLIED FIELDS ESCAPED BEFORE innerHTML INJECTION ══
-       Previously every field from result.* was interpolated raw into the HTML
-       template strings below. A prompt-injection attack (or a hallucination) could
-       produce a result field containing <script> tags or event-handler attributes,
-       which would execute in the browser with full access to the Groq API key and
-       patient data. Every string from result.* is now passed through esc() before
-       injection. Only the static structural HTML around them is trusted. */
-
+    /* All AI-supplied fields escaped before innerHTML injection — see prior security note */
     let html = '';
 
-    /* Payload values (user form input) also escaped — they arrive as strings */
     const safeDod = esc(payload.dod || '');
     const safeDoa = esc((payload.demographics && payload.demographics.doa) ? payload.demographics.doa : '');
+    const dodDisplay = safeDod ? `<span style="float:right;color:var(--text);font-size:0.85rem;font-weight:600;">DOD: ${safeDod}</span>` : '';
+    const doaDisplay = safeDoa ? `<span style="float:right;color:var(--text);font-size:0.85rem;font-weight:600;">DOA: ${safeDoa}</span>` : '';
 
-    const dodDisplay = safeDod ? `<span style="float:right; color:var(--text); font-size:0.85rem; font-weight:600;">DOD: ${safeDod}</span>` : '';
-    const doaDisplay = safeDoa ? `<span style="float:right; color:var(--text); font-size:0.85rem; font-weight:600;">DOA: ${safeDoa}</span>` : '';
-
-    const aiDisclaimer = `<div style="margin-top:15px; padding:8px 12px; background:rgba(255,193,7,0.07); border:1px solid rgba(255,193,7,0.25); border-radius:8px; font-size:0.7rem; color:var(--muted); line-height:1.5;">
+    const aiDisclaimer = `<div style="margin-top:15px;padding:8px 12px;background:rgba(255,193,7,0.07);border:1px solid rgba(255,193,7,0.25);border-radius:8px;font-size:0.7rem;color:var(--muted);line-height:1.5;">
       <strong style="color:var(--warn);">&#9888; Clinical Decision Support Only:</strong> This AI-generated report is intended to assist a qualified clinical pharmacist. Always verify drug-related problems, doses, and recommendations against current formulary, local protocols, and the patient's full clinical picture before acting. Cited references are AI-suggested — verify independently.
     </div>`;
 
+    /* ── SOAP section label helper ─────────────────────────────────────────── */
+    const soapSection = (letter, label, color, icon, content) => `
+      <div style="margin-bottom:18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:30px;height:30px;border-radius:8px;background:${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <span style="font-size:0.85rem;font-weight:700;color:#fff;font-family:monospace;">${letter}</span>
+          </div>
+          <div style="font-weight:700;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text);">${label}</div>
+          <span class="ms xs" style="color:var(--muted)">${icon}</span>
+        </div>
+        <div style="padding-left:40px;font-size:0.85rem;line-height:1.65;color:var(--text);">${content}</div>
+      </div>`;
+
     if(mode === 'discharge') {
-      html = `<div class="cdss-report" style="border-left:4px solid var(--ok); background:rgba(16,185,129,0.05);">
+      /* Discharge mode is patient-facing — SOAP does not apply. Unchanged. */
+      html = `<div class="cdss-report" style="border-left:4px solid var(--ok);background:rgba(16,185,129,0.05);">
         <div class="rep-hdr" style="color:var(--ok)"><span class="ms sm">home</span> ${esc(result.title || 'Discharge Instructions')} (${esc(lang)}) ${dodDisplay}</div>
-        <p style="margin-bottom:15px; line-height:1.6;"><strong>Overview:</strong> ${esc(result.diagnosis_simple || '')}</p>
-        <div style="font-weight:700; color:var(--ok); margin-bottom:8px;"><span class="ms sm">medication</span> Your Medications</div>
-        <div style="width:100%; overflow-x:auto; margin-bottom:15px; border-radius:8px; border:1px solid var(--b);">
-          <table class="rep-tbl" style="min-width: 600px; margin:0;"><tr><th>Medicine</th><th>Purpose</th><th>How to Take</th><th>Specific Warnings</th></tr>
-          ${(result.medications||[]).map(m => `<tr>
+        <p style="margin-bottom:15px;line-height:1.6;"><strong>Overview:</strong> ${esc(result.diagnosis_simple || '')}</p>
+        <div style="font-weight:700;color:var(--ok);margin-bottom:8px;"><span class="ms sm">medication</span> Your Medications</div>
+        <div style="width:100%;overflow-x:auto;margin-bottom:15px;border-radius:8px;border:1px solid var(--b);">
+          <table class="rep-tbl" style="min-width:600px;margin:0;"><tr><th>Medicine</th><th>Purpose</th><th>How to Take</th><th>Specific Warnings</th></tr>
+          ${(result.medications||[]).map(m=>`<tr>
             <td><strong>${esc(m.name||'-')}</strong></td>
             <td>${esc(m.purpose||'-')}</td>
             <td>${esc(m.schedule||'-')}</td>
@@ -529,73 +550,109 @@ Output ONLY valid JSON:
           </tr>`).join('')}</table>
         </div>
         <div style="margin-top:15px;">
-          <div style="font-weight:700; color:var(--text); margin-bottom:8px;"><span class="ms sm">restaurant_menu</span> Diet &amp; Lifestyle</div>
-          <ul style="font-size:0.85rem; margin-left:20px; margin-bottom:15px;">${(result.lifestyle_and_diet||[]).map(t => `<li>${esc(t)}</li>`).join('')}</ul>
+          <div style="font-weight:700;color:var(--text);margin-bottom:8px;"><span class="ms sm">restaurant_menu</span> Diet &amp; Lifestyle</div>
+          <ul style="font-size:0.85rem;margin-left:20px;margin-bottom:15px;">${(result.lifestyle_and_diet||[]).map(t=>`<li>${esc(t)}</li>`).join('')}</ul>
         </div>
-        <div style="margin-top:15px; padding-top:15px; border-top: 1px solid var(--b);">
-          <div style="font-weight:700; color:var(--danger); margin-bottom:8px;"><span class="ms sm">warning</span> When to Call the Doctor</div>
-          <ul style="font-size:0.85rem; margin-left:20px;">${(result.when_to_call_doctor||[]).map(w => `<li>${esc(w)}</li>`).join('')}</ul>
+        <div style="margin-top:15px;padding-top:15px;border-top:1px solid var(--b);">
+          <div style="font-weight:700;color:var(--danger);margin-bottom:8px;"><span class="ms sm">warning</span> When to Call the Doctor</div>
+          <ul style="font-size:0.85rem;margin-left:20px;">${(result.when_to_call_doctor||[]).map(w=>`<li>${esc(w)}</li>`).join('')}</ul>
         </div>
         ${aiDisclaimer}
       </div>`;
     } else {
-      const hasDRPs = Array.isArray(result.drug_related_problems) && result.drug_related_problems.length > 0;
-      let drpHtml = '';
-      if(hasDRPs) {
-        drpHtml = `<div style="margin-top:15px; border-top: 1px solid var(--b); padding-top: 15px;">
-          <div style="color:var(--danger); font-weight:700; margin-bottom:8px;"><span class="ms sm">warning</span> Drug-Related Problems (DRPs)</div>
-          ${result.drug_related_problems.map(drp => {
-            /* badgeClass is derived from a strict comparison — safe, not injected directly.
-               badgeText IS injected — escaped. */
-            const badgeClass = (drp.severity === 'Critical' || drp.severity === 'High') ? 'dng' : 'warn';
-            const badgeText = esc(drp.severity ? drp.severity.toUpperCase() : 'UNKNOWN');
-            return `<div class="aalert ${badgeClass}" style="margin-bottom:8px; flex-direction:column;">
-              <div style="font-weight:700; text-transform:uppercase; font-size:0.7rem;">${esc(drp.category || 'Issue')} [${badgeText} RISK]</div>
-              <div style="margin:4px 0; color:var(--text);"><strong>Issue:</strong> ${esc(drp.issue || '-')}</div>
-              <div style="color:var(--text);"><strong>Intervention:</strong> ${esc(drp.actionable_solution || '-')}</div>
-            </div>`;
-          }).join('')}
+      /* ── SOAP note rendering ─────────────────────────────────────────────── */
+      const sS = soap.S || {};
+      const sO = soap.O || {};
+      const sP = soap.P || {};
+
+      /* S — Subjective */
+      const sContent = `
+        <div style="margin-bottom:6px;"><strong>Chief Complaint:</strong> ${esc(sS.chief_complaint || 'Not provided.')}</div>
+        <div><strong>History:</strong> ${esc(sS.history || 'Not provided.')}</div>`;
+
+      /* O — Objective: vitals + labs prose, then therapy table */
+      const therapyRows = Array.isArray(sO.current_therapy) && sO.current_therapy.length > 0
+        ? sO.current_therapy.map(c=>`<tr>
+            <td><strong>${esc(c.drug||'-')}</strong></td>
+            <td>${esc(c.dose||'-')}</td>
+            <td>${esc(c.freq||'-')}</td>
+            <td>${esc(c.route||'-')}</td>
+            <td>${esc(c.indication||'-')}</td>
+            <td>${esc(c.moa||'-')}</td>
+            <td>${esc(c.monitoring||'-')}</td>
+            <td>${esc(c.side_effects||'-')}</td>
+          </tr>`).join('')
+        : '<tr><td colspan="8" style="text-align:center;">No current therapy recorded.</td></tr>';
+
+      const oContent = `
+        <div style="margin-bottom:8px;"><strong>Vitals:</strong> ${esc(sO.vitals || 'Not provided.')}</div>
+        <div style="margin-bottom:10px;"><strong>Labs:</strong> ${esc(sO.labs || 'Not provided.')}</div>
+        <div style="font-weight:600;margin-bottom:6px;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;">Current Therapy</div>
+        <div style="width:100%;overflow-x:auto;border-radius:8px;border:1px solid var(--b);">
+          <table class="rep-tbl" style="min-width:860px;margin:0;">
+            <tr><th>Drug</th><th>Dose</th><th>Freq</th><th>Route</th><th>Indication</th><th>MOA</th><th>Monitoring</th><th>Side Effects</th></tr>
+            ${therapyRows}
+          </table>
         </div>`;
-      }
 
-      const currentTherapyHtml = Array.isArray(result.current_therapy) && result.current_therapy.length > 0 ? 
-        result.current_therapy.map(c => `<tr>
-          <td><strong>${esc(c.drug || '-')}</strong></td>
-          <td>${esc(c.dose || '-')}</td>
-          <td>${esc(c.freq || '-')}</td>
-          <td>${esc(c.indication || '-')}</td>
-          <td>${esc(c.moa || '-')}</td>
-          <td>${esc(c.monitoring || '-')}</td>
-          <td>${esc(c.side_effects || '-')}</td>
-        </tr>`).join('') 
-        : '<tr><td colspan="7" style="text-align:center;">No current therapy active.</td></tr>';
+      /* A — Assessment: correlations + DRPs */
+      const correlationsHtml = Array.isArray(sA.clinical_correlations) && sA.clinical_correlations.length > 0
+        ? `<div style="margin-bottom:10px;"><strong>Clinical Correlations:</strong>
+            <ul style="margin:5px 0 0 18px;">${sA.clinical_correlations.map(c=>`<li>${esc(c)}</li>`).join('')}</ul>
+           </div>` : '';
 
-      const correlationsHtml = Array.isArray(result.clinical_correlations) && result.clinical_correlations.length > 0 ?
-        `<div style="font-size:0.85rem; color:var(--text); margin-bottom:12px; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px;"><strong>Clinical Correlations:</strong><ul style="margin:5px 0 0 20px;">${result.clinical_correlations.map(c=>`<li>${esc(c)}</li>`).join('')}</ul></div>` : '';
+      const drpItems = Array.isArray(sA.drug_related_problems) && sA.drug_related_problems.length > 0
+        ? sA.drug_related_problems.map(drp => {
+            const badgeClass = (drp.severity === 'Critical' || drp.severity === 'High') ? 'dng' : 'warn';
+            const badgeText  = esc(drp.severity ? drp.severity.toUpperCase() : 'UNKNOWN');
+            return `<div class="aalert ${badgeClass}" style="margin-bottom:8px;flex-direction:column;">
+              <div style="font-weight:700;text-transform:uppercase;font-size:0.7rem;">${esc(drp.category||'Issue')} [${badgeText} RISK]</div>
+              <div style="margin:4px 0;color:var(--text);"><strong>Issue:</strong> ${esc(drp.issue||'-')}</div>
+              <div style="color:var(--text);"><strong>Intervention:</strong> ${esc(drp.actionable_solution||'-')}</div>
+            </div>`;
+          }).join('')
+        : '<div style="color:var(--muted);font-size:0.85rem;">No drug-related problems identified.</div>';
 
-      /* References: map each to esc() before joining, rather than joining raw and injecting */
-      const referencesHtml = (result.references||[]).map(r => esc(r)).join('<br>');
+      const aContent = correlationsHtml +
+        `<div style="margin-top:8px;"><strong style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;">Drug-Related Problems</strong>
+          <div style="margin-top:8px;">${drpItems}</div>
+        </div>`;
+
+      /* P — Plan */
+      const interventionsHtml = (sP.pharmacist_interventions||['No interventions required at this time.']).map((i,idx)=>`<li><strong>${idx+1}.</strong> ${esc(i)}</li>`).join('');
+      const monitoringHtml    = (sP.monitoring_plan||[]).map(m=>`<li>${esc(m)}</li>`).join('');
+      const referencesHtml    = (sP.references||[]).map(r=>esc(r)).join('<br>');
+
+      const pContent = `
+        <div style="margin-bottom:10px;">
+          <strong>Pharmacist Interventions:</strong>
+          <ul style="margin:5px 0 0 18px;">${interventionsHtml}</ul>
+        </div>
+        ${monitoringHtml ? `<div style="margin-bottom:10px;">
+          <strong>Monitoring Plan:</strong>
+          <ul style="margin:5px 0 0 18px;">${monitoringHtml}</ul>
+        </div>` : ''}
+        <div style="margin-bottom:10px;">
+          <strong>Follow-up:</strong> ${esc(sP.follow_up || 'Not specified.')}
+        </div>
+        <div style="font-size:0.72rem;color:var(--muted);border-top:1px dashed var(--b);padding-top:8px;margin-top:4px;">
+          <strong>References:</strong><br>${referencesHtml || 'None cited.'}
+        </div>`;
 
       html = `<div class="cdss-report">
-        <div class="rep-hdr">${mode === 'baseline' ? 'Admission CMR Report' : 'Daily Progress CMR'} - ${esc(new Date().toLocaleDateString())} at ${ts()} ${doaDisplay}</div>
-        <div style="font-size:0.85rem; color:var(--text); margin-bottom:12px; line-height: 1.5;">
-          <strong>Demographics &amp; History:</strong> ${esc(result.patient_demographics_history || 'Not provided.')}<br><br>
-          <strong>Baseline Vitals &amp; Labs:</strong> ${esc(result.baseline_vitals_labs || 'Not provided.')}
+        <div class="rep-hdr">
+          <span class="ms sm">description</span>
+          ${mode === 'baseline' ? 'Pharmacist SOAP — Admission CMR' : 'Pharmacist SOAP — Daily Progress'}
+          &nbsp;&middot;&nbsp;${esc(new Date().toLocaleDateString())} ${ts()} ${doaDisplay}
         </div>
-        <div style="font-weight:700; color:var(--text); margin-bottom:8px;"><span class="ms sm">medication</span> Current Therapy Assessment</div>
-        <div style="width:100%; overflow-x:auto; margin-bottom:15px; border-radius:8px; border:1px solid var(--b);">
-          <table class="rep-tbl" style="min-width: 800px; margin:0;">
-            <tr><th>Drug</th><th>Dose</th><th>Freq</th><th>Indication</th><th>MOA</th><th>Monitoring</th><th>Side Effects</th></tr>
-            ${currentTherapyHtml}
-          </table>
-        </div>
-        ${correlationsHtml} ${drpHtml}
-        <div style="margin-top:15px; padding-top:15px; border-top: 1px solid var(--b);">
-           <div style="font-weight:700; color:var(--ok); margin-bottom:8px;"><span class="ms sm">check_circle</span> Pharmacist Interventions</div>
-           <ul style="font-size:0.85rem; margin-left:20px;">${(result.pharmacist_interventions||['No interventions required at this time.']).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
-        </div>
-        <div style="margin-top:15px; font-size:0.7rem; color:var(--muted); border-top: 1px dashed var(--b); padding-top:10px;">
-          <strong>Evidence-Based References:</strong><br>${referencesHtml}
+        <div style="border-top:1px solid var(--b);padding-top:14px;margin-top:4px;">
+          ${soapSection('S', 'Subjective', '#6366f1', 'person', sContent)}
+          <div style="border-top:1px solid var(--b);margin:2px 0 16px;"></div>
+          ${soapSection('O', 'Objective', '#0ea5e9', 'biotech', oContent)}
+          <div style="border-top:1px solid var(--b);margin:2px 0 16px;"></div>
+          ${soapSection('A', 'Assessment', '#f59e0b', 'warning', aContent)}
+          <div style="border-top:1px solid var(--b);margin:2px 0 16px;"></div>
+          ${soapSection('P', 'Plan', '#10b981', 'check_circle', pContent)}
         </div>
         ${aiDisclaimer}
       </div>`;
