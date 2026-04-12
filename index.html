@@ -748,7 +748,8 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
           <span id="ward-badge" style="display:none; position:absolute; top:-2px; right:-2px; width:16px; height:16px; background:var(--danger); border-radius:50%; font-size:9px; font-weight:700; color:#fff; align-items:center; justify-content:center;">0</span>
         </button>
         <button class="hbtn" onclick="openM('tm');hap(10);" title="Tools"><span class="ms sm">calculate</span></button>
-        <button class="hbtn" onclick="openM('sm');hap(10);" title="Settings"><span class="ms sm">settings</span></button>  
+        <button class="hbtn" onclick="openM('sm');hap(10);" title="Settings"><span class="ms sm">settings</span></button>
+        <div id="demo-counter" onclick="showLimitModal()" title="Daily query limit" style="cursor:pointer;font-size:0.65rem;font-weight:700;padding:4px 8px;border-radius:8px;border:1px solid rgba(16,185,129,0.3);background:rgba(16,185,129,0.15);color:var(--ok);white-space:nowrap;letter-spacing:0.02em;display:flex;align-items:center;gap:4px;user-select:none;"><span class="ms" style="font-size:13px;">bolt</span><span>5 / 5</span></div>
         <div class="pc" id="hpc" onclick="toggleSB();hap(10);">?</div>
       </div>
     </header>
@@ -946,6 +947,31 @@ body.light .ltbl tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
         <div class="sw"><span class="ccount" id="cc">0</span><button id="sbtn" onclick="sendQ();hap(20);"><span class="ms sm">arrow_upward</span></button></div>
       </div>
       <div class="disc"><span class="ms xs" style="color:var(--t2);flex-shrink:0">info</span> Clinical reference only &mdash; always consult a licensed healthcare professional.</div>
+    </div>
+  </div>
+</div>
+
+<div class="mov" id="demo-limit-modal" onclick="handleOC(event,'demo-limit-modal')">
+  <div class="msh" style="max-width:360px;border-radius:24px;">
+    <div class="mhdr">
+      <div class="mtitle"><span class="ms md" style="color:var(--warn)">bolt</span> Daily Limit Reached</div>
+      <button class="mclose" onclick="closeM('demo-limit-modal')"><span class="ms sm">close</span></button>
+    </div>
+    <div class="mbody" style="text-align:center;padding-bottom:24px;">
+      <div style="width:56px;height:56px;border-radius:16px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <span class="ms lg" style="color:var(--warn)">hourglass_top</span>
+      </div>
+      <div style="font-size:1rem;font-weight:700;margin-bottom:8px;color:var(--text);">You've used all 5 free queries today</div>
+      <div style="font-size:0.82rem;color:var(--t2);line-height:1.6;margin-bottom:16px;">
+        Your limit resets in <strong id="demo-reset-time" style="color:var(--text);">—</strong>.
+      </div>
+      <div style="background:rgba(255,193,7,0.07);border:1px solid rgba(255,193,7,0.25);border-radius:10px;padding:10px 14px;font-size:0.75rem;color:var(--muted);line-height:1.6;margin-bottom:20px;text-align:left;">
+        <span class="ms xs" style="color:var(--warn);vertical-align:middle;margin-right:4px;">info</span>
+        <strong style="color:var(--warn);">Free Demo Disclaimer:</strong> PharmAI is powered by a free-tier AI API. Daily query limits are in place to keep this demo freely accessible to everyone. Queries reset at midnight. For unlimited clinical use, contact us for a full-access plan.
+      </div>
+      <button class="obtn pri" style="width:100%;justify-content:center;" onclick="closeM('demo-limit-modal')">
+        <span class="ms xs">check_circle</span> Got it
+      </button>
     </div>
   </div>
 </div>
