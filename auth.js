@@ -161,6 +161,7 @@ async function enterApp(fbUser){
   await loadSettingsFromFirestore();
   await loadWardData(); 
   await loadSessions();
+  await loadDemoUsage();
   newChat();
   checkOnboarding();
 }
