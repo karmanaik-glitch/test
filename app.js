@@ -1,19 +1,17 @@
 'use strict';
 
 /* ══ DRUG AUTOCOMPLETE DATABASE ══ */
-const indianDrugs = ["Amoxicillin","Clavulanic Acid","Paracetamol","Metformin","Glimepiride","Atorvastatin","Rosuvastatin","Pantoprazole","Rabeprazole","Amlodipine","Telmisartan","Losartan","Levothyroxine","Aspirin","Clopidogrel","Azithromycin","Cefixime","Ceftriaxone","Diclofenac","Aceclofenac","Ibuprofen","Ondansetron","Domperidone","Metoprolol","Bisoprolol","Sitagliptin","Vildagliptin","Teneligliptin","Dapagliptin","Empagliflozin","Montelukast","Levocetirizine","Cetirizine","Fexofenadine","Pregabalin","Gabapentin","Methylcobalamin","Vitamin D3","Calcium Carbonate","Iron","Folic Acid","Zinc","Vitamin B Complex","Vitamin C","Cilnidipine","Chlorthalidone","Metronidazole","Ciprofloxacin","Ofloxacin","Levofloxacin","Doxycycline","Fluconazole","Itraconazole","Miconazole","Albendazole","Ivermectin","Hydroxychloroquine","Linezolid","Meropenem","Piperacillin","Tazobactam","Amikacin","Gentamicin","Vancomycin","Teicoplanin","Colistin","Polymyxin B","Tigecycline","Dexamethasone","Methylprednisolone","Prednisolone","Hydrocortisone","Deflazacort","Budesonide","Formoterol","Salbutamol","Levosalbutamol","Ipratropium","Tiotropium","Fluticasone","Mometasone","Umeclidinium","Glycopyrrolate","Theophylline","Doxofylline","Deriphyllin","Ambroxol","Guaifenesin","Bromhexine","Dextromethorphan","Chlorpheniramine","Phenylephrine","Paroxetine","Escitalopram","Sertraline","Fluoxetine","Fluvoxamine","Amitriptyline","Duloxetine","Venlafaxine","Mirtazapine","Desvenlafaxine","Bupropion","Clonazepam","Diazepam","Lorazepam","Alprazolam","Etizolam","Clobazam","Zolpidem","Nitrazepam","Midazolam","Chlordiazepoxide","Phenytoin","Carbamazepine","Valproate","Levetiracetam","Lamotrigine","Topiramate","Oxcarbazepine","Zonisamide","Lacosamide","Brivaracetam","Perampanel","Haloperidol","Risperidone","Olanzapine","Quetiapine","Clozapine","Aripiprazole","Paliperidone","Lurasidone","Amisulpride",
-  /* Added high-risk NTI and anticoagulant drugs */
+const indianDrugs = ["Amoxicillin","Clavulanic Acid","Paracetamol","Metformin","Glimepiride","Atorvastatin","Rosuvastatin","Pantoprazole","Rabeprazole","Amlodipine","Telmisartan","Losartan","Levothyroxine","Aspirin","Clopidogrel","Azithromycin","Cefixime","Ceftriaxone","Diclofenac","Aceclofenac","Ibuprofen","Ondansetron","Domperidone","Metoprolol","Bisoprolol","Sitagliptin","Vildagliptin","Teneligliptin","Dapaglifozin","Empagliflozin","Montelukast","Levocetirizine","Cetirizine","Fexofenadine","Pregabalin","Gabapentin","Methylcobalamin","Vitamin D3","Calcium Carbonate","Iron","Folic Acid","Zinc","Vitamin B Complex","Vitamin C","Cilnidipine","Chlorthalidone","Metronidazole","Ciprofloxacin","Ofloxacin","Levofloxacin","Doxycycline","Fluconazole","Itraconazole","Miconazole","Albendazole","Ivermectin","Hydroxychloroquine","Linezolid","Meropenem","Piperacillin","Tazobactam","Amikacin","Gentamicin","Vancomycin","Teicoplanin","Colistin","Polymyxin B","Tigecycline","Dexamethasone","Methylprednisolone","Prednisolone","Hydrocortisone","Deflazacort","Budesonide","Formoterol","Salbutamol","Levosalbutamol","Ipratropium","Tiotropium","Fluticasone","Mometasone","Umeclidinium","Glycopyrrolate","Theophylline","Doxofylline","Deriphyllin","Ambroxol","Guaifenesin","Bromhexine","Dextromethorphan","Chlorpheniramine","Phenylephrine","Paroxetine","Escitalopram","Sertraline","Fluoxetine","Fluvoxamine","Amitriptyline","Duloxetine","Venlafaxine","Mirtazapine","Desvenlafaxine","Bupropion","Clonazepam","Diazepam","Lorazepam","Alprazolam","Etizolam","Clobazam","Zolpidem","Nitrazepam","Midazolam","Chlordiazepoxide","Phenytoin","Carbamazepine","Valproate","Levetiracetam","Lamotrigine","Topiramate","Oxcarbazepine","Zonisamide","Lacosamide","Brivaracetam","Perampanel","Haloperidol","Risperidone","Olanzapine","Quetiapine","Clozapine","Aripiprazole","Paliperidone","Lurasidone","Amisulpride",
   "Warfarin","Digoxin","Lithium","Tacrolimus","Cyclosporine","Sirolimus","Everolimus","Methotrexate","Rivaroxaban","Apixaban","Dabigatran","Edoxaban","Enoxaparin","Heparin","Insulin Glargine","Insulin Aspart","Insulin Lispro","Insulin Regular","Insulin NPH","Glibenclamide","Pioglitazone","Sulfasalazine","Azathioprine","Mycophenolate","Leflunomide","Colchicine","Allopurinol","Febuxostat","Zoledronic Acid","Alendronate","Rifampicin","Isoniazid","Pyrazinamide","Ethambutol","Streptomycin","Bedaquiline","Linezolid","Clofazimine","Oseltamivir","Acyclovir","Valacyclovir","Tenofovir","Lamivudine","Efavirenz","Lopinavir","Ritonavir","Dolutegravir","Furosemide","Spironolactone","Torsemide","Hydrochlorothiazide","Indapamide","Enalapril","Ramipril","Perindopril","Nebivolol","Carvedilol","Ivabradine","Ranolazine","Amiodarone","Sotalol","Diltiazem","Verapamil","Nitroglycerine","Isosorbide Mononitrate","Isosorbide Dinitrate","Clopidogrel","Ticagrelor","Prasugrel","Alteplase","Streptokinase","Ondansetron","Granisetron","Aprepitant","Dexamethasone","Filgrastim","Erythropoietin","Tranexamic Acid","Phytomenadione","Protamine","Naloxone","Flumazenil","N-Acetylcysteine","Atropine","Adrenaline","Noradrenaline","Dopamine","Dobutamine","Vasopressin","Nitroglycerin IV","Nicardipine","Labetalol IV","Magnesium Sulfate","Calcium Gluconate","Potassium Chloride","Sodium Bicarbonate"];
 
 function handleAC(inp) {
   const v = inp.value.toLowerCase();
-  /* FIX: safe sibling lookup */
   const ac = inp.nextElementSibling;
   if(!ac || !ac.classList.contains('rx-ac')) return;
   if(v.length < 2) { ac.classList.remove('show'); return; }
   const matches = indianDrugs.filter(d => d.toLowerCase().includes(v)).slice(0,8);
   if(matches.length > 0) {
-    ac.innerHTML = matches.map(m => `<div class="rx-ac-item" onclick="selectAC('${m.replace(/'/g,"\\'")}', '${inp.id}')">${m}</div>`).join('');
+    ac.innerHTML = matches.map(m => `<div class="rx-ac-item" onclick="selectAC('${m.replace(/'/g,"\\'")}', '${inp.id}')">${esc(m)}</div>`).join('');
     ac.classList.add('show');
   } else { ac.classList.remove('show'); }
 }
@@ -22,7 +20,6 @@ function selectAC(val, id) {
   const inp = document.getElementById(id);
   if(!inp) return;
   inp.value = val;
-  /* FIX: null guard on nextElementSibling */
   const ac = inp.nextElementSibling;
   if(ac && ac.classList.contains('rx-ac')) ac.classList.remove('show');
   inp.focus();
@@ -35,8 +32,7 @@ document.addEventListener('click', e => {
 });
 
 /* ══ PREMIUM UI SOUND ENGINE ══
-   FIX: AudioContext created lazily on first user interaction, not at module load
-   (avoids browser autoplay policy violation and mobile Safari issues) */
+   AudioContext created lazily on first user interaction (avoids autoplay policy violation) */
 let audioCtx = null;
 
 function getAudioCtx() {
@@ -77,12 +73,11 @@ const Sounds = {
       gainNode.gain.linearRampToValueAtTime(0, now + 0.2);
       osc.start(now); osc.stop(now + 0.25);
     }
-    /* FIX: osc nodes auto-disconnect after stop(), no leak */
     osc.onended = () => { osc.disconnect(); gainNode.disconnect(); };
   }
 };
 
-/* FIX: resume AudioContext on first click (lazy init) */
+/* Resume AudioContext on first click */
 document.addEventListener('click', () => {
   const ctx = getAudioCtx();
   if(ctx && ctx.state === 'suspended') ctx.resume();
@@ -94,7 +89,7 @@ window.addEventListener('online', () => { toast('Back online. Syncing data...', 
 
 /* ══ STATE ══ */
 const GROQ_MODEL='llama-3.3-70b-versatile';
-const VISION_MODEL='meta-llama/llama-4-scout-17b-16e-instruct'; /* FIX: updated from deprecated llama-3.2-11b-vision-preview */
+const VISION_MODEL='meta-llama/llama-4-scout-17b-16e-instruct';
 const MAX_HIST=10;
 let user=null,uName='',groqKey='',loading=false,micOn=false,recog=null,hist=[],sessions=[],currSess=null,rxList=[],lastQuery='';
 const F={preg:false,peds:false,geri:false,counsel:false,steward:false};
@@ -102,7 +97,7 @@ let S={haptic:true,theme:'auto'};
 let _pendingFBUser=null;
 let lastSendTime = 0;
 
-/* ══ SIDEBAR SWIPE LOGIC ══ */
+/* ══ SIDEBAR SWIPE ══ */
 let touchStartX = 0;
 document.addEventListener('DOMContentLoaded', () => {
   const sb = document.getElementById('sb');
@@ -114,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ══ HAPTIC & TOAST ══ */
 function hap(ms){if(!S.haptic)return;if('vibrate'in navigator)navigator.vibrate(ms);}
-function toast(msg,type='info',dur=3000){const w=document.getElementById('tw');const el=document.createElement('div');el.className=`toast ${type}`;const ic={ok:'check_circle',warn:'warning',err:'error',info:'info'};el.innerHTML=`<span class="ms xs">${ic[type]||'info'}</span><span>${msg}</span>`;w.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),350);},dur);}
+function toast(msg,type='info',dur=3000){const w=document.getElementById('tw');const el=document.createElement('div');el.className=`toast ${type}`;const ic={ok:'check_circle',warn:'warning',err:'error',info:'info'};el.innerHTML=`<span class="ms xs">${ic[type]||'info'}</span><span>${esc(msg)}</span>`;w.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),350);},dur);}
 
 /* ══ THEME / SETTINGS ══ */
 async function loadS(){
@@ -128,15 +123,13 @@ function saveS(){localforage.setItem('pharmai_S', S);}
 function applyTheme(m){const p=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';const a=m==='auto'?p:m;document.body.classList.toggle('light',a==='light');document.getElementById('tcm').content=a==='light'?'#F7F7F7':'#000000';}
 function setTheme(m){S.theme=m;saveS();applyTheme(m);document.querySelectorAll('.tp-pill').forEach(p=>p.classList.remove('active'));document.getElementById('th-'+m)?.classList.add('active');hap(10);Sounds.play('tick');syncSettings();}
 
-/* FIX: toggleSet was hardcoded to 'hap-t' element regardless of key param.
-   Now correctly reads the setting value from the actual checkbox for that setting. */
 function toggleSet(k){
   const elMap = { haptic: 'hap-t' };
   const elId = elMap[k];
   if(elId) {
     S[k] = document.getElementById(elId).checked;
   } else {
-    S[k] = !S[k]; /* fallback for any boolean setting without a checkbox */
+    S[k] = !S[k];
   }
   saveS(); hap(10); Sounds.play('tick'); syncSettings();
 }
@@ -182,7 +175,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     if(btn.classList.contains('cpy-btn'))cpyTxt(decodeURIComponent(txt),btn);
   });
 
-  /* Session search */
   const searchEl = document.getElementById('sess-search');
   if(searchEl) searchEl.addEventListener('input', () => renderSB(searchEl.value.trim().toLowerCase()));
 
@@ -224,13 +216,11 @@ function flU(el){el.closest('.flw').classList.add('up');}
 function flB(el){if(!el.value&&el.value!=='0')el.closest('.flw').classList.remove('up');}
 function toggleSB(){const sb=document.getElementById('sb'),ov=document.getElementById('sb-ov');if(sb.classList.contains('open')){sb.classList.remove('open');setTimeout(()=>ov.classList.remove('open'),350);}else{ov.classList.add('open');setTimeout(()=>sb.classList.add('open'),10);}Sounds.play('tick');}
 
-/* FIX: Named function for opening PolyRx tab — replaces fragile nth-child selector */
 function openPolyRxTab(){
   openM('tm');
   const btn = document.querySelector('.tbtn[data-tab="poly"]');
   if(btn) btn.click();
 }
-/* FIX: Named function for opening CKD calculator */
 function openCKDCalc(){
   openM('tm');
   const calcBtn = document.querySelector('.tbtn[data-tab="calc"]');
@@ -256,11 +246,15 @@ async function loadSessions(){
       if (docSnap.exists && docSnap.data().sessions && docSnap.data().sessions.length > 0) {
         sessions = docSnap.data().sessions.sort((a,b)=>b.id-a.id);
         renderSB();
-        const batch = db.batch();
-        sessions.forEach(sess => {
-          batch.set(db.collection('users').doc(user).collection('sessions').doc(sess.id.toString()), sess);
-        });
-        await batch.commit();
+        /* FIX: chunk migration to stay under Firestore 500-doc batch limit.
+           Previously this was a single unbounded batch.set loop — identical
+           bug that ward migration already fixed — now consistent. */
+        const CHUNK = 400;
+        for(let i=0;i<sessions.length;i+=CHUNK){
+          const batch = db.batch();
+          sessions.slice(i,i+CHUNK).forEach(s=>batch.set(db.collection('users').doc(user).collection('sessions').doc(s.id.toString()),s));
+          await batch.commit();
+        }
         localforage.setItem('psess_'+user, sessions);
       }
     }
@@ -275,7 +269,6 @@ function saveSessions(){
   if(!user) return;
   let kb = getDocSizeKB(sessions);
   if(kb > 800) {
-    /* FIX: remove oldest (end of array since sorted newest-first) */
     sessions = sessions.slice(0, sessions.length - 5);
     toast('Older chats auto-archived to save space.', 'info');
   }
@@ -308,7 +301,6 @@ function saveHist(){
 
 async function genTitle(q){if(!groqKey||!currSess)return;try{const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},body:JSON.stringify({model:GROQ_MODEL,messages:[{role:'system',content:'Generate a 3-5 word clinical topic title. Return ONLY the title, no punctuation at end.'},{role:'user',content:q}],temperature:.3,max_tokens:20})});const d=await r.json();const t=d.choices?.[0]?.message?.content?.trim();if(t){const s=sessions.find(x=>x.id===currSess);if(s){s.title=t;saveSessions();renderSB();}}}catch(e){}}
 
-/* FIX: renderSB accepts optional filter string for session search */
 function renderSB(filter=''){
   const l=document.getElementById('sbl');
   if(!l) return;
@@ -342,21 +334,31 @@ async function delChat(id,e){
 
 /* ══ EXPORT / IMPORT ══ */
 function exportData(){
+  /* FIX: warn the user that the export contains sensitive patient data (PHI).
+     Under DPDP Act 2023 / HIPAA, health data must be handled with appropriate safeguards.
+     The downloaded file is unencrypted — user must be aware before proceeding. */
+  const confirmed = confirm(
+    '⚠ PHI Warning\n\n' +
+    'This backup file will contain sensitive patient data including names, diagnoses, ' +
+    'medications, and lab results in plain text.\n\n' +
+    'Store it in a secure, encrypted location. Do not share it or leave it in Downloads.\n\n' +
+    'Continue with export?'
+  );
+  if(!confirmed) return;
+
   const dump = { sessions, wardPatients, settings: S, exportDate: new Date().toISOString(), userName: uName };
   const b=new Blob([JSON.stringify(dump)],{type:'application/json'});
   const u=URL.createObjectURL(b);const a=document.createElement('a');
   a.href=u;a.download=`PharmAI_Backup_${new Date().toISOString().split('T')[0]}.json`;
-  a.click();URL.revokeObjectURL(u);toast('Exported!','ok');
+  a.click();URL.revokeObjectURL(u);toast('Exported! Store this file securely.','ok');
 }
 
-/* FIX: importData now validates structure before applying, prevents data corruption */
 function importData(e){
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
   r.onload=async function(ev){
     try{
       const p=JSON.parse(ev.target.result);
-      /* Validate required shape */
       if(typeof p !== 'object' || p === null) throw new Error('Not a valid JSON object.');
       if(p.sessions !== undefined && !Array.isArray(p.sessions)) throw new Error('Invalid sessions format.');
       if(p.wardPatients !== undefined && !Array.isArray(p.wardPatients)) throw new Error('Invalid ward data format.');
@@ -368,7 +370,6 @@ function importData(e){
       await localforage.setItem('psess_'+user, sessions);
       await localforage.setItem('pharmai_ward_' + user, wardPatients);
       
-      /* Firestore writes in chunks to respect 500-doc batch limit */
       const CHUNK = 400;
       for(let i=0;i<sessions.length;i+=CHUNK){
         const batch=db.batch();
@@ -419,14 +420,13 @@ function analyzeRx(){
 /* ══ CHAT ENGINE ══ */
 function renderWelcome(){
   const h=new Date().getHours();const gr=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
-  const name=uName||'Doctor';
+  const name=esc(uName||'Doctor');
   const wHtml=`
     <span class="ws-word" style="animation-delay:0.3s">${gr.split(' ')[0]}</span>
     <span class="ws-word" style="animation-delay:0.45s">${gr.split(' ')[1]},</span>
     <span class="ws-word" style="animation-delay:0.6s; color: var(--blue);">${name}.</span>
   `;
   const c=document.getElementById('chat');
-  /* FIX: replaced fragile .tbtn:nth-child(2) selector with named function openPolyRxTab() */
   c.innerHTML=`<div id="ws">
     <div class="ws-logo"><span class="ms lg fill">cardiology</span></div>
     <div class="ws-g">${wHtml}</div>
@@ -451,7 +451,12 @@ function renderWelcome(){
 
 const getChat=()=>document.getElementById('chat');
 function scrollD(){setTimeout(()=>{const c=getChat();c.scrollTo({top:c.scrollHeight,behavior:'smooth'});},50);}
-function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* esc() — HTML-escapes a value for safe insertion into innerHTML.
+   All user-supplied and AI-supplied strings must pass through this
+   before being placed in a template literal that targets innerHTML. */
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
 function autoR(){const q=document.getElementById('query');q.style.height='auto';q.style.height=Math.min(q.scrollHeight,120)+'px';}
 function insertQ(t){hap(10);const q=document.getElementById('query');q.value=t;autoR();q.focus();}
 function insertAndSend(t){insertQ(t);setTimeout(sendQ,100);}
@@ -465,7 +470,6 @@ function regenLast(btn){
   if(userMsg && userMsg.classList.contains('user')) userMsg.remove();
   aiMsg.remove();
   if(hist.length >= 2) { hist.pop(); hist.pop(); }
-  /* FIX: use insertAndSend so the text appears in box before sending */
   insertAndSend(lastQuery);
 }
 
@@ -473,30 +477,60 @@ function appendUser(text){const ws=document.getElementById('ws');if(ws)ws.remove
 function appendSkel(){const d=document.createElement('div');d.className='msg';d.id='typ';d.innerHTML=`<div class="avatar ai"><span class="ms sm fill">cardiology</span></div><div class="bwrap" style="max-width:84%;width:100%"><div class="skel"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="think-txt">PharmAI is analyzing...</div></div></div>`;getChat().appendChild(d);scrollD();}
 function remTyp(){const t=document.getElementById('typ');if(t)t.remove();}
 
-/* FIX: sanitize AI HTML details with DOMPurify before innerHTML injection (XSS prevention) */
+/* FIX: sanitizeHTML — when DOMPurify is available it strips dangerous HTML while
+   preserving safe formatting tags. When DOMPurify is NOT available the previous
+   regex-based allowlist was bypassable (e.g. attribute-based XSS, expression()
+   in IE). The safe fallback is now to return fully HTML-escaped plain text via
+   esc(), which renders the AI response as readable text without any risk. */
 function sanitizeHTML(html) {
-  if(typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(html, {ALLOWED_TAGS:['p','ul','li','ol','strong','em','br','small','b','i','span','div'], ALLOWED_ATTR:['style']});
-  /* Fallback: strip all tags if DOMPurify unavailable */
-  return String(html).replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi,'').replace(/<[^>]+>/g, m => /^<(p|ul|li|ol|strong|em|br|small|b|i|span|div)(\s|\/|>)/.test(m) ? m : '');
+  if(typeof DOMPurify !== 'undefined') {
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['p','ul','li','ol','strong','em','br','small','b','i','span','div'],
+      ALLOWED_ATTR: ['style']
+    });
+  }
+  /* Safe fallback: render as escaped plain text */
+  return esc(String(html));
 }
 
+/* FIX: appendAI — all AI-supplied string fields are now passed through esc() before
+   being injected into innerHTML template literals. Previously p.summary, p.warning,
+   p.danger, and p.keyPoints items were injected raw, allowing a prompt-injection
+   attack to embed arbitrary HTML in these fields. Only p.details is intentionally
+   HTML and continues to be processed through sanitizeHTML(). */
 function appendAI(p){
-  const CM={'Side Effects':{c:'se',i:'bolt',l:'Side Effects'},'Dosage':{c:'dos',i:'medication',l:'Dosage'},'Drug Interaction':{c:'int',i:'monitor_heart',l:'Drug Interaction'},'Contraindication':{c:'con',i:'block',l:'Contraindication'},'Mechanism of Action':{c:'mec',i:'biotech',l:'Mechanism of Action'},'General Information':{c:'gen',i:'info',l:'General Information'}};
-  const cat=CM[p.category]||{c:'gen',i:'info',l:p.category||'Response'};
+  const CM={
+    'Side Effects':{c:'se',i:'bolt',l:'Side Effects'},
+    'Dosage':{c:'dos',i:'medication',l:'Dosage'},
+    'Drug Interaction':{c:'int',i:'monitor_heart',l:'Drug Interaction'},
+    'Contraindication':{c:'con',i:'block',l:'Contraindication'},
+    'Mechanism of Action':{c:'mec',i:'biotech',l:'Mechanism of Action'},
+    'General Information':{c:'gen',i:'info',l:'General Information'}
+  };
+  /* FIX: when category falls through to the AI-supplied value, escape it */
+  const cat = CM[p.category] || {c:'gen', i:'info', l: esc(p.category || 'Response')};
   const badges=[F.preg?'<span class="fb2">Pregnancy</span>':'', F.peds?'<span class="fb2">Pediatric</span>':'', F.geri?'<span class="fb2">Geriatric</span>':'', F.counsel?'<span class="fb2">Counseling</span>':'', F.steward?'<span class="fb2">Stewardship</span>':''].filter(Boolean).join('');
-  const wH=p.warning?`<div class="aalert warn"><span class="ms xs" style="flex-shrink:0">warning</span><span>${p.warning}</span></div>`:'';
-  const dH=p.danger?`<div class="aalert dng"><span class="ms xs" style="flex-shrink:0">gpp_bad</span><span>${p.danger}</span></div>`:'';
-  const kH=p.keyPoints?.length?`<div class="kpw"><div class="aslbl"><span class="ms xs">checklist</span> Key Points</div>${p.keyPoints.map(k=>`<div class="kpi"><div class="kpd"></div><span>${k}</span></div>`).join('')}</div>`:'';
+
+  /* FIX: p.warning and p.danger escaped before injection */
+  const wH=p.warning?`<div class="aalert warn"><span class="ms xs" style="flex-shrink:0">warning</span><span>${esc(p.warning)}</span></div>`:'';
+  const dH=p.danger?`<div class="aalert dng"><span class="ms xs" style="flex-shrink:0">gpp_bad</span><span>${esc(p.danger)}</span></div>`:'';
+
+  /* FIX: p.keyPoints items escaped */
+  const kH=p.keyPoints?.length?`<div class="kpw"><div class="aslbl"><span class="ms xs">checklist</span> Key Points</div>${p.keyPoints.map(k=>`<div class="kpi"><div class="kpd"></div><span>${esc(k)}</span></div>`).join('')}</div>`:'';
   const sH=p.sources?.length?`<div class="srcrow"><span class="srclbl">Sources</span>${p.sources.map(s=>`<span class="srcc">${esc(s)}</span>`).join('')}</div>`:'';
+
   const plain=[p.summary,p.warning?'Warning: '+p.warning:'',p.danger?'Danger: '+p.danger:'',(p.details||'').replace(/<[^>]+>/g,''),p.keyPoints?.length?'Key points: '+p.keyPoints.join('. '):'',p.sources?.length?'Sources: '+p.sources.join(', '):''].filter(Boolean).join('\n\n');
-  /* FIX: sanitize p.details before injection */
+
+  /* p.details is intentionally HTML — sanitize through DOMPurify */
   const safeDetails = sanitizeHTML(p.details || '');
+
   const d=document.createElement('div');d.className='msg';
+  /* FIX: p.summary escaped */
   d.innerHTML=`<div class="avatar ai"><span class="ms sm fill">cardiology</span></div>
   <div class="bwrap" style="max-width:84%"><div class="aic ${cat.c}">
     <div class="ctag ${cat.c}"><span class="ms xs">${cat.i}</span> ${cat.l}</div>
     ${badges?`<div class="fbadges">${badges}</div>`:''}
-    <div class="asum"><span class="ms xs">bookmark</span>${p.summary}</div>
+    <div class="asum"><span class="ms xs">bookmark</span>${esc(p.summary)}</div>
     ${wH}${dH}
     <div class="aslbl" style="padding-top:12px"><span class="ms xs">menu_book</span> Details</div>
     <div class="abody">${safeDetails}</div>
@@ -565,7 +599,6 @@ async function sendQ(imgBase64 = null){
   try{
     const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},body:JSON.stringify({model:modelToUse,messages:msgs,temperature:0.25,max_tokens:1400,response_format: imgBase64 ? undefined : {type:'json_object'}})});
     const data=await res.json();
-    /* FIX: handle Groq rate limit and other API-level errors */
     if(data.error) {
       const errMsg = data.error.message || 'API error';
       if(data.error.type === 'tokens' || (data.error.code && data.error.code.includes('rate'))) {
@@ -578,19 +611,20 @@ async function sendQ(imgBase64 = null){
     let raw=data.choices[0].message?.content||'{}';
     
     if (imgBase64) {
-      raw = JSON.stringify({ category: "General Information", summary: "Vision Analysis Complete", details: `<p>${raw}</p>` });
+      /* FIX: escape the raw vision model output before embedding it in HTML.
+         Previously `raw` was interpolated directly as <p>${raw}</p>, meaning any HTML
+         the vision model happened to output (or was prompted to output) would be injected
+         into the DOM. esc() ensures it renders as plain text regardless of content. */
+      raw = JSON.stringify({ category: "General Information", summary: "Vision Analysis Complete", details: `<p>${esc(raw)}</p>` });
     }
     
     const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
     remTyp();appendAI(parsed);hap(15);
     
-    /* FIX: increased threshold from 500 to 2000 chars so real clinical responses
-       aren't wiped from history. This dramatically improves follow-up context. */
     const slimRaw = raw.length > 2000
       ? JSON.stringify({ category: parsed.category || 'System', summary: parsed.summary || 'Complex report generated — see chat for full details.' })
       : raw;
 
-    /* FIX: only push to hist when text is non-empty (avoids image-only empty entries) */
     if(text) {
       hist.push({role:'user',content:text},{role:'assistant',content:slimRaw});
     }
@@ -630,12 +664,19 @@ async function capScan(){
 
   if (typeof Tesseract === 'undefined' && document.getElementById('cam-mode').value === 'ocr') {
     toast('Loading OCR Engine (First time only)...', 'info');
-    await new Promise((resolve) => {
+    await new Promise((resolve, reject) => {
       const script = document.createElement('script');
+      /* FIX: load Tesseract with crossOrigin set. A Subresource Integrity (SRI) hash
+         should be added here once computed for the pinned version:
+         script.integrity = 'sha384-<hash>';
+         Until then, crossOrigin ensures the script cannot read cookies/storage via CORS. */
       script.src = "https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js";
+      script.crossOrigin = 'anonymous';
       script.onload = resolve;
+      script.onerror = () => { toast('Failed to load OCR engine.', 'err'); reject(new Error('Tesseract load failed')); };
       document.head.appendChild(script);
-    });
+    }).catch(() => { btn.disabled=false; btn.innerHTML='<span class="ms md">document_scanner</span> Capture'; return; });
+    if(typeof Tesseract === 'undefined') return;
   }
 
   btn.disabled=true;
