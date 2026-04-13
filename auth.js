@@ -49,12 +49,15 @@ function setLoginLoading(on) {
   const lb = document.getElementById('lbtn');
   const sb = document.getElementById('sbtn2');
   const gb = document.getElementById('google-btn');
+  const guestb = document.getElementById('guest-btn'); // Target the new button
+
   if(lb) {
     lb.disabled = on;
     lb.innerHTML = on ? '<span class="ms sm" style="animation:spin 1s linear infinite">progress_activity</span> Signing in...' : '<span class="ms sm">login</span> Sign In';
   }
   if(sb) sb.disabled = on;
   if(gb) gb.disabled = on;
+  if(guestb) guestb.disabled = on; // Disable the guest button during load
 }
 
 function doLogin(){
@@ -100,6 +103,14 @@ function signInWithGoogle(){
   setLoginLoading(true);
   const provider=new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider).catch(e=>{
+    setLoginLoading(false);
+    showErr(e.message);
+  });
+}
+
+function loginAsGuest() {
+  setLoginLoading(true);
+  auth.signInAnonymously().catch(e => {
     setLoginLoading(false);
     showErr(e.message);
   });
