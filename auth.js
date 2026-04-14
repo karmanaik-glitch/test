@@ -62,6 +62,8 @@ function _resetIdleTimer() {
   document.addEventListener(evt, _resetIdleTimer, { passive: true });
 });
 
+let _enteringApp = false; /* guard against double enterApp on profile update */
+
 async function fsWrite(fn, label='') {
   try { await fn(); } catch(e) {
     console.error(`Firestore write failed (${label}):`, e);
@@ -155,6 +157,9 @@ async function saveName(){
 }
 
 async function enterApp(fbUser){
+  if(_enteringApp) return;
+  _enteringApp = true;
+  try {
   user=fbUser.uid;
   uName=fbUser.isAnonymous?'Guest':(fbUser.displayName||(fbUser.email?fbUser.email.split('@')[0]:'User'));
   try{
@@ -183,8 +188,10 @@ async function enterApp(fbUser){
   }
   await loadDemoUsage();
   applyGuestUI(fbUser.isAnonymous);
+  _enteringApp = false;
   newChat();
   checkOnboarding();
+  } catch(err) { _enteringApp = false; console.error('enterApp error:', err); }
 }
 
 /* Show/hide guest-specific UI elements in the settings panel */
