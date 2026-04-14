@@ -163,8 +163,8 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 /* ══ SIDEBAR (HISTORY) ══ */
 #sb-ov { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 999; display: none; backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s; }
 #sb-ov.open { display: block; opacity: 1; }
-#sb { position: fixed; top: 0; left: -300px; width: 280px; height: 100dvh; background: var(--sf); backdrop-filter: blur(40px); border-right: 1px solid var(--b); z-index: 1000; transition: transform 0.35s var(--spring); display: flex; flex-direction: column; box-shadow: none; }
-#sb.open { transform: translateX(300px); box-shadow: 20px 0 80px rgba(0,0,0,0.5); }
+#sb { position: fixed; top: 0; left: -300px; width: 280px; height: 100dvh; background: var(--sf); backdrop-filter: blur(40px); border-right: 1px solid var(--b); z-index: 1000; transition: transform 0.35s var(--spring); display: flex; flex-direction: column; box-shadow: none; pointer-events: none; }
+#sb.open { transform: translateX(300px); box-shadow: 20px 0 80px rgba(0,0,0,0.5); pointer-events: all; }
 .sb-top { padding: max(env(safe-area-inset-top), 20px) 16px 16px; border-bottom: 1px solid var(--b); display: flex; flex-direction: column; gap: 12px; }
 .sb-profile { display: flex; align-items: center; gap: 12px; padding: 4px 0 8px; }
 .sb-pc { width: 44px; height: 44px; border-radius: 50%; background: var(--text); display: flex; align-items: center; justify-content: center; color: var(--bg); font-weight: 700; font-size: 1.1rem; flex-shrink: 0; }
