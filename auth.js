@@ -3,23 +3,14 @@ const firebaseConfig={apiKey:"AIzaSyAe1xX20eBj2Zb5HVZR3jsh7Aa1fp-mu_A",authDomai
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
-
-/* SESSION PERSISTENCE — use SESSION so credentials don't survive a closed browser tab.
-   On shared clinical workstations this prevents the next user from inheriting an open session. */
 auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
 
-db.enablePersistence().catch(function(err) {
-  console.log("Offline persistence failed to enable", err);
-});
-
-/* ══ IDLE TIMEOUT — auto-logout after 30 min of inactivity ══
-   FIX: prevents abandoned sessions exposing PHI on shared workstations */
-const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+/* ══ IDLE TIMEOUT — auto-logout after 30 min of inactivity ══ */
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
 let _idleTimer = null;
 
 function _resetIdleTimer() {
   clearTimeout(_idleTimer);
-  /* Only arm the timer when a user is actually logged in */
   if (!auth.currentUser) return;
   _idleTimer = setTimeout(async () => {
     if (auth.currentUser) {
@@ -29,7 +20,6 @@ function _resetIdleTimer() {
   }, IDLE_TIMEOUT_MS);
 }
 
-/* Attach to all common interaction events (passive listeners — no performance impact) */
 ['mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(evt => {
   document.addEventListener(evt, _resetIdleTimer, { passive: true });
 });
@@ -49,15 +39,14 @@ function setLoginLoading(on) {
   const lb = document.getElementById('lbtn');
   const sb = document.getElementById('sbtn2');
   const gb = document.getElementById('google-btn');
-  const guestb = document.getElementById('guest-btn'); // Target the new button
-
+  const guestB = document.getElementById('guest-btn');
   if(lb) {
-    lb.disabled = on;
-    lb.innerHTML = on ? '<span class="ms sm" style="animation:spin 1s linear infinite">progress_activity</span> Signing in...' : '<span class="ms sm">login</span> Sign In';
+      lb.disabled = on;
+      lb.innerHTML = on ? '<span class="ms sm" style="animation:spin 1s linear infinite">progress_activity</span> Signing in...' : '<span class="ms sm">login</span> Sign In';
   }
   if(sb) sb.disabled = on;
   if(gb) gb.disabled = on;
-  if(guestb) guestb.disabled = on; // Disable the guest button during load
+  if(guestB) guestB.disabled = on;
 }
 
 function doLogin(){
@@ -69,13 +58,7 @@ function doLogin(){
   setLoginLoading(true);
   auth.signInWithEmailAndPassword(email,pass).then(()=>{ Sounds.play('tick'); }).catch(e=>{
     setLoginLoading(false);
-    const msgs={
-      'auth/user-not-found':'No account found with this email.',
-      'auth/wrong-password':'Incorrect password.',
-      'auth/invalid-email':'Invalid email address.',
-      'auth/invalid-credential':'Incorrect email or password.',
-      'auth/too-many-requests':'Too many attempts. Please try again later.'
-    };
+    const msgs={'auth/user-not-found':'No account found with this email.','auth/wrong-password':'Incorrect password.','auth/invalid-email':'Invalid email address.','auth/too-many-requests':'Too many attempts. Please try again later.'};
     showErr(msgs[e.code]||e.message);
   });
 }
@@ -90,11 +73,7 @@ function doSignUp(){
   setLoginLoading(true);
   auth.createUserWithEmailAndPassword(email,pass).catch(e=>{
     setLoginLoading(false);
-    const msgs={
-      'auth/email-already-in-use':'An account already exists with this email.',
-      'auth/invalid-email':'Invalid email address.',
-      'auth/weak-password':'Password is too weak.'
-    };
+    const msgs={'auth/email-already-in-use':'An account already exists with this email.','auth/invalid-email':'Invalid email address.','auth/weak-password':'Password is too weak.'};
     showErr(msgs[e.code]||e.message);
   });
 }
@@ -108,11 +87,11 @@ function signInWithGoogle(){
   });
 }
 
-function loginAsGuest() {
+function signInAsGuest(){
   setLoginLoading(true);
-  auth.signInAnonymously().catch(e => {
+  auth.signInAnonymously().catch(e=>{
     setLoginLoading(false);
-    showErr(e.message);
+    showErr('Guest sign-in failed: '+e.message);
   });
 }
 
@@ -134,31 +113,20 @@ async function saveName(){
     _pendingFBUser=null;
     document.getElementById('lp').style.display='none';
     await enterApp(fbUser);
-  }catch(e){
-    nerr.style.display='flex';
-    const errSpan=document.getElementById('name-err').querySelector('span:last-child');
-    if(errSpan) errSpan.textContent=e.message;
-  }
+  }catch(e){nerr.style.display='flex';document.getElementById('name-err').querySelector('span:last-child')&&(document.getElementById('name-err').lastChild.textContent=e.message);}
 }
 
 async function enterApp(fbUser){
   user=fbUser.uid;
-  uName=fbUser.displayName||(fbUser.email?fbUser.email.split('@')[0]:'User');
+  uName=fbUser.isAnonymous?'Guest':(fbUser.displayName||(fbUser.email?fbUser.email.split('@')[0]:'User'));
   try{
     const cfg=await db.collection('config').doc('keys').get();
-    if(cfg.exists) {
-      groqKey=cfg.data().groq||'';
-      /* Persist key locally so offline sessions work after first successful load */
-      if(groqKey) await localforage.setItem('pgroq', groqKey);
-    }
+    if(cfg.exists)groqKey=cfg.data().groq||'';
   }catch(e){
+    // NEW: Async localforage check for the Groq API key
     const localKey = await localforage.getItem('pgroq');
     groqKey = localKey || '';
-    if(!groqKey) console.warn('Groq API key unavailable — AI features disabled.');
   }
-
-  /* Arm the idle timer now that the user is authenticated */
-  _resetIdleTimer();
 
   document.getElementById('ap').style.display='flex';
   document.getElementById('lp').style.display='none';
@@ -166,35 +134,65 @@ async function enterApp(fbUser){
   document.getElementById('hpc').textContent=init;
   document.getElementById('sbpc').textContent=init;
   document.getElementById('sbnm').textContent=uName;
-  const provider=fbUser.providerData[0]?.providerId==='google.com'?'Google Account':fbUser.email;
+  const provider=fbUser.isAnonymous?'Guest Session':(fbUser.providerData[0]?.providerId==='google.com'?'Google Account':fbUser.email);
   document.getElementById('sui').textContent=uName+' · '+provider;
+  _resetIdleTimer();
   applyUI();
   await loadSettingsFromFirestore();
-  await loadWardData(); 
-  await loadSessions();
+  if(!fbUser.isAnonymous){
+    await loadWardData();
+    await loadSessions();
+  }
   await loadDemoUsage();
+  applyGuestUI(fbUser.isAnonymous);
   newChat();
   checkOnboarding();
 }
 
+/* Show/hide guest-specific UI elements in the settings panel */
+function applyGuestUI(isGuest) {
+  const label  = document.getElementById('si-delete-label');
+  const desc   = document.getElementById('si-delete-desc');
+  const btn    = document.getElementById('si-delete-btn');
+  const exportBtn = document.querySelector('.bkbtn.exp');
+  if(!label) return;
+  if(isGuest) {
+    label.textContent = 'Create a Full Account';
+    label.style.color = 'var(--ok)';
+    desc.textContent  = 'Your data is not saved — sign up to keep it.';
+    btn.textContent   = 'Sign Up';
+    btn.style.background = 'var(--ok)';
+    btn.style.color = '#fff';
+    btn.onclick = () => { closeM('sm'); doLogout(); };
+    if(exportBtn) exportBtn.style.display = 'none';
+  } else {
+    label.textContent = 'Delete Account';
+    label.style.color = 'var(--danger)';
+    desc.textContent  = 'Permanently deletes your account & all data';
+    btn.textContent   = 'Delete';
+    btn.style.background = '';
+    btn.style.color = '';
+    btn.onclick = deleteAccount;
+    if(exportBtn) exportBtn.style.display = '';
+  }
+}
+
 async function doLogout(){
-  /* FIX: capture uid before clearing, so we can remove the correct localforage keys */
-  const uid = user;
   clearTimeout(_idleTimer);
-  await auth.signOut();
-
-  /* Clear in-memory state */
-  user=null; uName=''; groqKey=''; hist=[]; sessions=[]; currSess=null;
-
-  /* FIX: clear all cached PHI and the API key from browser storage on every logout.
-     Previously only deleteAccount() removed pgroq — regular logout left PHI and the
-     key accessible to the next person who opens the app on a shared device. */
-  if(uid) {
-    await localforage.removeItem('pharmai_ward_' + uid);
-    await localforage.removeItem('psess_' + uid);
+  const _currentFBUser = auth.currentUser;
+  const _uid = user;
+  if(_currentFBUser && _currentFBUser.isAnonymous){
+    try { await _currentFBUser.delete(); } catch(e) { console.warn('Anon delete failed',e); }
+  } else {
+    await auth.signOut();
+  }
+  user=null;uName='';groqKey='';hist=[];sessions=[];currSess=null;wardPatients=[];
+  /* Clear cached PHI and API key from browser storage on every logout */
+  if(_uid) {
+    await localforage.removeItem('pharmai_ward_' + _uid);
+    await localforage.removeItem('psess_' + _uid);
   }
   await localforage.removeItem('pgroq');
-
   document.getElementById('ap').style.display='none';
   document.getElementById('lp').style.display='flex';
   document.getElementById('auth-step').style.display='block';
@@ -216,16 +214,12 @@ async function deleteAccount(){
       await batch.commit();
     }
     const uid = user;
-    await localforage.removeItem('pgroq');
-    if(uid) {
-      await localforage.removeItem('pharmai_ward_' + uid);
-      await localforage.removeItem('psess_' + uid);
-    }
     const fbUser=auth.currentUser;
     if(fbUser)await fbUser.delete();
+    if(uid){ await localforage.removeItem('pharmai_ward_'+uid); await localforage.removeItem('psess_'+uid); }
+    await localforage.removeItem('pgroq');
     toast('Account deleted.','info');
-    clearTimeout(_idleTimer);
-    user=null; uName=''; groqKey=''; hist=[]; sessions=[]; currSess=null;
+    user=null;uName='';groqKey='';hist=[];sessions=[];currSess=null;wardPatients=[];wardPatients=[];
     document.getElementById('ap').style.display='none';
     document.getElementById('lp').style.display='flex';
     document.getElementById('auth-step').style.display='block';
