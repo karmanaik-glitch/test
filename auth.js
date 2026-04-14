@@ -3,7 +3,45 @@ const firebaseConfig={apiKey:"AIzaSyAe1xX20eBj2Zb5HVZR3jsh7Aa1fp-mu_A",authDomai
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
-auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+/* Await persistence before registering the auth state observer.
+   Not awaiting caused the observer to never fire (Firebase buffers
+   state changes until persistence is confirmed). */
+(async () => {
+  try {
+    await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+  } catch(e) {
+    console.warn('setPersistence failed, falling back to default:', e);
+  }
+
+  auth.onAuthStateChanged(async(fbUser)=>{
+    const loading_el=document.getElementById('auth-loading');
+    if(fbUser){
+      /* Anonymous users skip the name-step entirely */
+      if(fbUser.isAnonymous){
+        loading_el.style.display='none';
+        await enterApp(fbUser);
+        return;
+      }
+      if(!fbUser.displayName){
+        _pendingFBUser=fbUser;
+        loading_el.style.display='none';
+        document.getElementById('lp').style.display='flex';
+        document.getElementById('auth-step').style.display='none';
+        document.getElementById('name-step').style.display='block';
+        setTimeout(()=>document.getElementById('display-name').focus(),300);
+        return;
+      }
+      loading_el.style.display='none';
+      await enterApp(fbUser);
+    } else {
+      loading_el.style.display='none';
+      document.getElementById('lp').style.display='flex';
+      document.getElementById('auth-step').style.display='block';
+      document.getElementById('name-step').style.display='none';
+      setLoginLoading(false);
+    }
+  });
+})();
 
 /* ══ IDLE TIMEOUT — auto-logout after 30 min of inactivity ══ */
 const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
