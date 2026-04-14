@@ -219,6 +219,15 @@ window.addEventListener('DOMContentLoaded', async () => {
   initMic();
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(S.theme==='auto')applyTheme('auto');});
   document.getElementById('query').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendQ();hap(20);}});
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') {
+      /* Close sidebar if open */
+      const sb = document.getElementById('sb');
+      if(sb && sb.classList.contains('open')) { toggleSB(); return; }
+      /* Close topmost modal if any */
+      if(openModals.length > 0) closeM(openModals[openModals.length - 1]);
+    }
+  });
   document.getElementById('query').addEventListener('input',()=>{autoR();updCC();});
   document.getElementById('chat').addEventListener('click',e=>{
     const btn=e.target.closest('.acbtn');if(!btn)return;
@@ -487,6 +496,10 @@ function sanitizeHTML(html) {
   return esc(String(html));
 }
 
+/* Treat JSON string "null" the same as actual null — the AI sometimes
+   returns the literal string "null" instead of JSON null for empty fields */
+function nullify(v){ return (v === null || v === 'null' || v === undefined || v === '') ? null : v; }
+
 function appendAI(p){
   if(p.in_scope === false){
     const d=document.createElement('div');d.className='msg';
@@ -519,10 +532,11 @@ function appendAI(p){
   };
   const cat=CM[p.category]||{c:'gen',i:'info',l:esc(p.category||'Clinical Response')};
 
-  const evClass={'A':'ev-a','B':'ev-b','C':'ev-c','D':'ev-d'}[p.evidence_grade]||'ev-c';
-  const evBadge=p.evidence_grade?`<span class="ev-badge ${evClass}">Evidence ${p.evidence_grade}</span>`:'';
+  const evClass={'A':'ev-a','B':'ev-b','C':'ev-c','D':'ev-d'}[nullify(p.evidence_grade)]||'ev-c';
+  const evBadge=nullify(p.evidence_grade)?`<span class="ev-badge ${evClass}">Evidence ${p.evidence_grade}</span>`:'';
   const badges=[F.preg?'<span class="fb2">Pregnancy</span>':'',F.peds?'<span class="fb2">Paediatric</span>':'',F.geri?'<span class="fb2">Geriatric</span>':'',F.counsel?'<span class="fb2">Counselling</span>':'',F.steward?'<span class="fb2">Stewardship</span>':''].filter(Boolean).join('');
-  const bbwBar=p.bbw?`<div class="clin-bbw-bar"><span class="ms xs" style="flex-shrink:0">warning</span><span><strong>BLACK BOX WARNING:</strong> ${esc(p.bbw)}</span></div>`:'';
+  const _bbw=nullify(p.bbw);
+const bbwBar=_bbw?`<div class="clin-bbw-bar"><span class="ms xs" style="flex-shrink:0">warning</span><span><strong>BLACK BOX WARNING:</strong> ${esc(_bbw)}</span></div>`:'';
 
   let pkHtml='';
   if(p.pharmacokinetics){
@@ -532,11 +546,11 @@ function appendAI(p){
       {l:'V<sub>d</sub>',v:pk.vd},{l:'Protein Binding',v:pk.protein_binding},
       {l:'Half-life (t\u00BD)',v:pk.half_life},{l:'Metabolism',v:pk.metabolism},
       {l:'Excretion',v:pk.excretion}
-    ].filter(f=>f.v&&f.v!=='null'&&f.v!==null);
+    ].filter(f=>nullify(f.v));
     if(pkFields.length>0){
       pkHtml=`<div class="clin-sec">
         <div class="clin-sec-hdr"><span class="ms xs">science</span> Pharmacokinetics</div>
-        <div class="pk-grid">${pkFields.map(f=>`<div class="pk-cell"><div class="pk-lbl">${f.l}</div><div class="pk-val">${esc(String(f.v))}</div></div>`).join('')}</div>
+        <div class="pk-grid">${pkFields.map(f=>`<div class="pk-cell"><div class="pk-lbl">${f.l}</div><div class="pk-val">${esc(String(nullify(f.v)||''))}</div></div>`).join('')}</div>
       </div>`;
     }
   }
@@ -553,7 +567,7 @@ function appendAI(p){
       <div style="overflow-x:auto;padding:0 14px 12px;">
         <table class="mon-tbl">
           <thead><tr><th>Parameter</th><th>Frequency</th><th>Target / Threshold</th></tr></thead>
-          <tbody>${p.monitoring.map(m=>`<tr><td>${esc(m.parameter||'-')}</td><td>${esc(m.frequency||'-')}</td><td>${esc(m.target||'-')}</td></tr>`).join('')}</tbody>
+          <tbody>${p.monitoring.map(m=>`<tr><td>${esc(nullify(m.parameter)||'-')}</td><td>${esc(nullify(m.frequency)||'-')}</td><td>${esc(nullify(m.target)||'-')}</td></tr>`).join('')}</tbody>
         </table>
       </div>
     </div>`;
@@ -569,11 +583,11 @@ function appendAI(p){
           const sevCls=sc==='major'?'major':sc==='moderate'?'moderate':'minor';
           return `<div class="int-row">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <span class="int-drug">${esc(i.drug||'-')}</span>
-              <span class="int-sev ${sevCls}"><span class="ms xs">warning</span>${esc(i.severity||'Unknown')}</span>
+              <span class="int-drug">${esc(nullify(i.drug)||'-')}</span>
+              <span class="int-sev ${sevCls}"><span class="ms xs">warning</span>${esc(nullify(i.severity)||'Unknown')}</span>
             </div>
-            <div class="int-mech"><strong>Mechanism:</strong> ${esc(i.mechanism||'-')}</div>
-            <div class="int-mgmt"><span class="ms xs" style="font-size:12px;vertical-align:middle">arrow_forward</span> ${esc(i.management||'-')}</div>
+            <div class="int-mech"><strong>Mechanism:</strong> ${esc(nullify(i.mechanism)||'-')}</div>
+            <div class="int-mgmt"><span class="ms xs" style="font-size:12px;vertical-align:middle">arrow_forward</span> ${esc(nullify(i.management)||'-')}</div>
           </div>`;
         }).join('')}
       </div>
@@ -584,9 +598,9 @@ function appendAI(p){
   const da=p.dose_adjustments;
   if(da&&(da.renal||da.hepatic||da.other)){
     const rows=[];
-    if(da.renal&&da.renal!=='null') rows.push(`<div class="dose-row"><span class="dose-lbl renal">Renal</span><span>${esc(da.renal)}</span></div>`);
-    if(da.hepatic&&da.hepatic!=='null') rows.push(`<div class="dose-row"><span class="dose-lbl hepatic">Hepatic</span><span>${esc(da.hepatic)}</span></div>`);
-    if(da.other&&da.other!=='null') rows.push(`<div class="dose-row"><span class="dose-lbl other">Other</span><span>${esc(da.other)}</span></div>`);
+    if(nullify(da.renal)) rows.push(`<div class="dose-row"><span class="dose-lbl renal">Renal</span><span>${esc(nullify(da.renal))}</span></div>`);
+    if(nullify(da.hepatic)) rows.push(`<div class="dose-row"><span class="dose-lbl hepatic">Hepatic</span><span>${esc(nullify(da.hepatic))}</span></div>`);
+    if(nullify(da.other)) rows.push(`<div class="dose-row"><span class="dose-lbl other">Other</span><span>${esc(nullify(da.other))}</span></div>`);
     if(rows.length>0){
       doseHtml=`<div class="clin-sec">
         <div class="clin-sec-hdr"><span class="ms xs">tune</span> Dose Adjustments</div>
@@ -610,7 +624,7 @@ function appendAI(p){
 
   const plain=[
     p.summary,
-    p.bbw?'BLACK BOX WARNING: '+p.bbw:'',
+    _bbw?'BLACK BOX WARNING: '+_bbw:'',
     p.clinical_details?p.clinical_details.replace(/<[^>]+>/g,''):'',
     p.monitoring&&p.monitoring.length?'Monitoring: '+p.monitoring.map(m=>m.parameter+' ('+m.target+')').join('; '):'',
     p.interactions&&p.interactions.length?'Interactions: '+p.interactions.map(i=>i.drug+' \u2014 '+i.severity).join('; '):'',
@@ -626,15 +640,15 @@ function appendAI(p){
         <div class="clin-tag-l">
           <span class="ms xs">${cat.i}</span>
           <span style="color:var(--cc,var(--text))">${cat.l}</span>
-          ${p.drug_name&&p.drug_name!=='null'?`<span style="color:var(--t2);font-weight:400">\u2014 ${esc(p.drug_name)}</span>`:''}
+          ${nullify(p.drug_name)?`<span style="color:var(--t2);font-weight:400">\u2014 ${esc(nullify(p.drug_name)||'')}</span>`:''}
         </div>
         <div style="display:flex;align-items:center;gap:5px;">
-          ${p.bbw?'<span class="clin-bbw">BBW</span>':''}
+          ${_bbw?'<span class="clin-bbw">BBW</span>':''}
           ${evBadge}
         </div>
       </div>
       ${badges?`<div class="fbadges">${badges}</div>`:''}
-      <div class="clin-summary"><span class="ms xs">bookmark</span>${esc(p.summary)}</div>
+      <div class="clin-summary"><span class="ms xs">bookmark</span>${esc(nullify(p.summary)||'No summary available.')}</div>
       ${bbwBar}
       ${pkHtml}
       ${detailsHtml}
