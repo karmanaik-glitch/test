@@ -1,8 +1,7 @@
 'use strict';
 
 /* ══ DRUG AUTOCOMPLETE DATABASE ══ */
-const indianDrugs = ["Amoxicillin","Clavulanic Acid","Paracetamol","Metformin","Glimepiride","Atorvastatin","Rosuvastatin","Pantoprazole","Rabeprazole","Amlodipine","Telmisartan","Losartan","Levothyroxine","Aspirin","Clopidogrel","Azithromycin","Cefixime","Ceftriaxone","Diclofenac","Aceclofenac","Ibuprofen","Ondansetron","Domperidone","Metoprolol","Bisoprolol","Sitagliptin","Vildagliptin","Teneligliptin","Dapaglifozin","Empagliflozin","Montelukast","Levocetirizine","Cetirizine","Fexofenadine","Pregabalin","Gabapentin","Methylcobalamin","Vitamin D3","Calcium Carbonate","Iron","Folic Acid","Zinc","Vitamin B Complex","Vitamin C","Cilnidipine","Chlorthalidone","Metronidazole","Ciprofloxacin","Ofloxacin","Levofloxacin","Doxycycline","Fluconazole","Itraconazole","Miconazole","Albendazole","Ivermectin","Hydroxychloroquine","Linezolid","Meropenem","Piperacillin","Tazobactam","Amikacin","Gentamicin","Vancomycin","Teicoplanin","Colistin","Polymyxin B","Tigecycline","Dexamethasone","Methylprednisolone","Prednisolone","Hydrocortisone","Deflazacort","Budesonide","Formoterol","Salbutamol","Levosalbutamol","Ipratropium","Tiotropium","Fluticasone","Mometasone","Umeclidinium","Glycopyrrolate","Theophylline","Doxofylline","Deriphyllin","Ambroxol","Guaifenesin","Bromhexine","Dextromethorphan","Chlorpheniramine","Phenylephrine","Paroxetine","Escitalopram","Sertraline","Fluoxetine","Fluvoxamine","Amitriptyline","Duloxetine","Venlafaxine","Mirtazapine","Desvenlafaxine","Bupropion","Clonazepam","Diazepam","Lorazepam","Alprazolam","Etizolam","Clobazam","Zolpidem","Nitrazepam","Midazolam","Chlordiazepoxide","Phenytoin","Carbamazepine","Valproate","Levetiracetam","Lamotrigine","Topiramate","Oxcarbazepine","Zonisamide","Lacosamide","Brivaracetam","Perampanel","Haloperidol","Risperidone","Olanzapine","Quetiapine","Clozapine","Aripiprazole","Paliperidone","Lurasidone","Amisulpride",
-  "Warfarin","Digoxin","Lithium","Tacrolimus","Cyclosporine","Sirolimus","Everolimus","Methotrexate","Rivaroxaban","Apixaban","Dabigatran","Edoxaban","Enoxaparin","Heparin","Insulin Glargine","Insulin Aspart","Insulin Lispro","Insulin Regular","Insulin NPH","Glibenclamide","Pioglitazone","Sulfasalazine","Azathioprine","Mycophenolate","Leflunomide","Colchicine","Allopurinol","Febuxostat","Zoledronic Acid","Alendronate","Rifampicin","Isoniazid","Pyrazinamide","Ethambutol","Streptomycin","Bedaquiline","Linezolid","Clofazimine","Oseltamivir","Acyclovir","Valacyclovir","Tenofovir","Lamivudine","Efavirenz","Lopinavir","Ritonavir","Dolutegravir","Furosemide","Spironolactone","Torsemide","Hydrochlorothiazide","Indapamide","Enalapril","Ramipril","Perindopril","Nebivolol","Carvedilol","Ivabradine","Ranolazine","Amiodarone","Sotalol","Diltiazem","Verapamil","Nitroglycerine","Isosorbide Mononitrate","Isosorbide Dinitrate","Clopidogrel","Ticagrelor","Prasugrel","Alteplase","Streptokinase","Ondansetron","Granisetron","Aprepitant","Dexamethasone","Filgrastim","Erythropoietin","Tranexamic Acid","Phytomenadione","Protamine","Naloxone","Flumazenil","N-Acetylcysteine","Atropine","Adrenaline","Noradrenaline","Dopamine","Dobutamine","Vasopressin","Nitroglycerin IV","Nicardipine","Labetalol IV","Magnesium Sulfate","Calcium Gluconate","Potassium Chloride","Sodium Bicarbonate"];
+const indianDrugs = ["Amoxicillin","Clavulanic Acid","Paracetamol","Metformin","Glimepiride","Atorvastatin","Rosuvastatin","Pantoprazole","Rabeprazole","Amlodipine","Telmisartan","Losartan","Levothyroxine","Aspirin","Clopidogrel","Azithromycin","Cefixime","Ceftriaxone","Diclofenac","Aceclofenac","Ibuprofen","Ondansetron","Domperidone","Metoprolol","Bisoprolol","Sitagliptin","Vildagliptin","Teneligliptin","Dapagliptin","Empagliflozin","Montelukast","Levocetirizine","Cetirizine","Fexofenadine","Pregabalin","Gabapentin","Methylcobalamin","Vitamin D3","Calcium Carbonate","Iron","Folic Acid","Zinc","Vitamin B Complex","Vitamin C","Cilnidipine","Chlorthalidone","Metronidazole","Ciprofloxacin","Ofloxacin","Levofloxacin","Doxycycline","Fluconazole","Itraconazole","Miconazole","Albendazole","Ivermectin","Hydroxychloroquine","Linezolid","Meropenem","Piperacillin","Tazobactam","Amikacin","Gentamicin","Vancomycin","Teicoplanin","Colistin","Polymyxin B","Tigecycline","Dexamethasone","Methylprednisolone","Prednisolone","Hydrocortisone","Deflazacort","Budesonide","Formoterol","Salbutamol","Levosalbutamol","Ipratropium","Tiotropium","Fluticasone","Mometasone","Umeclidinium","Glycopyrrolate","Theophylline","Doxofylline","Deriphyllin","Ambroxol","Guaifenesin","Bromhexine","Dextromethorphan","Chlorpheniramine","Phenylephrine","Paroxetine","Escitalopram","Sertraline","Fluoxetine","Fluvoxamine","Amitriptyline","Duloxetine","Venlafaxine","Mirtazapine","Desvenlafaxine","Bupropion","Clonazepam","Diazepam","Lorazepam","Alprazolam","Etizolam","Clobazam","Zolpidem","Nitrazepam","Midazolam","Chlordiazepoxide","Phenytoin","Carbamazepine","Valproate","Levetiracetam","Lamotrigine","Topiramate","Oxcarbazepine","Zonisamide","Lacosamide","Brivaracetam","Perampanel","Rufinamide","Eslicarbazepine","Vigabatrin","Tiagabine","Ethosuximide","Primidone","Phenobarbital","Haloperidol","Risperidone","Olanzapine","Quetiapine","Clozapine","Ziprasidone","Aripiprazole","Paliperidone","Iloperidone","Lurasidone","Asenapine","Blonanserin","Amisulpride","Cariprazine","Brexpiprazole","Lumateperone","Pimavanserin"];
 
 function handleAC(inp) {
   const v = inp.value.toLowerCase();
@@ -11,47 +10,49 @@ function handleAC(inp) {
   if(v.length < 2) { ac.classList.remove('show'); return; }
   const matches = indianDrugs.filter(d => d.toLowerCase().includes(v)).slice(0,8);
   if(matches.length > 0) {
-    ac.innerHTML = matches.map(m => `<div class="rx-ac-item" onclick="selectAC('${m.replace(/'/g,"\\'")}', '${inp.id}')">${esc(m)}</div>`).join('');
+    ac.innerHTML = matches.map(m => `<div class="rx-ac-item" data-val="${m.replace(/"/g,'&quot;')}" data-inp="${inp.id}">${m}</div>`).join('');
     ac.classList.add('show');
   } else { ac.classList.remove('show'); }
 }
 
 function selectAC(val, id) {
   const inp = document.getElementById(id);
-  if(!inp) return;
   inp.value = val;
-  const ac = inp.nextElementSibling;
-  if(ac && ac.classList.contains('rx-ac')) ac.classList.remove('show');
+  const acEl = inp.nextElementSibling; if(acEl) acEl.classList.remove('show');
   inp.focus();
 }
 
 document.addEventListener('click', e => {
+  if(e.target.classList.contains('rx-ac-item')) {
+    const val = e.target.getAttribute('data-val');
+    const id  = e.target.getAttribute('data-inp');
+    if(val && id) selectAC(val, id);
+    return;
+  }
   if(!e.target.classList.contains('rx-ac-inp')) {
     document.querySelectorAll('.rx-ac').forEach(a => a.classList.remove('show'));
   }
 });
 
-/* ══ PREMIUM UI SOUND ENGINE ══
-   AudioContext created lazily on first user interaction (avoids autoplay policy violation) */
+/* ══ PREMIUM UI SOUND ENGINE ══ */
 let audioCtx = null;
-
 function getAudioCtx() {
-  if(!audioCtx) {
+  if (!audioCtx) {
     const AC = window.AudioContext || window.webkitAudioContext;
-    if(AC) audioCtx = new AC();
+    if (AC) audioCtx = new AC();
   }
   return audioCtx;
 }
 
 const Sounds = {
   play: (type) => {
-    if (!S.haptic) return;
     const ctx = getAudioCtx();
-    if(!ctx || ctx.state === 'suspended') return;
+    if (!S.haptic || !ctx || ctx.state === 'suspended') return;
     const osc = ctx.createOscillator();
     const gainNode = ctx.createGain();
     osc.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    gainNode.connect(audioCtx.destination);
+    
     const now = ctx.currentTime;
     if (type === 'tick') {
       osc.type = 'sine'; osc.frequency.setValueAtTime(800, now);
@@ -73,15 +74,9 @@ const Sounds = {
       gainNode.gain.linearRampToValueAtTime(0, now + 0.2);
       osc.start(now); osc.stop(now + 0.25);
     }
-    osc.onended = () => { osc.disconnect(); gainNode.disconnect(); };
   }
 };
-
-/* Resume AudioContext on first click */
-document.addEventListener('click', () => {
-  const ctx = getAudioCtx();
-  if(ctx && ctx.state === 'suspended') ctx.resume();
-}, {once: true});
+document.addEventListener('click', () => { const c = getAudioCtx(); if(c && c.state === 'suspended') c.resume(); }, {once: true});
 
 /* ══ OFFLINE EVENTS ══ */
 window.addEventListener('offline', () => toast('You are offline. Changes will sync when reconnected.', 'warn', 8000));
@@ -99,18 +94,14 @@ let lastSendTime = 0;
 
 /* ══ DEMO USAGE LIMIT ══
    Free public demo — 5 AI queries per account per day.
-   Count is stored in Firestore so it persists across devices and browsers.
-   Resets automatically at midnight on the next query attempt. */
+   Stored in Firestore so it survives cache clears and device switches.
+   Resets automatically at midnight. */
 const DEMO_DAILY_LIMIT = 5;
-let _demoCount = 0;   /* queries used today */
-let _demoDate  = '';  /* YYYY-MM-DD of the current count */
+let _demoCount = 0;
+let _demoDate  = '';
 
-function _todayStr() {
-  return new Date().toISOString().slice(0, 10); /* "YYYY-MM-DD" */
-}
+function _todayStr() { return new Date().toISOString().slice(0, 10); }
 
-/* Load usage from Firestore into _demoCount / _demoDate.
-   Called once after login. */
 async function loadDemoUsage() {
   if(!user) return;
   try {
@@ -120,13 +111,11 @@ async function loadDemoUsage() {
       _demoDate  = d.demo_date  || '';
       _demoCount = d.demo_count || 0;
     }
-  } catch(e) { /* offline — stay at 0, gate will re-check on next online session */ }
-  /* If stored date isn't today, treat as fresh day */
+  } catch(e) {}
   if(_demoDate !== _todayStr()) { _demoCount = 0; _demoDate = _todayStr(); }
   renderDemoCounter();
 }
 
-/* Persist current count to Firestore (fire-and-forget) */
 function _saveDemoUsage() {
   if(!user) return;
   fsWrite(() => db.collection('users').doc(user).set(
@@ -134,14 +123,11 @@ function _saveDemoUsage() {
   ), 'demoUsage');
 }
 
-/* Returns true if the user still has queries remaining.
-   Also resets the counter if the stored date is stale (new day). */
 function demoCheck() {
   if(_demoDate !== _todayStr()) { _demoCount = 0; _demoDate = _todayStr(); }
   return _demoCount < DEMO_DAILY_LIMIT;
 }
 
-/* Increment counter, persist, and refresh the UI pill */
 function demoIncrement() {
   if(_demoDate !== _todayStr()) { _demoCount = 0; _demoDate = _todayStr(); }
   _demoCount++;
@@ -149,48 +135,31 @@ function demoIncrement() {
   renderDemoCounter();
 }
 
-/* Update the "X / 5 queries" pill in the header */
 function renderDemoCounter() {
   const el = document.getElementById('demo-counter');
   if(!el) return;
   const remaining = Math.max(0, DEMO_DAILY_LIMIT - _demoCount);
   const pct = _demoCount / DEMO_DAILY_LIMIT;
-  /* Target only the text span — the bolt icon span must not be overwritten */
   const textSpan = el.querySelector('span:last-child');
-  if(textSpan) textSpan.textContent = `${remaining} / ${DEMO_DAILY_LIMIT}`;
-  el.style.background = pct < 0.6
-    ? 'rgba(16,185,129,0.15)'
-    : pct < 1
-    ? 'rgba(245,158,11,0.18)'
-    : 'rgba(239,68,68,0.18)';
-  el.style.color = pct < 0.6
-    ? 'var(--ok)'
-    : pct < 1
-    ? 'var(--warn)'
-    : 'var(--danger)';
-  el.style.borderColor = pct < 0.6
-    ? 'rgba(16,185,129,0.3)'
-    : pct < 1
-    ? 'rgba(245,158,11,0.35)'
-    : 'rgba(239,68,68,0.35)';
+  if(textSpan) textSpan.textContent = remaining + ' / ' + DEMO_DAILY_LIMIT;
+  el.style.background   = pct < 0.6 ? 'rgba(16,185,129,0.15)' : pct < 1 ? 'rgba(245,158,11,0.18)' : 'rgba(239,68,68,0.18)';
+  el.style.color        = pct < 0.6 ? 'var(--ok)'   : pct < 1 ? 'var(--warn)'   : 'var(--danger)';
+  el.style.borderColor  = pct < 0.6 ? 'rgba(16,185,129,0.3)' : pct < 1 ? 'rgba(245,158,11,0.35)' : 'rgba(239,68,68,0.35)';
 }
 
-/* Show the limit-reached modal with hours-until-midnight countdown */
 function showLimitModal() {
-  const now      = new Date();
-  const midnight = new Date(now);
+  const now = new Date(), midnight = new Date(now);
   midnight.setHours(24, 0, 0, 0);
-  const diffMs  = midnight - now;
-  const hrs     = Math.floor(diffMs / 3_600_000);
-  const mins    = Math.floor((diffMs % 3_600_000) / 60_000);
-  const resetIn = hrs > 0 ? `${hrs}h ${mins}m` : `${mins} minutes`;
+  const diff = midnight - now;
+  const hrs  = Math.floor(diff / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
   const el = document.getElementById('demo-reset-time');
-  if(el) el.textContent = resetIn;
+  if(el) el.textContent = hrs > 0 ? hrs + 'h ' + mins + 'm' : mins + ' minutes';
   openM('demo-limit-modal');
   hap(40);
 }
 
-/* ══ SIDEBAR SWIPE ══ */
+/* ══ SIDEBAR SWIPE LOGIC ══ */
 let touchStartX = 0;
 document.addEventListener('DOMContentLoaded', () => {
   const sb = document.getElementById('sb');
@@ -202,9 +171,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ══ HAPTIC & TOAST ══ */
 function hap(ms){if(!S.haptic)return;if('vibrate'in navigator)navigator.vibrate(ms);}
-function toast(msg,type='info',dur=3000){const w=document.getElementById('tw');const el=document.createElement('div');el.className=`toast ${type}`;const ic={ok:'check_circle',warn:'warning',err:'error',info:'info'};el.innerHTML=`<span class="ms xs">${ic[type]||'info'}</span><span>${esc(msg)}</span>`;w.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),350);},dur);}
+function toast(msg,type='info',dur=3000){const w=document.getElementById('tw');const el=document.createElement('div');el.className=`toast ${type}`;const ic={ok:'check_circle',warn:'warning',err:'error',info:'info'};el.innerHTML=`<span class="ms xs">${ic[type]||'info'}</span><span>${msg}</span>`;w.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),350);},dur);}
 
-/* ══ THEME / SETTINGS ══ */
+/* ══ THEME / SETTINGS (Async with localforage) ══ */
 async function loadS(){
   try {
     const s = await localforage.getItem('pharmai_S');
@@ -215,17 +184,7 @@ async function loadS(){
 function saveS(){localforage.setItem('pharmai_S', S);}
 function applyTheme(m){const p=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';const a=m==='auto'?p:m;document.body.classList.toggle('light',a==='light');document.getElementById('tcm').content=a==='light'?'#F7F7F7':'#000000';}
 function setTheme(m){S.theme=m;saveS();applyTheme(m);document.querySelectorAll('.tp-pill').forEach(p=>p.classList.remove('active'));document.getElementById('th-'+m)?.classList.add('active');hap(10);Sounds.play('tick');syncSettings();}
-
-function toggleSet(k){
-  const elMap = { haptic: 'hap-t' };
-  const elId = elMap[k];
-  if(elId) {
-    S[k] = document.getElementById(elId).checked;
-  } else {
-    S[k] = !S[k];
-  }
-  saveS(); hap(10); Sounds.play('tick'); syncSettings();
-}
+function toggleSet(k){S[k]=document.getElementById('hap-t').checked;saveS();hap(10);Sounds.play('tick');syncSettings();}
 function applyUI(){document.getElementById('hap-t').checked=S.haptic;document.querySelectorAll('.tp-pill').forEach(p=>p.classList.remove('active'));document.getElementById('th-'+S.theme)?.classList.add('active');}
 
 async function syncSettings(){if(!user)return;try{await fsWrite(() => db.collection('users').doc(user).set({settings:S},{merge:true}), 'settings');}catch(e){}}
@@ -268,12 +227,18 @@ window.addEventListener('DOMContentLoaded', async () => {
     if(btn.classList.contains('cpy-btn'))cpyTxt(decodeURIComponent(txt),btn);
   });
 
-  const searchEl = document.getElementById('sess-search');
-  if(searchEl) searchEl.addEventListener('input', () => renderSB(searchEl.value.trim().toLowerCase()));
+  const sessSearchEl = document.getElementById('sess-search');
+  if(sessSearchEl) sessSearchEl.addEventListener('input', () => renderSB(sessSearchEl.value.trim().toLowerCase()));
 
   auth.onAuthStateChanged(async(fbUser)=>{
     const loading_el=document.getElementById('auth-loading');
     if(fbUser){
+      /* Anonymous users skip the name-step entirely */
+      if(fbUser.isAnonymous){
+        loading_el.style.display='none';
+        await enterApp(fbUser);
+        return;
+      }
       if(!fbUser.displayName){
         _pendingFBUser=fbUser;
         loading_el.style.display='none';
@@ -297,7 +262,17 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 /* ══ UI HELPERS & MODALS ══ */
 let openModals = [];
-function toggleF(k){hap(10);F[k]=!F[k];document.getElementById('t-'+k).classList.toggle('on',F[k]);Sounds.play('tick');}
+function toggleF(k){
+  hap(10);
+  const next = !F[k];
+  Object.keys(F).forEach(key => {
+    F[key] = false;
+    document.getElementById('t-'+key).classList.remove('on');
+  });
+  F[k] = next;
+  document.getElementById('t-'+k).classList.toggle('on', next);
+  Sounds.play('tick');
+}
 function openM(id){document.getElementById(id).classList.add('open'); openModals.push(id); Sounds.play('tick');}
 function closeM(id){document.getElementById(id).classList.remove('open'); openModals = openModals.filter(m => m !== id);}
 function handleOC(e,id){if(e.target===document.getElementById(id) && openModals[openModals.length - 1] === id){closeM(id);}}
@@ -309,19 +284,7 @@ function flU(el){el.closest('.flw').classList.add('up');}
 function flB(el){if(!el.value&&el.value!=='0')el.closest('.flw').classList.remove('up');}
 function toggleSB(){const sb=document.getElementById('sb'),ov=document.getElementById('sb-ov');if(sb.classList.contains('open')){sb.classList.remove('open');setTimeout(()=>ov.classList.remove('open'),350);}else{ov.classList.add('open');setTimeout(()=>sb.classList.add('open'),10);}Sounds.play('tick');}
 
-function openPolyRxTab(){
-  openM('tm');
-  const btn = document.querySelector('.tbtn[data-tab="poly"]');
-  if(btn) btn.click();
-}
-function openCKDCalc(){
-  openM('tm');
-  const calcBtn = document.querySelector('.tbtn[data-tab="calc"]');
-  if(calcBtn) calcBtn.click();
-  setTimeout(()=>{ const card = document.getElementById('cc-ckd'); if(card) card.classList.add('open'); }, 100);
-}
-
-/* ══ SESSIONS ══ */
+/* ══ SESSIONS (Async with localforage) ══ */
 function getDocSizeKB(obj) { return new Blob([JSON.stringify(obj)]).size / 1024; }
 
 async function loadSessions(){
@@ -334,26 +297,22 @@ async function loadSessions(){
       renderSB();
     } else {
       const s = await localforage.getItem('psess_'+user);
-      if (s) { sessions = s.sort((a,b)=>b.id-a.id); renderSB(); }
+      if (s) { sessions = s; renderSB(); }
       const docSnap = await db.collection('users').doc(user).get();
       if (docSnap.exists && docSnap.data().sessions && docSnap.data().sessions.length > 0) {
-        sessions = docSnap.data().sessions.sort((a,b)=>b.id-a.id);
+        sessions = docSnap.data().sessions;
         renderSB();
-        /* FIX: chunk migration to stay under Firestore 500-doc batch limit.
-           Previously this was a single unbounded batch.set loop — identical
-           bug that ward migration already fixed — now consistent. */
-        const CHUNK = 400;
-        for(let i=0;i<sessions.length;i+=CHUNK){
-          const batch = db.batch();
-          sessions.slice(i,i+CHUNK).forEach(s=>batch.set(db.collection('users').doc(user).collection('sessions').doc(s.id.toString()),s));
-          await batch.commit();
-        }
+        const batch = db.batch();
+        sessions.forEach(sess => {
+          batch.set(db.collection('users').doc(user).collection('sessions').doc(sess.id.toString()), sess);
+        });
+        await batch.commit();
         localforage.setItem('psess_'+user, sessions);
       }
     }
   }catch(e){
     const s = await localforage.getItem('psess_'+user);
-    sessions = s ? s.sort((a,b)=>b.id-a.id) : [];
+    sessions = s || [];
     renderSB();
   }
 }
@@ -362,8 +321,8 @@ function saveSessions(){
   if(!user) return;
   let kb = getDocSizeKB(sessions);
   if(kb > 800) {
-    sessions = sessions.slice(0, sessions.length - 5);
-    toast('Older chats auto-archived to save space.', 'info');
+      sessions = sessions.slice(0, Math.max(0, sessions.length - 5));
+      toast('Older chats auto-archived to save space.', 'info');
   }
   localforage.setItem('psess_'+user, sessions);
   const s = sessions.find(x=>x.id===currSess);
@@ -398,20 +357,13 @@ function renderSB(filter=''){
   const l=document.getElementById('sbl');
   if(!l) return;
   l.innerHTML='';
-  const filtered = filter
-    ? sessions.filter(s => s.title.toLowerCase().includes(filter))
-    : sessions;
-  if(filtered.length===0 && sessions.length>0) {
+  const filtered = filter ? sessions.filter(s => s.title.toLowerCase().includes(filter)) : sessions;
+  if(filtered.length===0 && sessions.length>0){
     l.innerHTML='<div style="text-align:center;padding:20px;font-size:0.82rem;color:var(--muted);">No matches found.</div>';
     return;
   }
-  filtered.forEach(s=>{
-    const d=document.createElement('div');
-    d.className='sbi'+(currSess===s.id?' active':'');
-    d.innerHTML=`<div class="sbi-t" onclick="loadChat(${s.id});hap(10);"><span class="ms xs">chat</span><span>${esc(s.title)}</span></div><button class="sbi-del" onclick="delChat(${s.id},event);hap(20);"><span class="ms xs">delete</span></button>`;
-    l.appendChild(d);
-  });
-}
+  filtered.forEach(s=>{const d=document.createElement('div');d.className='sbi'+(currSess===s.id?' active':'');d.innerHTML=`<div class="sbi-t" onclick="loadChat(${s.id});hap(10);"><span class="ms xs">chat</span><span>${esc(s.title)}</span></div><button class="sbi-del" onclick="delChat(${s.id},event);hap(20);"><span class="ms xs">delete</span></button>`;l.appendChild(d);});
+}}
 
 function newChat(){hist=[];currSess=null;renderWelcome();if(document.getElementById('sb').classList.contains('open'))toggleSB();renderSB();}
 function loadChat(id){const s=sessions.find(x=>x.id===id);if(!s)return;currSess=id;hist=s.hist;document.getElementById('chat').innerHTML=s.html;if(document.getElementById('sb').classList.contains('open'))toggleSB();scrollD();renderSB();Sounds.play('tick');}
@@ -427,23 +379,12 @@ async function delChat(id,e){
 
 /* ══ EXPORT / IMPORT ══ */
 function exportData(){
-  /* FIX: warn the user that the export contains sensitive patient data (PHI).
-     Under DPDP Act 2023 / HIPAA, health data must be handled with appropriate safeguards.
-     The downloaded file is unencrypted — user must be aware before proceeding. */
-  const confirmed = confirm(
-    '⚠ PHI Warning\n\n' +
-    'This backup file will contain sensitive patient data including names, diagnoses, ' +
-    'medications, and lab results in plain text.\n\n' +
-    'Store it in a secure, encrypted location. Do not share it or leave it in Downloads.\n\n' +
-    'Continue with export?'
-  );
-  if(!confirmed) return;
-
+  if(!confirm('⚠ PHI Warning\n\nThis backup file will contain sensitive patient data including names, diagnoses, medications and lab results in plain text.\n\nStore it in a secure location. Do not share or leave it in Downloads.\n\nContinue with export?')) return;
   const dump = { sessions, wardPatients, settings: S, exportDate: new Date().toISOString(), userName: uName };
   const b=new Blob([JSON.stringify(dump)],{type:'application/json'});
   const u=URL.createObjectURL(b);const a=document.createElement('a');
   a.href=u;a.download=`PharmAI_Backup_${new Date().toISOString().split('T')[0]}.json`;
-  a.click();URL.revokeObjectURL(u);toast('Exported! Store this file securely.','ok');
+  a.click();URL.revokeObjectURL(u);toast('Exported!','ok');
 }
 
 function importData(e){
@@ -455,26 +396,14 @@ function importData(e){
       if(typeof p !== 'object' || p === null) throw new Error('Not a valid JSON object.');
       if(p.sessions !== undefined && !Array.isArray(p.sessions)) throw new Error('Invalid sessions format.');
       if(p.wardPatients !== undefined && !Array.isArray(p.wardPatients)) throw new Error('Invalid ward data format.');
-
       if(p.sessions) sessions = p.sessions;
       if(p.wardPatients) wardPatients = p.wardPatients;
       if(p.settings && typeof p.settings === 'object') { S = {...S, ...p.settings}; saveS(); applyUI(); applyTheme(S.theme); }
-      
       await localforage.setItem('psess_'+user, sessions);
       await localforage.setItem('pharmai_ward_' + user, wardPatients);
-      
       const CHUNK = 400;
-      for(let i=0;i<sessions.length;i+=CHUNK){
-        const batch=db.batch();
-        sessions.slice(i,i+CHUNK).forEach(s=>batch.set(db.collection('users').doc(user).collection('sessions').doc(s.id.toString()),s));
-        await batch.commit();
-      }
-      for(let i=0;i<wardPatients.length;i+=CHUNK){
-        const batch=db.batch();
-        wardPatients.slice(i,i+CHUNK).forEach(w=>batch.set(db.collection('users').doc(user).collection('ward').doc(w.id.toString()),w));
-        await batch.commit();
-      }
-      
+      for(let i=0;i<sessions.length;i+=CHUNK){const batch=db.batch();sessions.slice(i,i+CHUNK).forEach(s=>batch.set(db.collection('users').doc(user).collection('sessions').doc(s.id.toString()),s));await batch.commit();}
+      for(let i=0;i<wardPatients.length;i+=CHUNK){const batch=db.batch();wardPatients.slice(i,i+CHUNK).forEach(w=>batch.set(db.collection('users').doc(user).collection('ward').doc(w.id.toString()),w));await batch.commit();}
       renderSB(); renderWardList();
       toast('Backup restored!','ok');closeM('sm');
     }catch(err){toast('Invalid backup file: '+err.message,'err');}
@@ -494,13 +423,18 @@ function analyzeRx(){
   const useCtx = document.getElementById('poly-ctx').checked;
   
   if (useCtx) {
-    if (!activeCaseId) { toast('Cannot use context: No active patient selected.', 'warn'); return; }
+    if (typeof activeCaseId === 'undefined' || !activeCaseId) {
+      toast('No active ward patient. Uncheck context or select a patient first.', 'warn');
+      // don't return - just skip context
+      ctxStr = '';
+    } else {
     const pt = wardPatients.find(p => p.id === activeCaseId);
     if (pt && pt.demo) {
       const age = pt.demo.age || 'Unknown';
       const sex = pt.demo.sex || 'Unknown';
       const wt = pt.demo.wt ? `${pt.demo.wt}kg` : 'Unknown weight';
       ctxStr = `\nPatient Context: ${age}y ${sex}, ${wt}. `;
+    }
     }
   }
   
@@ -511,9 +445,22 @@ function analyzeRx(){
 }
 
 /* ══ CHAT ENGINE ══ */
+function openPolyRxTab(){
+  openM('tm');
+  const btn = document.querySelector('.tbtn[data-tab="poly"]') ||
+              document.querySelector('.tbtn:nth-child(2)');
+  if(btn) btn.click();
+}
+function openCKDCalc(){
+  openM('tm');
+  const calcBtn = document.querySelector('.tbtn[data-tab="calc"]') ||
+                  document.querySelector('.tbtn:first-child');
+  if(calcBtn) calcBtn.click();
+  setTimeout(()=>{ const card = document.getElementById('cc-ckd'); if(card) card.classList.add('open'); }, 100);
+}
 function renderWelcome(){
   const h=new Date().getHours();const gr=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
-  const name=esc(uName||'Doctor');
+  const name=uName||'Doctor';
   const wHtml=`
     <span class="ws-word" style="animation-delay:0.3s">${gr.split(' ')[0]}</span>
     <span class="ws-word" style="animation-delay:0.45s">${gr.split(' ')[1]},</span>
@@ -529,13 +476,13 @@ function renderWelcome(){
       <button class="ws-btn" style="animation-delay:0.9s" onclick="openPolyRxTab()">
         <span class="ms lg">monitor_heart</span>Drug Interactions
       </button>
-      <button class="ws-btn" style="animation-delay:1.0s" onclick="insertAndSend('Beers Criteria \u2014 high-risk medications to avoid in elderly patients')">
+      <button class="ws-btn" style="animation-delay:1.0s" onclick="insertAndSend('Beers Criteria \\u2014 high-risk medications to avoid in elderly patients')">
         <span class="ms lg">elderly</span>Beers Criteria
       </button>
       <button class="ws-btn" style="animation-delay:1.1s" onclick="insertAndSend('Standard pediatric dose for Amoxicillin 40mg/kg/day?')">
         <span class="ms lg">child_care</span>Peds Dosing
       </button>
-      <button class="ws-btn" style="animation-delay:1.2s" onclick="openCKDCalc()">
+      <button class="ws-btn" style="animation-delay:1.2s" onclick="openM('tm');document.getElementById('cc-ckd').classList.add('open');">
         <span class="ms lg">water_drop</span>eGFR Calc
       </button>
     </div>
@@ -544,12 +491,7 @@ function renderWelcome(){
 
 const getChat=()=>document.getElementById('chat');
 function scrollD(){setTimeout(()=>{const c=getChat();c.scrollTo({top:c.scrollHeight,behavior:'smooth'});},50);}
-
-/* esc() — HTML-escapes a value for safe insertion into innerHTML.
-   All user-supplied and AI-supplied strings must pass through this
-   before being placed in a template literal that targets innerHTML. */
-function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function autoR(){const q=document.getElementById('query');q.style.height='auto';q.style.height=Math.min(q.scrollHeight,120)+'px';}
 function insertQ(t){hap(10);const q=document.getElementById('query');q.value=t;autoR();q.focus();}
 function insertAndSend(t){insertQ(t);setTimeout(sendQ,100);}
@@ -563,81 +505,193 @@ function regenLast(btn){
   if(userMsg && userMsg.classList.contains('user')) userMsg.remove();
   aiMsg.remove();
   if(hist.length >= 2) { hist.pop(); hist.pop(); }
-  insertAndSend(lastQuery);
+  document.getElementById('query').value = lastQuery;
+  sendQ();
 }
 
 function appendUser(text){const ws=document.getElementById('ws');if(ws)ws.remove();const d=document.createElement('div');d.className='msg user';d.innerHTML=`<div class="bwrap"><div class="utxt">${esc(text)}</div><div class="mts">${ts()}</div></div>`;getChat().appendChild(d);scrollD();}
 function appendSkel(){const d=document.createElement('div');d.className='msg';d.id='typ';d.innerHTML=`<div class="avatar ai"><span class="ms sm fill">cardiology</span></div><div class="bwrap" style="max-width:84%;width:100%"><div class="skel"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="think-txt">PharmAI is analyzing...</div></div></div>`;getChat().appendChild(d);scrollD();}
 function remTyp(){const t=document.getElementById('typ');if(t)t.remove();}
 
-/* FIX: sanitizeHTML — when DOMPurify is available it strips dangerous HTML while
-   preserving safe formatting tags. When DOMPurify is NOT available the previous
-   regex-based allowlist was bypassable (e.g. attribute-based XSS, expression()
-   in IE). The safe fallback is now to return fully HTML-escaped plain text via
-   esc(), which renders the AI response as readable text without any risk. */
-function sanitizeHTML(html) {
-  if(typeof DOMPurify !== 'undefined') {
-    return DOMPurify.sanitize(html, {
-      ALLOWED_TAGS: ['p','ul','li','ol','strong','em','br','small','b','i','span','div'],
-      ALLOWED_ATTR: ['style']
-    });
-  }
-  /* Safe fallback: render as escaped plain text */
-  return esc(String(html));
-}
-
-/* FIX: appendAI — all AI-supplied string fields are now passed through esc() before
-   being injected into innerHTML template literals. Previously p.summary, p.warning,
-   p.danger, and p.keyPoints items were injected raw, allowing a prompt-injection
-   attack to embed arbitrary HTML in these fields. Only p.details is intentionally
-   HTML and continues to be processed through sanitizeHTML(). */
 function appendAI(p){
+  // Handle out-of-scope response
+  if(p.in_scope === false){
+    const d=document.createElement('div');d.className='msg';
+    d.innerHTML=`<div class="avatar ai"><span class="ms sm fill">cardiology</span></div>
+    <div class="bwrap" style="max-width:85%">
+      <div class="oos-card">
+        <div class="oos-icon"><span class="ms sm">block</span></div>
+        <div>
+          <div class="oos-title">Outside Clinical Scope</div>
+          <div class="oos-body">PharmAI is a clinical decision support tool for licensed medical professionals. This query falls outside the scope of medicine, pharmacology, or clinical science and cannot be answered here.</div>
+        </div>
+      </div>
+      <div class="mts">${ts()}</div>
+    </div>`;
+    getChat().appendChild(d);scrollD();
+    return;
+  }
+
+  // Category map
   const CM={
-    'Side Effects':{c:'se',i:'bolt',l:'Side Effects'},
-    'Dosage':{c:'dos',i:'medication',l:'Dosage'},
+    'Pharmacokinetics':{c:'mec',i:'science',l:'Pharmacokinetics'},
     'Drug Interaction':{c:'int',i:'monitor_heart',l:'Drug Interaction'},
+    'Dosage & Administration':{c:'dos',i:'medication',l:'Dosage & Administration'},
+    'Adverse Effects':{c:'se',i:'bolt',l:'Adverse Effects'},
     'Contraindication':{c:'con',i:'block',l:'Contraindication'},
     'Mechanism of Action':{c:'mec',i:'biotech',l:'Mechanism of Action'},
-    'General Information':{c:'gen',i:'info',l:'General Information'}
+    'Clinical Therapeutics':{c:'gen',i:'local_hospital',l:'Clinical Therapeutics'},
+    'Monitoring':{c:'dos',i:'monitoring',l:'Monitoring'},
+    'Antimicrobial':{c:'int',i:'coronavirus',l:'Antimicrobial'},
+    'General Clinical':{c:'gen',i:'info',l:'General Clinical'},
   };
-  /* FIX: when category falls through to the AI-supplied value, escape it */
-  const cat = CM[p.category] || {c:'gen', i:'info', l: esc(p.category || 'Response')};
-  const badges=[F.preg?'<span class="fb2">Pregnancy</span>':'', F.peds?'<span class="fb2">Pediatric</span>':'', F.geri?'<span class="fb2">Geriatric</span>':'', F.counsel?'<span class="fb2">Counseling</span>':'', F.steward?'<span class="fb2">Stewardship</span>':''].filter(Boolean).join('');
+  const cat=CM[p.category]||{c:'gen',i:'info',l:p.category||'Clinical Response'};
 
-  /* FIX: p.warning and p.danger escaped before injection */
-  const wH=p.warning?`<div class="aalert warn"><span class="ms xs" style="flex-shrink:0">warning</span><span>${esc(p.warning)}</span></div>`:'';
-  const dH=p.danger?`<div class="aalert dng"><span class="ms xs" style="flex-shrink:0">gpp_bad</span><span>${esc(p.danger)}</span></div>`:'';
+  // Evidence grade badge
+  const evClass={'A':'ev-a','B':'ev-b','C':'ev-c','D':'ev-d'}[p.evidence_grade]||'ev-c';
+  const evBadge=p.evidence_grade?`<span class="ev-badge ${evClass}">Evidence ${p.evidence_grade}</span>`:'';
 
-  /* FIX: p.keyPoints items escaped */
-  const kH=p.keyPoints?.length?`<div class="kpw"><div class="aslbl"><span class="ms xs">checklist</span> Key Points</div>${p.keyPoints.map(k=>`<div class="kpi"><div class="kpd"></div><span>${esc(k)}</span></div>`).join('')}</div>`:'';
-  const sH=p.sources?.length?`<div class="srcrow"><span class="srclbl">Sources</span>${p.sources.map(s=>`<span class="srcc">${esc(s)}</span>`).join('')}</div>`:'';
+  // Filter badges
+  const badges=[F.preg?'<span class="fb2">Pregnancy</span>':'',F.peds?'<span class="fb2">Paediatric</span>':'',F.geri?'<span class="fb2">Geriatric</span>':'',F.counsel?'<span class="fb2">Counselling</span>':'',F.steward?'<span class="fb2">Stewardship</span>':''].filter(Boolean).join('');
 
-  const plain=[p.summary,p.warning?'Warning: '+p.warning:'',p.danger?'Danger: '+p.danger:'',(p.details||'').replace(/<[^>]+>/g,''),p.keyPoints?.length?'Key points: '+p.keyPoints.join('. '):'',p.sources?.length?'Sources: '+p.sources.join(', '):''].filter(Boolean).join('\n\n');
+  // BBW bar
+  const bbwBar=p.bbw?`<div class="clin-bbw-bar"><span class="ms xs" style="flex-shrink:0">warning</span><span><strong>BLACK BOX WARNING:</strong> ${p.bbw}</span></div>`:'';
 
-  /* p.details is intentionally HTML — sanitize through DOMPurify */
-  const safeDetails = sanitizeHTML(p.details || '');
+  // Pharmacokinetics grid
+  let pkHtml='';
+  if(p.pharmacokinetics){
+    const pk=p.pharmacokinetics;
+    const pkFields=[
+      {l:'Bioavailability',v:pk.bioavailability},{l:'T<sub>max</sub>',v:pk.tmax},
+      {l:'V<sub>d</sub>',v:pk.vd},{l:'Protein Binding',v:pk.protein_binding},
+      {l:'Half-life (t½)',v:pk.half_life},{l:'Metabolism',v:pk.metabolism},
+      {l:'Excretion',v:pk.excretion}
+    ].filter(f=>f.v&&f.v!=='null'&&f.v!==null);
+    if(pkFields.length>0){
+      pkHtml=`<div class="clin-sec">
+        <div class="clin-sec-hdr"><span class="ms xs">science</span> Pharmacokinetics</div>
+        <div class="pk-grid">${pkFields.map(f=>`<div class="pk-cell"><div class="pk-lbl">${f.l}</div><div class="pk-val">${f.v}</div></div>`).join('')}</div>
+      </div>`;
+    }
+  }
+
+  // Clinical details
+  const detailsHtml=p.clinical_details?`<div class="clin-sec">
+    <div class="clin-sec-hdr"><span class="ms xs">menu_book</span> Clinical Overview</div>
+    <div class="clin-body">${p.clinical_details}</div>
+  </div>`:'';
+
+  // Monitoring table
+  let monHtml='';
+  if(p.monitoring&&p.monitoring.length>0){
+    monHtml=`<div class="clin-sec">
+      <div class="clin-sec-hdr"><span class="ms xs">monitoring</span> Monitoring Parameters</div>
+      <div style="overflow-x:auto;padding:0 14px 12px;">
+        <table class="mon-tbl">
+          <thead><tr><th>Parameter</th><th>Frequency</th><th>Target / Threshold</th></tr></thead>
+          <tbody>${p.monitoring.map(m=>`<tr><td>${m.parameter||'-'}</td><td>${m.frequency||'-'}</td><td>${m.target||'-'}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  // Interactions
+  let intHtml='';
+  if(p.interactions&&p.interactions.length>0){
+    intHtml=`<div class="clin-sec">
+      <div class="clin-sec-hdr"><span class="ms xs">compare_arrows</span> Drug Interactions</div>
+      <div style="padding:0 14px 12px;">
+        ${p.interactions.map(i=>{
+          const sc=(i.severity||'').toLowerCase();
+          const sevCls=sc==='major'?'major':sc==='moderate'?'moderate':'minor';
+          return `<div class="int-row">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span class="int-drug">${i.drug||'-'}</span>
+              <span class="int-sev ${sevCls}"><span class="ms xs">warning</span>${i.severity||'Unknown'}</span>
+            </div>
+            <div class="int-mech"><strong>Mechanism:</strong> ${i.mechanism||'-'}</div>
+            <div class="int-mgmt"><span class="ms xs" style="font-size:12px;vertical-align:middle">arrow_forward</span> ${i.management||'-'}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  // Dose adjustments
+  let doseHtml='';
+  const da=p.dose_adjustments;
+  if(da&&(da.renal||da.hepatic||da.other)){
+    const rows=[];
+    if(da.renal&&da.renal!=='null') rows.push(`<div class="dose-row"><span class="dose-lbl renal">Renal</span><span>${da.renal}</span></div>`);
+    if(da.hepatic&&da.hepatic!=='null') rows.push(`<div class="dose-row"><span class="dose-lbl hepatic">Hepatic</span><span>${da.hepatic}</span></div>`);
+    if(da.other&&da.other!=='null') rows.push(`<div class="dose-row"><span class="dose-lbl other">Other</span><span>${da.other}</span></div>`);
+    if(rows.length>0){
+      doseHtml=`<div class="clin-sec">
+        <div class="clin-sec-hdr"><span class="ms xs">tune</span> Dose Adjustments</div>
+        <div class="dose-adj">${rows.join('')}</div>
+      </div>`;
+    }
+  }
+
+  // Key clinical points
+  let kpHtml='';
+  if(p.key_points&&p.key_points.length>0){
+    kpHtml=`<div class="clin-sec">
+      <div class="clin-sec-hdr"><span class="ms xs">checklist</span> Clinical Pearls</div>
+      <div style="padding:4px 14px 12px;">
+        ${p.key_points.map((k,i)=>`<div class="kp-row"><div class="kp-num">${i+1}</div><span>${k}</span></div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // References
+  const refsHtml=p.references&&p.references.length>0?
+    `<div class="clin-refs"><span style="font-size:0.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:3px;">Refs</span>${p.references.map(r=>`<span class="ref-tag">${esc(r)}</span>`).join('')}</div>`:'';
+
+  // Plain text for TTS/copy
+  const plain=[
+    p.summary,
+    p.bbw?'BLACK BOX WARNING: '+p.bbw:'',
+    p.clinical_details?p.clinical_details.replace(/<[^>]+>/g,''):'',
+    p.monitoring&&p.monitoring.length?'Monitoring: '+p.monitoring.map(m=>m.parameter+' ('+m.target+')').join('; '):'',
+    p.interactions&&p.interactions.length?'Interactions: '+p.interactions.map(i=>i.drug+' — '+i.severity).join('; '):'',
+    p.key_points&&p.key_points.length?'Clinical Pearls: '+p.key_points.join('. '):'',
+    p.references&&p.references.length?'References: '+p.references.join(', '):'',
+  ].filter(Boolean).join('\n\n');
 
   const d=document.createElement('div');d.className='msg';
-  /* FIX: p.summary escaped */
   d.innerHTML=`<div class="avatar ai"><span class="ms sm fill">cardiology</span></div>
-  <div class="bwrap" style="max-width:84%"><div class="aic ${cat.c}">
-    <div class="ctag ${cat.c}"><span class="ms xs">${cat.i}</span> ${cat.l}</div>
-    ${badges?`<div class="fbadges">${badges}</div>`:''}
-    <div class="asum"><span class="ms xs">bookmark</span>${esc(p.summary)}</div>
-    ${wH}${dH}
-    <div class="aslbl" style="padding-top:12px"><span class="ms xs">menu_book</span> Details</div>
-    <div class="abody">${safeDetails}</div>
-    ${kH}${sH}
-    <div class="aalert" style="background:rgba(255,193,7,0.08);border-color:rgba(255,193,7,0.3);font-size:0.7rem;margin-top:10px;padding:8px 12px;">
-      <span class="ms xs" style="flex-shrink:0;color:var(--warn)">info</span>
-      <span style="color:var(--muted)">AI-generated content. Sources listed are for reference — verify independently. Not a substitute for clinical judgment.</span>
+  <div class="bwrap" style="max-width:87%">
+    <div class="clin-card ${cat.c}">
+      <div class="clin-tag">
+        <div class="clin-tag-l">
+          <span class="ms xs">${cat.i}</span>
+          <span style="color:var(--cc,var(--text))">${cat.l}</span>
+          ${p.drug_name&&p.drug_name!=='null'?`<span style="color:var(--t2);font-weight:400">— ${esc(p.drug_name)}</span>`:''}
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;">
+          ${p.bbw?'<span class="clin-bbw">BBW</span>':''}
+          ${evBadge}
+        </div>
+      </div>
+      ${badges?`<div class="fbadges">${badges}</div>`:''}
+      <div class="clin-summary"><span class="ms xs">bookmark</span>${p.summary}</div>
+      ${bbwBar}
+      ${pkHtml}
+      ${detailsHtml}
+      ${monHtml}
+      ${intHtml}
+      ${doseHtml}
+      ${kpHtml}
+      ${refsHtml}
+      <div class="clin-acbar acbar">
+        <button class="acbtn tts-btn" data-text="${encodeURIComponent(plain)}"><span class="ms xs">volume_up</span> Read</button>
+        <button class="acbtn cpy-btn" data-text="${encodeURIComponent(plain)}"><span class="ms xs">content_copy</span> Copy</button>
+        <button class="acbtn" onclick="regenLast(this)"><span class="ms xs">refresh</span> Regenerate</button>
+      </div>
     </div>
-    <div class="acbar">
-      <button class="acbtn tts-btn" data-text="${encodeURIComponent(plain)}"><span class="ms xs">volume_up</span> Read Aloud</button>
-      <button class="acbtn cpy-btn" data-text="${encodeURIComponent(plain)}"><span class="ms xs">content_copy</span> Copy</button>
-      <button class="acbtn" onclick="regenLast(this)"><span class="ms xs">refresh</span> Regenerate</button>
-    </div>
-  </div><div class="mts">${ts()}</div></div>`;
+    <div class="mts">${ts()}</div>
+  </div>`;
   getChat().appendChild(d);scrollD();
   Sounds.play('receive');
 }
@@ -649,25 +703,82 @@ function cpyTxt(text,btn){navigator.clipboard.writeText(text).then(()=>{btn.inne
 
 function buildPrompt(text){
   const fl=[];
-  const pregKeywords = ['pregnant','pregnancy','lactation','breastfeed','trimester','obstetric','antenatal'];
-  const autoPreg = pregKeywords.some(k => text.toLowerCase().includes(k));
-  if(F.preg || autoPreg) fl.push('PREGNANCY FILTER: State FDA Pregnancy Category (A/B/C/D/X) and PLLR safety data. Highlight teratogenic risks and safer alternatives.');
-  if(F.peds) fl.push('PEDIATRIC FILTER: Provide mg/kg dosing. Note age restrictions, weight-based calculations, and pediatric-specific contraindications.');
-  if(F.geri) fl.push('GERIATRIC FILTER: Cross-reference Beers Criteria. Flag falls risk, anticholinergic burden, CNS effects, QT prolongation. Suggest safer alternatives.');
-  if(F.steward) fl.push('ANTIBIOTIC STEWARDSHIP: For any antibiotic query, evaluate empiric vs targeted indication, de-escalation opportunity, IV-to-oral switch eligibility, and local resistance patterns.');
-  const lang=F.counsel?'LANGUAGE: Use clear, simple language for patients. Replace jargon \u2014 "xerostomia"\u2192"dry mouth".':'LANGUAGE: Use precise medical terminology. Include PK parameters (Vd, t\u00BD, protein binding, Tmax) for mechanism queries.';
-  return `You are PharmAI, a senior clinical pharmacist providing accurate, evidence-based drug information.\n${lang}\n${fl.length?'Active Filters:\n'+fl.join('\n'):''}\nRespond ONLY in this exact JSON (no markdown, no code fences):\n{"category":"<Side Effects|Dosage|Drug Interaction|Contraindication|Mechanism of Action|General Information>","summary":"<one precise sentence>","warning":"<moderate safety concern or null>","danger":"<critical risk or null>","details":"<HTML using p,ul,li,strong \u2014 2-4 paragraphs>","keyPoints":["<pt1>","<pt2>","<pt3>"],"sources":["<s1>","<s2>","<s3>"]}\nCite 2-4 from: FDA, WHO, PubMed, MedlinePlus, Drugs.com, DailyMed, BNF, ASHP, UpToDate, Beers Criteria, ACC/AHA, ACOG.`;
+  const pregKeywords=['pregnant','pregnancy','lactation','breastfeed','trimester','obstetric','antenatal'];
+  const autoPreg=pregKeywords.some(k=>text.toLowerCase().includes(k));
+  if(F.preg||autoPreg) fl.push('PREGNANCY SPECIALIST MODE: State FDA PLLR data across all three sections (Pregnancy/Lactation/Reproductive). Specify trimester-specific risks, teratogenic mechanisms, and evidence-graded safer alternatives with dosing. Reference ACOG guidelines.');
+  if(F.peds) fl.push('PAEDIATRIC SPECIALIST MODE: Provide age-stratified and weight-based dosing (mg/kg and absolute cap). Note neonatal vs infant vs child PK differences, off-label status, and paediatric-specific toxicities. Reference BNFc and AAP guidelines.');
+  if(F.geri) fl.push('GERIATRIC SPECIALIST MODE: Apply Beers Criteria (2023 AGS), STOPP/START criteria. Quantify anticholinergic burden (ACB score). Flag polypharmacy cascade risks, fall risk, QTc prolongation with specific QTc thresholds, and age-related PK changes (reduced Vd, CrCl, hepatic clearance).');
+  if(F.steward) fl.push('ANTIMICROBIAL STEWARDSHIP MODE: Classify as empiric vs. targeted therapy. State spectrum, PD/PK target attainment (AUC/MIC, T>MIC, Cmax/MIC), de-escalation criteria, IV-to-oral switch eligibility (OPAT criteria), and recommended total duration per IDSA/local guidelines. Note local resistance patterns.');
+  if(F.counsel) fl.push('COUNSELLING MODE: Translate all clinical information to patient-appropriate language (5th grade reading level). Replace all jargon with simple equivalents. Use actionable instructions.');
+
+  const filters=fl.length?`\nSPECIALIST FILTERS ACTIVE:\n${fl.join('\n')}`:'';
+
+  return `You are PharmAI, an AI clinical decision support system functioning at the level of a Senior Clinical Pharmacist and Physician. Your audience is exclusively licensed medical professionals. Responses must be evidence-based, precise, and clinically actionable.
+
+SCOPE GATE (MANDATORY): If the query is not related to medicine, pharmacology, clinical sciences, pharmacy, diagnostics, or allied health — set "in_scope": false and return nothing else.
+
+ADAPTIVE FIELD POPULATION — CRITICAL: Populate ONLY the fields relevant to the specific query. Set all other fields to null or []. Use this mapping:
+
+• Pharmacokinetics or Mechanism of Action → populate: pharmacokinetics, clinical_details, key_points, references. Set monitoring=[], interactions=[], dose_adjustments all null.
+• Drug Interaction → populate: interactions (full detail), clinical_details, key_points, references. Set pharmacokinetics null (except relevant CYP subfields if PK-mediated). Set monitoring=[], dose_adjustments all null.
+• Dosage & Administration → populate: dose_adjustments, monitoring, clinical_details, key_points, references. Set pharmacokinetics null, interactions=[].
+• Adverse Effects → populate: clinical_details, monitoring, bbw if present, key_points, references. Set pharmacokinetics null, interactions=[], dose_adjustments all null.
+• Contraindication → populate: clinical_details, bbw if present, key_points, references. Set pharmacokinetics null, monitoring=[], interactions=[], dose_adjustments all null.
+• Monitoring → populate: monitoring (detailed), clinical_details, key_points, references. Set pharmacokinetics null, interactions=[], dose_adjustments all null.
+• Clinical Therapeutics or General Clinical → populate: clinical_details, key_points, references. Set pharmacokinetics null, monitoring=[], interactions=[], dose_adjustments all null — unless the query explicitly asks about those sections.
+• Antimicrobial → populate: clinical_details, dose_adjustments, monitoring, interactions if relevant, key_points, references. Set pharmacokinetics null unless PK/PD target attainment is the question.
+
+NEVER pad responses with unrequested sections. A drug interaction question does not need PK parameters. A disease question does not need a monitoring table.
+${filters}
+
+CLINICAL DEPTH (for populated fields only):
+- Mechanisms at receptor/molecular/enzyme level
+- Evidence graded: A = RCT/meta-analysis; B = cohort; C = expert consensus
+- Cite specific guidelines with year (e.g. "ACC/AHA 2023", "BNF 88", "IDSA 2022")
+- Flag Black Box Warnings explicitly
+- Interactions: ASHP severity classification with mechanistic basis
+- Dose adjustments: exact CrCl and Child-Pugh thresholds
+- Monitoring: exact target ranges and sampling timing
+
+Respond ONLY in this exact JSON (no markdown, no code fences):
+{
+  "in_scope": true,
+  "category": "<Pharmacokinetics|Drug Interaction|Dosage & Administration|Adverse Effects|Contraindication|Mechanism of Action|Clinical Therapeutics|Monitoring|Antimicrobial|General Clinical>",
+  "drug_name": "<Primary drug or topic name, or null>",
+  "evidence_grade": "<A|B|C>",
+  "bbw": "<Exact Black Box Warning text or null>",
+  "summary": "<One precise, clinically dense sentence>",
+  "pharmacokinetics": {
+    "bioavailability": "<% or null>",
+    "tmax": "<time or null>",
+    "vd": "<L/kg or null>",
+    "protein_binding": "<% or null>",
+    "half_life": "<hours or null>",
+    "metabolism": "<CYP/phase or null>",
+    "excretion": "<route or null>"
+  },
+  "clinical_details": "<Structured HTML using p,ul,li,strong — relevant depth only>",
+  "monitoring": [
+    {"parameter": "<param>", "frequency": "<timing>", "target": "<range>"}
+  ],
+  "interactions": [
+    {"drug": "<drug>", "severity": "<Major|Moderate|Minor>", "mechanism": "<PK/PD>", "management": "<action>"}
+  ],
+  "dose_adjustments": {
+    "renal": "<CrCl thresholds or null>",
+    "hepatic": "<Child-Pugh or null>",
+    "other": "<age/weight/dialysis or null>"
+  },
+  "key_points": ["<pearl 1>","<pearl 2>","<pearl 3>"],
+  "references": ["<guideline with year>","<source 2>"]
+}`;
 }
 
 async function sendQ(imgBase64 = null){
   if (Date.now() - lastSendTime < 2000) { toast('Please wait before sending again.', 'warn'); return; }
-  const text=document.getElementById('query').value.trim();
-  if((!text && !imgBase64)||loading)return;
+  const text=document.getElementById('query').value.trim();if((!text && !imgBase64)||loading)return;
   if(!groqKey){toast('API key not configured. Contact admin.','err');return;}
-
-  /* Demo limit gate */
-  if(!demoCheck()) { showLimitModal(); return; }
-
+  if(!demoCheck()){ showLimitModal(); return; }
   lastSendTime = Date.now();
   loading=true;document.getElementById('sbtn').disabled=true;
   lastQuery = text;
@@ -675,53 +786,41 @@ async function sendQ(imgBase64 = null){
   Sounds.play('pop');
   const ws=document.getElementById('ws');if(ws)ws.remove();
   
-  appendUser(imgBase64 ? (text ? text : '\ud83d\udcf7 Image submitted for analysis') : text);
+  appendUser(imgBase64 ? '📷 Uploaded Image: ' + text : text);
   appendSkel();
   
   let msgs = [];
   let modelToUse = GROQ_MODEL;
   
   if (imgBase64) {
-    modelToUse = VISION_MODEL;
-    msgs = [
-      {role:'user', content: [
-        {type: "text", text: text || "Identify this medication tablet/capsule from its physical appearance, color, shape, and any imprint code visible. Provide clinical details."},
-        {type: "image_url", image_url: {url: "data:image/jpeg;base64," + imgBase64}}
-      ]}
-    ];
+     modelToUse = VISION_MODEL;
+     msgs = [
+       {role:'user', content: [
+         {type: "text", text: text || "Identify this medication tablet/capsule from its physical appearance, color, shape, and any imprint code visible. Provide clinical details."},
+         {type: "image_url", image_url: {url: "data:image/jpeg;base64," + imgBase64}}
+       ]}
+     ];
   } else {
-    msgs = [{role:'system',content:buildPrompt(text)},...hist.slice(-MAX_HIST*2),{role:'user',content:text}];
+     msgs = [{role:'system',content:buildPrompt(text)},...hist.slice(-MAX_HIST*2),{role:'user',content:text}];
   }
 
   try{
     const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},body:JSON.stringify({model:modelToUse,messages:msgs,temperature:0.25,max_tokens:1400,response_format: imgBase64 ? undefined : {type:'json_object'}})});
     const data=await res.json();
-    if(data.error) {
-      const errMsg = data.error.message || 'API error';
-      if(data.error.type === 'tokens' || (data.error.code && data.error.code.includes('rate'))) {
-        throw new Error('Rate limit reached. Please wait a moment before sending.');
-      }
-      throw new Error(errMsg);
-    }
-    if(!data.choices || !data.choices[0]) throw new Error('Empty response from AI service.');
+    if(data.error) throw new Error(data.error.message);
     
-    let raw=data.choices[0].message?.content||'{}';
+    let raw=data.choices?.[0]?.message?.content||'{}';
     
     if (imgBase64) {
       raw = JSON.stringify({ category: "General Information", summary: "Vision Analysis Complete", details: `<p>${esc(raw)}</p>` });
     }
     
     const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
-    remTyp();appendAI(parsed);hap(15);
-
-    /* Count only on successful AI response */
-    demoIncrement();
+    remTyp();appendAI(parsed);
+    if(parsed.in_scope !== false){ hap(15); demoIncrement(); }
     
-    const slimRaw = raw.length > 2000
-      ? JSON.stringify({ category: parsed.category || 'System', summary: parsed.summary || 'Complex report generated — see chat for full details.' })
-      : raw;
-
-    if(text) {
+    if(parsed.in_scope !== false){
+      const slimRaw = raw.length > 500 ? '{"category": "System", "summary": "Previous complex report generated. Data excluded to save context."}' : raw;
       hist.push({role:'user',content:text},{role:'assistant',content:slimRaw});
     }
     
@@ -758,28 +857,23 @@ async function capScan(){
     return;
   }
 
+  // Tesseract Lazy-Load Injection
   if (typeof Tesseract === 'undefined' && document.getElementById('cam-mode').value === 'ocr') {
     toast('Loading OCR Engine (First time only)...', 'info');
-    await new Promise((resolve, reject) => {
+    await new Promise((resolve) => {
       const script = document.createElement('script');
-      /* FIX: load Tesseract with crossOrigin set. A Subresource Integrity (SRI) hash
-         should be added here once computed for the pinned version:
-         script.integrity = 'sha384-<hash>';
-         Until then, crossOrigin ensures the script cannot read cookies/storage via CORS. */
       script.src = "https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js";
-      script.crossOrigin = 'anonymous';
       script.onload = resolve;
-      script.onerror = () => { toast('Failed to load OCR engine.', 'err'); reject(new Error('Tesseract load failed')); };
       document.head.appendChild(script);
-    }).catch(() => { btn.disabled=false; btn.innerHTML='<span class="ms md">document_scanner</span> Capture'; return; });
-    if(typeof Tesseract === 'undefined') return;
+    });
   }
 
   btn.disabled=true;
   btn.innerHTML='<span class="ms md" style="animation:spin 1s linear infinite">progress_activity</span> Processing...';
   
   const c=document.getElementById('canvas');
-  c.width=v.videoWidth;c.height=v.videoHeight;
+  c.width=v.videoWidth;
+  c.height=v.videoHeight;
   c.getContext('2d').drawImage(v,0,0);
   const mode = document.getElementById('cam-mode').value;
   
