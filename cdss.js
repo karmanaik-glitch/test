@@ -373,13 +373,21 @@ async function genCarePlan() {
     treatment: cdssTempTx
   };
 
-  let age = parseFloat(payload.demographics.age), wt = parseFloat(payload.demographics.wt), scr = parseFloat(payload.labs.anchors.scr), sex = payload.demographics.sex;
+  let age = parseFloat(payload.demographics.age), wt = parseFloat(payload.demographics.wt), scr = parseFloat(payload.labs.anchors.scr), sex = payload.demographics.sex, ht = parseFloat(payload.demographics.ht);
   if (!isNaN(age) && !isNaN(wt) && !isNaN(scr) && scr > 0) {
-    let crcl = ((140 - age) * wt) / (72 * scr); if (sex === 'F') crcl *= 0.85;
-    /* FIX: renamed from calculated_CrCl to calculated_CrCl_CG to make explicit that this
-       is a Cockcroft-Gault estimate for drug dosing, not an eGFR for CKD staging.
-       The system prompt is updated to match — the AI will no longer conflate the two. */
-    payload.labs.calculated_CrCl_CG = crcl.toFixed(1) + " mL/min (Cockcroft-Gault, for drug dosing only)";
+    /* Use Adjusted Body Weight for obese patients (actual wt > 130% IBW) per CG guidance */
+    let dosingWt = wt;
+    if (!isNaN(ht) && ht > 0) {
+      const hi = ht / 2.54; /* cm to inches */
+      const ibw = sex === 'F' ? 45.5 + 2.3 * (hi - 60) : 50 + 2.3 * (hi - 60);
+      const ibwClamped = Math.max(0, ibw);
+      if (wt > 1.3 * ibwClamped && ibwClamped > 0) {
+        dosingWt = ibwClamped + 0.4 * (wt - ibwClamped); /* ABW */
+      }
+    }
+    let crcl = ((140 - age) * dosingWt) / (72 * scr); if (sex === 'F') crcl *= 0.85;
+    const wtNote = dosingWt !== wt ? ` (ABW used: ${dosingWt.toFixed(1)}kg — obese patient)` : '';
+    payload.labs.calculated_CrCl_CG = crcl.toFixed(1) + " mL/min (Cockcroft-Gault, for drug dosing only)" + wtNote;
   }
   if(isUpdate && pt && pt.demo && pt.demo.doa) { payload.demographics.doa = pt.demo.doa; }
 
@@ -746,6 +754,16 @@ function printSOAP() {
             -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .aalert.dng { border-color: #e88; background: #fff0f0; }
   .aalert.warn { border-color: #e8c060; background: #fffbf0; }
+  /* SOAP section badge fallbacks — CSS vars don't resolve in print popup */
+  [style*="#6366f1"],[style*="6366f1"] { background-color: #6366f1 !important; }
+  [style*="#0ea5e9"],[style*="0ea5e9"] { background-color: #0ea5e9 !important; }
+  [style*="#f59e0b"],[style*="f59e0b"] { background-color: #f59e0b !important; }
+  [style*="#10b981"],[style*="10b981"] { background-color: #10b981 !important; }
+  [style*="var(--ok)"] { color: #10b981 !important; }
+  [style*="var(--warn)"] { color: #f59e0b !important; }
+  [style*="var(--danger)"] { color: #ef4444 !important; }
+  [style*="var(--text)"] { color: #111 !important; }
+  [style*="var(--muted)"] { color: #888 !important; }
   button, .ms { display: none !important; }
   ul { padding-left: 16px; }
   li { margin-bottom: 3px; }
