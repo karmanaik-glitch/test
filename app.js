@@ -229,35 +229,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   const sessSearchEl = document.getElementById('sess-search');
   if(sessSearchEl) sessSearchEl.addEventListener('input', () => renderSB(sessSearchEl.value.trim().toLowerCase()));
-
-  auth.onAuthStateChanged(async(fbUser)=>{
-    const loading_el=document.getElementById('auth-loading');
-    if(fbUser){
-      /* Anonymous users skip the name-step entirely */
-      if(fbUser.isAnonymous){
-        loading_el.style.display='none';
-        await enterApp(fbUser);
-        return;
-      }
-      if(!fbUser.displayName){
-        _pendingFBUser=fbUser;
-        loading_el.style.display='none';
-        document.getElementById('lp').style.display='flex';
-        document.getElementById('auth-step').style.display='none';
-        document.getElementById('name-step').style.display='block';
-        setTimeout(()=>document.getElementById('display-name').focus(),300);
-        return;
-      }
-      loading_el.style.display='none';
-      await enterApp(fbUser);
-    } else {
-      loading_el.style.display='none';
-      document.getElementById('lp').style.display='flex';
-      document.getElementById('auth-step').style.display='block';
-      document.getElementById('name-step').style.display='none';
-      setLoginLoading(false);
-    }
-  });
 });
 
 /* ══ UI HELPERS & MODALS ══ */
@@ -284,7 +255,7 @@ function flU(el){el.closest('.flw').classList.add('up');}
 function flB(el){if(!el.value&&el.value!=='0')el.closest('.flw').classList.remove('up');}
 function toggleSB(){const sb=document.getElementById('sb'),ov=document.getElementById('sb-ov');if(sb.classList.contains('open')){sb.classList.remove('open');setTimeout(()=>ov.classList.remove('open'),350);}else{ov.classList.add('open');setTimeout(()=>sb.classList.add('open'),10);}Sounds.play('tick');}
 
-/* ══ SESSIONS (Async with localforage) ══ */
+/* ══ SESSIONS ══ */
 function getDocSizeKB(obj) { return new Blob([JSON.stringify(obj)]).size / 1024; }
 
 async function loadSessions(){
@@ -302,11 +273,12 @@ async function loadSessions(){
       if (docSnap.exists && docSnap.data().sessions && docSnap.data().sessions.length > 0) {
         sessions = docSnap.data().sessions;
         renderSB();
-        const batch = db.batch();
-        sessions.forEach(sess => {
-          batch.set(db.collection('users').doc(user).collection('sessions').doc(sess.id.toString()), sess);
-        });
-        await batch.commit();
+        const CHUNK = 400;
+        for(let i=0;i<sessions.length;i+=CHUNK){
+          const batch = db.batch();
+          sessions.slice(i,i+CHUNK).forEach(s=>batch.set(db.collection('users').doc(user).collection('sessions').doc(s.id.toString()),s));
+          await batch.commit();
+        }
         localforage.setItem('psess_'+user, sessions);
       }
     }
@@ -321,8 +293,8 @@ function saveSessions(){
   if(!user) return;
   let kb = getDocSizeKB(sessions);
   if(kb > 800) {
-      sessions = sessions.slice(0, Math.max(0, sessions.length - 5));
-      toast('Older chats auto-archived to save space.', 'info');
+    sessions = sessions.slice(0, Math.max(0, sessions.length - 5));
+    toast('Older chats auto-archived to save space.', 'info');
   }
   localforage.setItem('psess_'+user, sessions);
   const s = sessions.find(x=>x.id===currSess);
@@ -363,7 +335,7 @@ function renderSB(filter=''){
     return;
   }
   filtered.forEach(s=>{const d=document.createElement('div');d.className='sbi'+(currSess===s.id?' active':'');d.innerHTML=`<div class="sbi-t" onclick="loadChat(${s.id});hap(10);"><span class="ms xs">chat</span><span>${esc(s.title)}</span></div><button class="sbi-del" onclick="delChat(${s.id},event);hap(20);"><span class="ms xs">delete</span></button>`;l.appendChild(d);});
-}}
+}
 
 function newChat(){hist=[];currSess=null;renderWelcome();if(document.getElementById('sb').classList.contains('open'))toggleSB();renderSB();}
 function loadChat(id){const s=sessions.find(x=>x.id===id);if(!s)return;currSess=id;hist=s.hist;document.getElementById('chat').innerHTML=s.html;if(document.getElementById('sb').classList.contains('open'))toggleSB();scrollD();renderSB();Sounds.play('tick');}
@@ -379,12 +351,12 @@ async function delChat(id,e){
 
 /* ══ EXPORT / IMPORT ══ */
 function exportData(){
-  if(!confirm('⚠ PHI Warning\n\nThis backup file will contain sensitive patient data including names, diagnoses, medications and lab results in plain text.\n\nStore it in a secure location. Do not share or leave it in Downloads.\n\nContinue with export?')) return;
+  if(!confirm('\u26a0 PHI Warning\n\nThis backup file will contain sensitive patient data including names, diagnoses, medications and lab results in plain text.\n\nStore it in a secure location. Do not share or leave it in Downloads.\n\nContinue with export?')) return;
   const dump = { sessions, wardPatients, settings: S, exportDate: new Date().toISOString(), userName: uName };
   const b=new Blob([JSON.stringify(dump)],{type:'application/json'});
   const u=URL.createObjectURL(b);const a=document.createElement('a');
   a.href=u;a.download=`PharmAI_Backup_${new Date().toISOString().split('T')[0]}.json`;
-  a.click();URL.revokeObjectURL(u);toast('Exported!','ok');
+  a.click();URL.revokeObjectURL(u);toast('Exported! Store this file securely.','ok');
 }
 
 function importData(e){
@@ -418,26 +390,22 @@ function renderRx(){document.getElementById('rx-con').innerHTML=rxList.map((r,i)
 function analyzeRx(){
   if(rxList.length<2){toast('Add at least 2 medications.','warn');return;}
   closeM('tm');
-  
   let ctxStr = '';
   const useCtx = document.getElementById('poly-ctx').checked;
-  
   if (useCtx) {
     if (typeof activeCaseId === 'undefined' || !activeCaseId) {
       toast('No active ward patient. Uncheck context or select a patient first.', 'warn');
-      // don't return - just skip context
       ctxStr = '';
     } else {
-    const pt = wardPatients.find(p => p.id === activeCaseId);
-    if (pt && pt.demo) {
-      const age = pt.demo.age || 'Unknown';
-      const sex = pt.demo.sex || 'Unknown';
-      const wt = pt.demo.wt ? `${pt.demo.wt}kg` : 'Unknown weight';
-      ctxStr = `\nPatient Context: ${age}y ${sex}, ${wt}. `;
-    }
+      const pt = wardPatients.find(p => p.id === activeCaseId);
+      if (pt && pt.demo) {
+        const age = pt.demo.age || 'Unknown';
+        const sex = pt.demo.sex || 'Unknown';
+        const wt = pt.demo.wt ? `${pt.demo.wt}kg` : 'Unknown weight';
+        ctxStr = `\nPatient Context: ${age}y ${sex}, ${wt}. `;
+      }
     }
   }
-  
   const q=`Analyze polypharmacy interactions between: ${rxList.join(', ')}. ${ctxStr}Provide an Interaction Matrix covering severity, mechanism, and required monitoring.`;
   insertAndSend(q);
   rxList=[];
@@ -458,6 +426,7 @@ function openCKDCalc(){
   if(calcBtn) calcBtn.click();
   setTimeout(()=>{ const card = document.getElementById('cc-ckd'); if(card) card.classList.add('open'); }, 100);
 }
+
 function renderWelcome(){
   const h=new Date().getHours();const gr=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
   const name=uName||'Doctor';
@@ -476,13 +445,13 @@ function renderWelcome(){
       <button class="ws-btn" style="animation-delay:0.9s" onclick="openPolyRxTab()">
         <span class="ms lg">monitor_heart</span>Drug Interactions
       </button>
-      <button class="ws-btn" style="animation-delay:1.0s" onclick="insertAndSend('Beers Criteria \\u2014 high-risk medications to avoid in elderly patients')">
+      <button class="ws-btn" style="animation-delay:1.0s" onclick="insertAndSend('Beers Criteria \u2014 high-risk medications to avoid in elderly patients')">
         <span class="ms lg">elderly</span>Beers Criteria
       </button>
       <button class="ws-btn" style="animation-delay:1.1s" onclick="insertAndSend('Standard pediatric dose for Amoxicillin 40mg/kg/day?')">
         <span class="ms lg">child_care</span>Peds Dosing
       </button>
-      <button class="ws-btn" style="animation-delay:1.2s" onclick="openM('tm');document.getElementById('cc-ckd').classList.add('open');">
+      <button class="ws-btn" style="animation-delay:1.2s" onclick="openCKDCalc()">
         <span class="ms lg">water_drop</span>eGFR Calc
       </button>
     </div>
@@ -513,8 +482,12 @@ function appendUser(text){const ws=document.getElementById('ws');if(ws)ws.remove
 function appendSkel(){const d=document.createElement('div');d.className='msg';d.id='typ';d.innerHTML=`<div class="avatar ai"><span class="ms sm fill">cardiology</span></div><div class="bwrap" style="max-width:84%;width:100%"><div class="skel"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="think-txt">PharmAI is analyzing...</div></div></div>`;getChat().appendChild(d);scrollD();}
 function remTyp(){const t=document.getElementById('typ');if(t)t.remove();}
 
+function sanitizeHTML(html) {
+  if(typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(html, {ALLOWED_TAGS:['p','ul','li','ol','strong','em','br','small','b','i','span','div','h4'],ALLOWED_ATTR:['style']});
+  return esc(String(html));
+}
+
 function appendAI(p){
-  // Handle out-of-scope response
   if(p.in_scope === false){
     const d=document.createElement('div');d.className='msg';
     d.innerHTML=`<div class="avatar ai"><span class="ms sm fill">cardiology</span></div>
@@ -532,7 +505,6 @@ function appendAI(p){
     return;
   }
 
-  // Category map
   const CM={
     'Pharmacokinetics':{c:'mec',i:'science',l:'Pharmacokinetics'},
     'Drug Interaction':{c:'int',i:'monitor_heart',l:'Drug Interaction'},
@@ -545,43 +517,35 @@ function appendAI(p){
     'Antimicrobial':{c:'int',i:'coronavirus',l:'Antimicrobial'},
     'General Clinical':{c:'gen',i:'info',l:'General Clinical'},
   };
-  const cat=CM[p.category]||{c:'gen',i:'info',l:p.category||'Clinical Response'};
+  const cat=CM[p.category]||{c:'gen',i:'info',l:esc(p.category||'Clinical Response')};
 
-  // Evidence grade badge
   const evClass={'A':'ev-a','B':'ev-b','C':'ev-c','D':'ev-d'}[p.evidence_grade]||'ev-c';
   const evBadge=p.evidence_grade?`<span class="ev-badge ${evClass}">Evidence ${p.evidence_grade}</span>`:'';
-
-  // Filter badges
   const badges=[F.preg?'<span class="fb2">Pregnancy</span>':'',F.peds?'<span class="fb2">Paediatric</span>':'',F.geri?'<span class="fb2">Geriatric</span>':'',F.counsel?'<span class="fb2">Counselling</span>':'',F.steward?'<span class="fb2">Stewardship</span>':''].filter(Boolean).join('');
+  const bbwBar=p.bbw?`<div class="clin-bbw-bar"><span class="ms xs" style="flex-shrink:0">warning</span><span><strong>BLACK BOX WARNING:</strong> ${esc(p.bbw)}</span></div>`:'';
 
-  // BBW bar
-  const bbwBar=p.bbw?`<div class="clin-bbw-bar"><span class="ms xs" style="flex-shrink:0">warning</span><span><strong>BLACK BOX WARNING:</strong> ${p.bbw}</span></div>`:'';
-
-  // Pharmacokinetics grid
   let pkHtml='';
   if(p.pharmacokinetics){
     const pk=p.pharmacokinetics;
     const pkFields=[
       {l:'Bioavailability',v:pk.bioavailability},{l:'T<sub>max</sub>',v:pk.tmax},
       {l:'V<sub>d</sub>',v:pk.vd},{l:'Protein Binding',v:pk.protein_binding},
-      {l:'Half-life (t½)',v:pk.half_life},{l:'Metabolism',v:pk.metabolism},
+      {l:'Half-life (t\u00BD)',v:pk.half_life},{l:'Metabolism',v:pk.metabolism},
       {l:'Excretion',v:pk.excretion}
     ].filter(f=>f.v&&f.v!=='null'&&f.v!==null);
     if(pkFields.length>0){
       pkHtml=`<div class="clin-sec">
         <div class="clin-sec-hdr"><span class="ms xs">science</span> Pharmacokinetics</div>
-        <div class="pk-grid">${pkFields.map(f=>`<div class="pk-cell"><div class="pk-lbl">${f.l}</div><div class="pk-val">${f.v}</div></div>`).join('')}</div>
+        <div class="pk-grid">${pkFields.map(f=>`<div class="pk-cell"><div class="pk-lbl">${f.l}</div><div class="pk-val">${esc(String(f.v))}</div></div>`).join('')}</div>
       </div>`;
     }
   }
 
-  // Clinical details
   const detailsHtml=p.clinical_details?`<div class="clin-sec">
     <div class="clin-sec-hdr"><span class="ms xs">menu_book</span> Clinical Overview</div>
-    <div class="clin-body">${p.clinical_details}</div>
+    <div class="clin-body">${sanitizeHTML(p.clinical_details)}</div>
   </div>`:'';
 
-  // Monitoring table
   let monHtml='';
   if(p.monitoring&&p.monitoring.length>0){
     monHtml=`<div class="clin-sec">
@@ -589,13 +553,12 @@ function appendAI(p){
       <div style="overflow-x:auto;padding:0 14px 12px;">
         <table class="mon-tbl">
           <thead><tr><th>Parameter</th><th>Frequency</th><th>Target / Threshold</th></tr></thead>
-          <tbody>${p.monitoring.map(m=>`<tr><td>${m.parameter||'-'}</td><td>${m.frequency||'-'}</td><td>${m.target||'-'}</td></tr>`).join('')}</tbody>
+          <tbody>${p.monitoring.map(m=>`<tr><td>${esc(m.parameter||'-')}</td><td>${esc(m.frequency||'-')}</td><td>${esc(m.target||'-')}</td></tr>`).join('')}</tbody>
         </table>
       </div>
     </div>`;
   }
 
-  // Interactions
   let intHtml='';
   if(p.interactions&&p.interactions.length>0){
     intHtml=`<div class="clin-sec">
@@ -606,25 +569,24 @@ function appendAI(p){
           const sevCls=sc==='major'?'major':sc==='moderate'?'moderate':'minor';
           return `<div class="int-row">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <span class="int-drug">${i.drug||'-'}</span>
-              <span class="int-sev ${sevCls}"><span class="ms xs">warning</span>${i.severity||'Unknown'}</span>
+              <span class="int-drug">${esc(i.drug||'-')}</span>
+              <span class="int-sev ${sevCls}"><span class="ms xs">warning</span>${esc(i.severity||'Unknown')}</span>
             </div>
-            <div class="int-mech"><strong>Mechanism:</strong> ${i.mechanism||'-'}</div>
-            <div class="int-mgmt"><span class="ms xs" style="font-size:12px;vertical-align:middle">arrow_forward</span> ${i.management||'-'}</div>
+            <div class="int-mech"><strong>Mechanism:</strong> ${esc(i.mechanism||'-')}</div>
+            <div class="int-mgmt"><span class="ms xs" style="font-size:12px;vertical-align:middle">arrow_forward</span> ${esc(i.management||'-')}</div>
           </div>`;
         }).join('')}
       </div>
     </div>`;
   }
 
-  // Dose adjustments
   let doseHtml='';
   const da=p.dose_adjustments;
   if(da&&(da.renal||da.hepatic||da.other)){
     const rows=[];
-    if(da.renal&&da.renal!=='null') rows.push(`<div class="dose-row"><span class="dose-lbl renal">Renal</span><span>${da.renal}</span></div>`);
-    if(da.hepatic&&da.hepatic!=='null') rows.push(`<div class="dose-row"><span class="dose-lbl hepatic">Hepatic</span><span>${da.hepatic}</span></div>`);
-    if(da.other&&da.other!=='null') rows.push(`<div class="dose-row"><span class="dose-lbl other">Other</span><span>${da.other}</span></div>`);
+    if(da.renal&&da.renal!=='null') rows.push(`<div class="dose-row"><span class="dose-lbl renal">Renal</span><span>${esc(da.renal)}</span></div>`);
+    if(da.hepatic&&da.hepatic!=='null') rows.push(`<div class="dose-row"><span class="dose-lbl hepatic">Hepatic</span><span>${esc(da.hepatic)}</span></div>`);
+    if(da.other&&da.other!=='null') rows.push(`<div class="dose-row"><span class="dose-lbl other">Other</span><span>${esc(da.other)}</span></div>`);
     if(rows.length>0){
       doseHtml=`<div class="clin-sec">
         <div class="clin-sec-hdr"><span class="ms xs">tune</span> Dose Adjustments</div>
@@ -633,28 +595,25 @@ function appendAI(p){
     }
   }
 
-  // Key clinical points
   let kpHtml='';
   if(p.key_points&&p.key_points.length>0){
     kpHtml=`<div class="clin-sec">
       <div class="clin-sec-hdr"><span class="ms xs">checklist</span> Clinical Pearls</div>
       <div style="padding:4px 14px 12px;">
-        ${p.key_points.map((k,i)=>`<div class="kp-row"><div class="kp-num">${i+1}</div><span>${k}</span></div>`).join('')}
+        ${p.key_points.map((k,i)=>`<div class="kp-row"><div class="kp-num">${i+1}</div><span>${esc(k)}</span></div>`).join('')}
       </div>
     </div>`;
   }
 
-  // References
   const refsHtml=p.references&&p.references.length>0?
     `<div class="clin-refs"><span style="font-size:0.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:3px;">Refs</span>${p.references.map(r=>`<span class="ref-tag">${esc(r)}</span>`).join('')}</div>`:'';
 
-  // Plain text for TTS/copy
   const plain=[
     p.summary,
     p.bbw?'BLACK BOX WARNING: '+p.bbw:'',
     p.clinical_details?p.clinical_details.replace(/<[^>]+>/g,''):'',
     p.monitoring&&p.monitoring.length?'Monitoring: '+p.monitoring.map(m=>m.parameter+' ('+m.target+')').join('; '):'',
-    p.interactions&&p.interactions.length?'Interactions: '+p.interactions.map(i=>i.drug+' — '+i.severity).join('; '):'',
+    p.interactions&&p.interactions.length?'Interactions: '+p.interactions.map(i=>i.drug+' \u2014 '+i.severity).join('; '):'',
     p.key_points&&p.key_points.length?'Clinical Pearls: '+p.key_points.join('. '):'',
     p.references&&p.references.length?'References: '+p.references.join(', '):'',
   ].filter(Boolean).join('\n\n');
@@ -667,7 +626,7 @@ function appendAI(p){
         <div class="clin-tag-l">
           <span class="ms xs">${cat.i}</span>
           <span style="color:var(--cc,var(--text))">${cat.l}</span>
-          ${p.drug_name&&p.drug_name!=='null'?`<span style="color:var(--t2);font-weight:400">— ${esc(p.drug_name)}</span>`:''}
+          ${p.drug_name&&p.drug_name!=='null'?`<span style="color:var(--t2);font-weight:400">\u2014 ${esc(p.drug_name)}</span>`:''}
         </div>
         <div style="display:flex;align-items:center;gap:5px;">
           ${p.bbw?'<span class="clin-bbw">BBW</span>':''}
@@ -675,7 +634,7 @@ function appendAI(p){
         </div>
       </div>
       ${badges?`<div class="fbadges">${badges}</div>`:''}
-      <div class="clin-summary"><span class="ms xs">bookmark</span>${p.summary}</div>
+      <div class="clin-summary"><span class="ms xs">bookmark</span>${esc(p.summary)}</div>
       ${bbwBar}
       ${pkHtml}
       ${detailsHtml}
@@ -715,18 +674,18 @@ function buildPrompt(text){
 
   return `You are PharmAI, an AI clinical decision support system functioning at the level of a Senior Clinical Pharmacist and Physician. Your audience is exclusively licensed medical professionals. Responses must be evidence-based, precise, and clinically actionable.
 
-SCOPE GATE (MANDATORY): If the query is not related to medicine, pharmacology, clinical sciences, pharmacy, diagnostics, or allied health — set "in_scope": false and return nothing else.
+SCOPE GATE (MANDATORY): If the query is not related to medicine, pharmacology, clinical sciences, pharmacy, diagnostics, or allied health \u2014 set "in_scope": false and return nothing else.
 
-ADAPTIVE FIELD POPULATION — CRITICAL: Populate ONLY the fields relevant to the specific query. Set all other fields to null or []. Use this mapping:
+ADAPTIVE FIELD POPULATION \u2014 CRITICAL: Populate ONLY the fields relevant to the specific query. Set all other fields to null or []. Use this mapping:
 
-• Pharmacokinetics or Mechanism of Action → populate: pharmacokinetics, clinical_details, key_points, references. Set monitoring=[], interactions=[], dose_adjustments all null.
-• Drug Interaction → populate: interactions (full detail), clinical_details, key_points, references. Set pharmacokinetics null (except relevant CYP subfields if PK-mediated). Set monitoring=[], dose_adjustments all null.
-• Dosage & Administration → populate: dose_adjustments, monitoring, clinical_details, key_points, references. Set pharmacokinetics null, interactions=[].
-• Adverse Effects → populate: clinical_details, monitoring, bbw if present, key_points, references. Set pharmacokinetics null, interactions=[], dose_adjustments all null.
-• Contraindication → populate: clinical_details, bbw if present, key_points, references. Set pharmacokinetics null, monitoring=[], interactions=[], dose_adjustments all null.
-• Monitoring → populate: monitoring (detailed), clinical_details, key_points, references. Set pharmacokinetics null, interactions=[], dose_adjustments all null.
-• Clinical Therapeutics or General Clinical → populate: clinical_details, key_points, references. Set pharmacokinetics null, monitoring=[], interactions=[], dose_adjustments all null — unless the query explicitly asks about those sections.
-• Antimicrobial → populate: clinical_details, dose_adjustments, monitoring, interactions if relevant, key_points, references. Set pharmacokinetics null unless PK/PD target attainment is the question.
+\u2022 Pharmacokinetics or Mechanism of Action \u2192 populate: pharmacokinetics, clinical_details, key_points, references. Set monitoring=[], interactions=[], dose_adjustments all null.
+\u2022 Drug Interaction \u2192 populate: interactions (full detail), clinical_details, key_points, references. Set pharmacokinetics null (except relevant CYP subfields if PK-mediated). Set monitoring=[], dose_adjustments all null.
+\u2022 Dosage & Administration \u2192 populate: dose_adjustments, monitoring, clinical_details, key_points, references. Set pharmacokinetics null, interactions=[].
+\u2022 Adverse Effects \u2192 populate: clinical_details, monitoring, bbw if present, key_points, references. Set pharmacokinetics null, interactions=[], dose_adjustments all null.
+\u2022 Contraindication \u2192 populate: clinical_details, bbw if present, key_points, references. Set pharmacokinetics null, monitoring=[], interactions=[], dose_adjustments all null.
+\u2022 Monitoring \u2192 populate: monitoring (detailed), clinical_details, key_points, references. Set pharmacokinetics null, interactions=[], dose_adjustments all null.
+\u2022 Clinical Therapeutics or General Clinical \u2192 populate: clinical_details, key_points, references. Set pharmacokinetics null, monitoring=[], interactions=[], dose_adjustments all null \u2014 unless the query explicitly asks about those sections.
+\u2022 Antimicrobial \u2192 populate: clinical_details, dose_adjustments, monitoring, interactions if relevant, key_points, references. Set pharmacokinetics null unless PK/PD target attainment is the question.
 
 NEVER pad responses with unrequested sections. A drug interaction question does not need PK parameters. A disease question does not need a monitoring table.
 ${filters}
@@ -757,7 +716,7 @@ Respond ONLY in this exact JSON (no markdown, no code fences):
     "metabolism": "<CYP/phase or null>",
     "excretion": "<route or null>"
   },
-  "clinical_details": "<Structured HTML using p,ul,li,strong — relevant depth only>",
+  "clinical_details": "<Structured HTML using p,ul,li,strong \u2014 relevant depth only>",
   "monitoring": [
     {"parameter": "<param>", "frequency": "<timing>", "target": "<range>"}
   ],
@@ -785,48 +744,40 @@ async function sendQ(imgBase64 = null){
   document.getElementById('query').value='';document.getElementById('query').style.height='auto';document.getElementById('cc').classList.remove('show');
   Sounds.play('pop');
   const ws=document.getElementById('ws');if(ws)ws.remove();
-  
-  appendUser(imgBase64 ? '📷 Uploaded Image: ' + text : text);
+
+  appendUser(imgBase64 ? '\ud83d\udcf7 Image submitted for analysis' + (text ? ': '+text : '') : text);
   appendSkel();
-  
+
   let msgs = [];
   let modelToUse = GROQ_MODEL;
-  
+
   if (imgBase64) {
-     modelToUse = VISION_MODEL;
-     msgs = [
-       {role:'user', content: [
-         {type: "text", text: text || "Identify this medication tablet/capsule from its physical appearance, color, shape, and any imprint code visible. Provide clinical details."},
-         {type: "image_url", image_url: {url: "data:image/jpeg;base64," + imgBase64}}
-       ]}
-     ];
+    modelToUse = VISION_MODEL;
+    msgs = [{role:'user', content: [
+      {type:"text", text: text || "Identify this medication tablet/capsule from its physical appearance, color, shape, and any imprint code visible. Provide clinical details."},
+      {type:"image_url", image_url:{url:"data:image/jpeg;base64,"+imgBase64}}
+    ]}];
   } else {
-     msgs = [{role:'system',content:buildPrompt(text)},...hist.slice(-MAX_HIST*2),{role:'user',content:text}];
+    msgs = [{role:'system',content:buildPrompt(text)},...hist.slice(-MAX_HIST*2),{role:'user',content:text}];
   }
 
   try{
-    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},body:JSON.stringify({model:modelToUse,messages:msgs,temperature:0.25,max_tokens:1400,response_format: imgBase64 ? undefined : {type:'json_object'}})});
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},body:JSON.stringify({model:modelToUse,messages:msgs,temperature:0.25,max_tokens:1400,response_format:imgBase64?undefined:{type:'json_object'}})});
     const data=await res.json();
     if(data.error) throw new Error(data.error.message);
-    
     let raw=data.choices?.[0]?.message?.content||'{}';
-    
-    if (imgBase64) {
-      raw = JSON.stringify({ category: "General Information", summary: "Vision Analysis Complete", details: `<p>${esc(raw)}</p>` });
+    if(imgBase64){
+      raw = JSON.stringify({category:"General Information",summary:"Vision Analysis Complete",details:`<p>${esc(raw)}</p>`});
     }
-    
     const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
     remTyp();appendAI(parsed);
     if(parsed.in_scope !== false){ hap(15); demoIncrement(); }
-    
     if(parsed.in_scope !== false){
-      const slimRaw = raw.length > 500 ? '{"category": "System", "summary": "Previous complex report generated. Data excluded to save context."}' : raw;
+      const slimRaw = raw.length > 500 ? '{"category":"System","summary":"Previous complex report generated."}' : raw;
       hist.push({role:'user',content:text},{role:'assistant',content:slimRaw});
     }
-    
     saveHist();
     if(hist.length===2 && !imgBase64) genTitle(text);
-    
   }catch(e){
     remTyp();
     appendErr('Something went wrong: '+e.message);
@@ -851,42 +802,33 @@ function closeCam(){const s=vid().srcObject;if(s)s.getTracks().forEach(t=>t.stop
 async function capScan(){
   const btn=document.getElementById('snapbtn');
   const v=vid();
-  
-  if(v.videoWidth === 0 || v.videoHeight === 0) {
-    toast('Camera is still initializing, please wait.', 'warn');
-    return;
-  }
-
-  // Tesseract Lazy-Load Injection
-  if (typeof Tesseract === 'undefined' && document.getElementById('cam-mode').value === 'ocr') {
-    toast('Loading OCR Engine (First time only)...', 'info');
-    await new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = "https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js";
-      script.onload = resolve;
+  if(v.videoWidth===0||v.videoHeight===0){toast('Camera is still initializing, please wait.','warn');return;}
+  if(typeof Tesseract==='undefined'&&document.getElementById('cam-mode').value==='ocr'){
+    toast('Loading OCR Engine (First time only)...','info');
+    await new Promise((resolve,reject)=>{
+      const script=document.createElement('script');
+      script.src="https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js";
+      script.crossOrigin='anonymous';
+      script.onload=resolve;
+      script.onerror=()=>{toast('Failed to load OCR engine.','err');reject(new Error('Tesseract load failed'));};
       document.head.appendChild(script);
-    });
+    }).catch(()=>{btn.disabled=false;btn.innerHTML='<span class="ms md">document_scanner</span> Capture';return;});
+    if(typeof Tesseract==='undefined')return;
   }
-
-  btn.disabled=true;
-  btn.innerHTML='<span class="ms md" style="animation:spin 1s linear infinite">progress_activity</span> Processing...';
-  
+  btn.disabled=true;btn.innerHTML='<span class="ms md" style="animation:spin 1s linear infinite">progress_activity</span> Processing...';
   const c=document.getElementById('canvas');
-  c.width=v.videoWidth;
-  c.height=v.videoHeight;
+  c.width=v.videoWidth;c.height=v.videoHeight;
   c.getContext('2d').drawImage(v,0,0);
-  const mode = document.getElementById('cam-mode').value;
-  
+  const mode=document.getElementById('cam-mode').value;
   try{
-    if (mode === 'ocr') {
+    if(mode==='ocr'){
       const r=await Tesseract.recognize(c,'eng');
       const txt=r.data.text.trim();
       if(txt&&txt.length>3){closeCam();document.getElementById('ocredit').value=txt;openM('opm');}
       else{toast('No text detected. Try better lighting.','warn');}
     } else {
-      const b64 = c.toDataURL('image/jpeg').split(',')[1];
-      closeCam();
-      sendQ(b64);
+      const b64=c.toDataURL('image/jpeg').split(',')[1];
+      closeCam();sendQ(b64);
     }
   }catch(e){toast('Processing failed. Please try again.','err');}
   btn.disabled=false;btn.innerHTML='<span class="ms md">document_scanner</span> Capture';
