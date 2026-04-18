@@ -1,285 +1,312 @@
-/* ══ FIREBASE INIT ══ */
-const firebaseConfig={apiKey:"AIzaSyAe1xX20eBj2Zb5HVZR3jsh7Aa1fp-mu_A",authDomain:"pharmai-38907.firebaseapp.com",projectId:"pharmai-38907",storageBucket:"pharmai-38907.firebasestorage.app",messagingSenderId:"1052723358649",appId:"1:1052723358649:web:612e0220af490ff6982468"};
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.firestore();
+'use strict';
 
-/* FIX #8: Changed SESSION → LOCAL persistence so clinicians who close a browser
-   tab mid-shift are not forced to re-authenticate on return.
-   Security note: PHI-sensitive sessions should still be protected at the
-   Firebase Security Rules level, and the 30-min idle timeout below still applies. */
-(async () => {
-  try {
-    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-  } catch(e) {
-    console.warn('setPersistence failed, falling back to default:', e);
-  }
-
-  auth.onAuthStateChanged(async(fbUser)=>{
-    const loading_el=document.getElementById('auth-loading');
-    if(fbUser){
-      if(fbUser.isAnonymous){
-        loading_el.style.display='none';
-        await enterApp(fbUser);
-        return;
-      }
-      if(!fbUser.displayName){
-        _pendingFBUser=fbUser;
-        loading_el.style.display='none';
-        document.getElementById('lp').style.display='flex';
-        document.getElementById('auth-step').style.display='none';
-        document.getElementById('name-step').style.display='block';
-        setTimeout(()=>document.getElementById('display-name').focus(),300);
-        return;
-      }
-      loading_el.style.display='none';
-      await enterApp(fbUser);
-    } else {
-      loading_el.style.display='none';
-      document.getElementById('lp').style.display='flex';
-      document.getElementById('auth-step').style.display='block';
-      document.getElementById('name-step').style.display='none';
-      setLoginLoading(false);
-    }
+/* ══ FIRESTORE WRITE DEBOUNCER ══ */
+const _fsQ = {};
+function fsWrite(fn, key) {
+  if (_fsQ[key]) clearTimeout(_fsQ[key]);
+  return new Promise(resolve => {
+    _fsQ[key] = setTimeout(async () => {
+      try { resolve(await fn()); } catch(e) { resolve(null); }
+    }, 800);
   });
-})();
-
-/* ══ IDLE TIMEOUT — auto-logout after 30 min of inactivity ══ */
-const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
-let _idleTimer = null;
-
-function _resetIdleTimer() {
-  clearTimeout(_idleTimer);
-  if (!auth.currentUser) return;
-  _idleTimer = setTimeout(async () => {
-    if (auth.currentUser) {
-      toast('Session expired due to inactivity. Please sign in again.', 'warn', 6000);
-      await doLogout();
-    }
-  }, IDLE_TIMEOUT_MS);
 }
 
-['mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(evt => {
-  document.addEventListener(evt, _resetIdleTimer, { passive: true });
+/* ══ SHOW / HIDE APP vs LOGIN ══ */
+function showApp(uid, name) {
+  user  = uid;
+  uName = name || 'Doctor';
+
+  document.getElementById('lp').style.display           = 'none';
+  document.getElementById('auth-loading').style.display = 'none';
+  document.getElementById('ap').style.display           = 'block';
+
+  const initial = uName.charAt(0).toUpperCase();
+  document.getElementById('hpc').textContent   = initial;
+  document.getElementById('sbpc').textContent  = initial;
+  document.getElementById('sbnm').textContent  = uName;
+  document.getElementById('sui').textContent   =
+    firebase.auth().currentUser?.email || (firebase.auth().currentUser?.isAnonymous ? 'Guest' : '—');
+
+  /* Hide delete-account row for anonymous guests */
+  const isGuest = firebase.auth().currentUser?.isAnonymous;
+  const delRow  = document.getElementById('si-delete-row');
+  if (delRow) delRow.style.display = isGuest ? 'none' : 'flex';
+
+  applyUI();
+  renderWelcome();
+  loadSessions();
+  if (typeof loadWardData === 'function') loadWardData();
+  loadDemoUsage();
+  loadSettingsFromFirestore();
+  checkOnboarding();
+  Sounds.play('tick');
+  hap(15);
+}
+
+function showLogin() {
+  user = null; uName = '';
+  document.getElementById('ap').style.display           = 'none';
+  document.getElementById('auth-loading').style.display = 'none';
+  document.getElementById('lp').style.display           = 'flex';
+  /* Always reset to the email/pass step */
+  document.getElementById('auth-step').style.display  = 'block';
+  document.getElementById('name-step').style.display  = 'none';
+}
+
+/* ══ ERROR HELPERS ══ */
+function clearErr() {
+  document.getElementById('lerr').style.display      = 'none';
+  document.getElementById('name-err').style.display  = 'none';
+}
+function showErr(msg) {
+  const el = document.getElementById('lerr');
+  document.getElementById('err-text').textContent = msg;
+  el.style.display = 'flex';
+}
+
+/* ══ AUTH STATE — handles session restore AND auto-logout on data clear ══ */
+firebase.auth().onAuthStateChanged(async fbUser => {
+  document.getElementById('auth-loading').style.display = 'none';
+
+  if (!fbUser) {
+    /* Browser data cleared, sign-out, or never signed in → go to login */
+    showLogin();
+    return;
+  }
+
+  /* ── Guest with no name yet ── */
+  if (fbUser.isAnonymous && (!fbUser.displayName || fbUser.displayName.trim() === '')) {
+    _pendingFBUser = fbUser;
+    document.getElementById('lp').style.display          = 'flex';
+    document.getElementById('auth-step').style.display   = 'none';
+    document.getElementById('name-step').style.display   = 'block';
+    return;
+  }
+
+  /* ── Fetch stored name from Firestore ── */
+  try {
+    const doc  = await db.collection('users').doc(fbUser.uid).get();
+    const name = (doc.exists && doc.data().name)
+      ? doc.data().name
+      : (fbUser.displayName || fbUser.email?.split('@')[0] || 'Doctor');
+
+    /* New email sign-up — no name stored yet → show name dialog */
+    if (!doc.exists || !doc.data().name) {
+      _pendingFBUser = fbUser;
+      document.getElementById('lp').style.display          = 'flex';
+      document.getElementById('auth-step').style.display   = 'none';
+      document.getElementById('name-step').style.display   = 'block';
+      /* Pre-fill from Google display name if available */
+      const nameInp = document.getElementById('display-name');
+      if (nameInp && fbUser.displayName) nameInp.value = fbUser.displayName;
+      return;
+    }
+
+    showApp(fbUser.uid, name);
+  } catch(e) {
+    /* Offline — use whatever we have */
+    showApp(fbUser.uid, fbUser.displayName || 'Doctor');
+  }
 });
 
-let _enteringApp = false;
+/* ══ EMAIL SIGN IN ══ */
+async function doLogin() {
+  const email = document.getElementById('uname').value.trim();
+  const pass  = document.getElementById('ac').value;
+  if (!email || !pass) { showErr('Please enter your email and password.'); return; }
 
-async function fsWrite(fn, label='') {
-  try { await fn(); } catch(e) {
-    console.error(`Firestore write failed (${label}):`, e);
-    if(e.code === 'unavailable') toast('Offline \u2014 changes saved locally.', 'warn');
-    else toast(`Save failed: ${label}`, 'err');
-  }
-}
+  const btn = document.getElementById('lbtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="auth-spinner" style="width:20px;height:20px;border-width:2px;margin:0;"></div>';
 
-function clearErr(){document.getElementById('lerr').style.display='none';}
-function showErr(msg){document.getElementById('err-text').innerText=msg;document.getElementById('lerr').style.display='flex';hap(40);}
-
-function setLoginLoading(on) {
-  const lb = document.getElementById('lbtn');
-  const sb = document.getElementById('sbtn2');
-  const gb = document.getElementById('google-btn');
-  const guestB = document.getElementById('guest-btn');
-  if(lb) {
-      lb.disabled = on;
-      lb.innerHTML = on ? '<span class="ms sm" style="animation:spin 1s linear infinite">progress_activity</span> Signing in...' : '<span class="ms sm">login</span> Sign In';
-  }
-  if(sb) sb.disabled = on;
-  if(gb) gb.disabled = on;
-  if(guestB) guestB.disabled = on;
-}
-
-function doLogin(){
-  const email=document.getElementById('uname').value.trim();
-  const pass=document.getElementById('ac').value.trim();
-  if(!email){showErr('Please enter your email address.');return;}
-  if(!pass){showErr('Please enter your password.');return;}
-  if(!email.includes('@')){showErr('Please enter a valid email address.');return;}
-  setLoginLoading(true);
-  auth.signInWithEmailAndPassword(email,pass).then(()=>{ Sounds.play('tick'); }).catch(e=>{
-    setLoginLoading(false);
-    const msgs={'auth/user-not-found':'No account found with this email.','auth/wrong-password':'Incorrect password.','auth/invalid-email':'Invalid email address.','auth/too-many-requests':'Too many attempts. Please try again later.'};
-    showErr(msgs[e.code]||e.message);
-  });
-}
-
-function doSignUp(){
-  const email=document.getElementById('uname').value.trim();
-  const pass=document.getElementById('ac').value.trim();
-  if(!email){showErr('Please enter your email address.');return;}
-  if(!pass){showErr('Please enter a password.');return;}
-  if(!email.includes('@')){showErr('Please enter a valid email address.');return;}
-  if(pass.length<6){showErr('Password must be at least 6 characters.');return;}
-  setLoginLoading(true);
-  auth.createUserWithEmailAndPassword(email,pass).catch(e=>{
-    setLoginLoading(false);
-    const msgs={'auth/email-already-in-use':'An account already exists with this email.','auth/invalid-email':'Invalid email address.','auth/weak-password':'Password is too weak.'};
-    showErr(msgs[e.code]||e.message);
-  });
-}
-
-function signInWithGoogle(){
-  setLoginLoading(true);
-  const provider=new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(e=>{
-    setLoginLoading(false);
-    showErr(e.message);
-  });
-}
-
-function signInAsGuest(){
-  setLoginLoading(true);
-  auth.signInAnonymously().catch(e=>{
-    setLoginLoading(false);
-    showErr('Guest sign-in failed: '+e.message);
-  });
-}
-
-function forgotPassword(){
-  const email=document.getElementById('uname').value.trim();
-  if(!email||!email.includes('@')){showErr('Please enter your email address above first.');return;}
-  auth.sendPasswordResetEmail(email).then(()=>{toast('Password reset email sent! Check your inbox.','ok',5000);}).catch(e=>showErr(e.message));
-}
-
-async function saveName(){
-  const name=document.getElementById('display-name').value.trim();
-  const nerr=document.getElementById('name-err');
-  if(!name){nerr.style.display='flex';return;}
-  nerr.style.display='none';
-  /* FIX #saveName: capture the pending user reference BEFORE nullifying,
-     so a failed enterApp() can be retried without losing the reference. */
-  const fbUser=_pendingFBUser||auth.currentUser;
-  if(!fbUser)return;
-  try{
-    await fbUser.updateProfile({displayName:name});
-    _pendingFBUser=null;
-    document.getElementById('lp').style.display='none';
-    await enterApp(fbUser);
-  }catch(e){
-    /* Do NOT null _pendingFBUser here — allows retry */
-    nerr.style.display='flex';
-    const errSpan=document.getElementById('name-err').querySelector('span:last-child');
-    if(errSpan)errSpan.textContent=e.message;
-  }
-}
-
-async function enterApp(fbUser){
-  if(_enteringApp) return;
-  _enteringApp = true;
   try {
-    user=fbUser.uid;
-    uName=fbUser.isAnonymous?'Guest':(fbUser.displayName||(fbUser.email?fbUser.email.split('@')[0]:'User'));
-    try{
-      const cfg=await db.collection('config').doc('keys').get();
-      if(cfg.exists)groqKey=cfg.data().groq||'';
-    }catch(e){
-      const localKey = await localforage.getItem('pgroq');
-      groqKey = localKey || '';
-    }
-
-    document.getElementById('ap').style.display='flex';
-    document.getElementById('lp').style.display='none';
-    const init=uName.charAt(0).toUpperCase();
-    document.getElementById('hpc').textContent=init;
-    document.getElementById('sbpc').textContent=init;
-    document.getElementById('sbnm').textContent=uName;
-    const provider=fbUser.isAnonymous?'Guest Session':(fbUser.providerData[0]?.providerId==='google.com'?'Google Account':fbUser.email);
-    document.getElementById('sui').textContent=uName+' \u00B7 '+provider;
-    _resetIdleTimer();
-    applyUI();
-    await loadSettingsFromFirestore();
-    if(!fbUser.isAnonymous){
-      await loadWardData();
-      await loadSessions();
-    }
-    await loadDemoUsage();
-    applyGuestUI(fbUser.isAnonymous);
-    _enteringApp = false;
-    newChat();
-    checkOnboarding();
-  } catch(err) { _enteringApp = false; console.error('enterApp error:', err); }
-}
-
-function applyGuestUI(isGuest) {
-  const label  = document.getElementById('si-delete-label');
-  const desc   = document.getElementById('si-delete-desc');
-  const btn    = document.getElementById('si-delete-btn');
-  const exportBtn = document.querySelector('.bkbtn.exp');
-  if(!label) return;
-  if(isGuest) {
-    label.textContent = 'Create a Full Account';
-    label.style.color = 'var(--ok)';
-    desc.textContent  = 'Your data is not saved \u2014 sign up to keep it.';
-    btn.textContent   = 'Sign Up';
-    btn.style.background = 'var(--ok)';
-    btn.style.color = '#fff';
-    btn.onclick = () => { closeM('sm'); doLogout(); };
-    if(exportBtn) exportBtn.style.display = 'none';
-  } else {
-    label.textContent = 'Delete Account';
-    label.style.color = 'var(--danger)';
-    desc.textContent  = 'Permanently deletes your account & all data';
-    btn.textContent   = 'Delete';
-    btn.style.background = '';
-    btn.style.color = '';
-    btn.onclick = deleteAccount;
-    if(exportBtn) exportBtn.style.display = '';
+    await firebase.auth().signInWithEmailAndPassword(email, pass);
+    /* onAuthStateChanged fires → showApp() */
+  } catch(e) {
+    const m = {
+      'auth/user-not-found'      : 'No account found for this email.',
+      'auth/wrong-password'      : 'Incorrect password.',
+      'auth/invalid-email'       : 'Invalid email address.',
+      'auth/invalid-credential'  : 'Invalid email or password.',
+      'auth/too-many-requests'   : 'Too many attempts — try again later.',
+    };
+    showErr(m[e.code] || e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="ms sm">login</span> Sign In';
   }
 }
 
-async function doLogout(){
-  clearTimeout(_idleTimer);
-  const _currentFBUser = auth.currentUser;
-  const _uid = user;
-  if(_currentFBUser && _currentFBUser.isAnonymous){
-    try { await _currentFBUser.delete(); } catch(e) { console.warn('Anon delete failed',e); }
-  } else {
-    await auth.signOut();
+/* ══ EMAIL SIGN UP ══ */
+async function doSignUp() {
+  const email = document.getElementById('uname').value.trim();
+  const pass  = document.getElementById('ac').value;
+  if (!email || !pass) { showErr('Please enter your email and password.'); return; }
+  if (pass.length < 6) { showErr('Password must be at least 6 characters.'); return; }
+
+  const btn = document.getElementById('sbtn2');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="auth-spinner" style="width:20px;height:20px;border-width:2px;margin:0;"></div>';
+
+  try {
+    const cred = await firebase.auth().createUserWithEmailAndPassword(email, pass);
+    _pendingFBUser = cred.user;
+    document.getElementById('auth-step').style.display = 'none';
+    document.getElementById('name-step').style.display = 'block';
+  } catch(e) {
+    const m = {
+      'auth/email-already-in-use' : 'An account already exists for this email.',
+      'auth/invalid-email'        : 'Invalid email address.',
+      'auth/weak-password'        : 'Password is too weak (min 6 chars).',
+    };
+    showErr(m[e.code] || e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="ms sm">person_add</span> Sign Up';
   }
-  user=null;uName='';groqKey='';hist=[];sessions=[];currSess=null;
-  /* FIX #8 cross-file: reset wardPatients via its owning module reference */
-  if(typeof wardPatients !== 'undefined') wardPatients=[];
-  if(_uid) {
-    await localforage.removeItem('pharmai_ward_' + _uid);
-    await localforage.removeItem('psess_' + _uid);
-  }
-  await localforage.removeItem('pgroq');
-  document.getElementById('ap').style.display='none';
-  document.getElementById('lp').style.display='flex';
-  document.getElementById('auth-step').style.display='block';
-  document.getElementById('name-step').style.display='none';
-  closeM('sm');
-  hap(10);
 }
 
-async function deleteAccount(){
-  if(!confirm('Permanently delete your account and all data? This cannot be undone.'))return;
-  try{
-    if(user){
-      const wardDocs = await db.collection('users').doc(user).collection('ward').get();
-      const sDocs = await db.collection('users').doc(user).collection('sessions').get();
-      const batch = db.batch();
-      wardDocs.forEach(doc => batch.delete(doc.ref));
-      sDocs.forEach(doc => batch.delete(doc.ref));
-      batch.delete(db.collection('users').doc(user));
-      await batch.commit();
+/* ══ GOOGLE SIGN IN ══ */
+async function signInWithGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    await firebase.auth().signInWithPopup(provider);
+    /* onAuthStateChanged fires → showApp() or name dialog */
+  } catch(e) {
+    if (e.code !== 'auth/popup-closed-by-user') {
+      showErr('Google sign-in failed. Please try again.');
     }
-    const uid = user;
-    const fbUser=auth.currentUser;
-    if(fbUser)await fbUser.delete();
-    if(uid){ await localforage.removeItem('pharmai_ward_'+uid); await localforage.removeItem('psess_'+uid); }
-    await localforage.removeItem('pgroq');
-    toast('Account deleted.','info');
-    user=null;uName='';groqKey='';hist=[];sessions=[];currSess=null;
-    if(typeof wardPatients !== 'undefined') wardPatients=[];
-    document.getElementById('ap').style.display='none';
-    document.getElementById('lp').style.display='flex';
-    document.getElementById('auth-step').style.display='block';
-    document.getElementById('name-step').style.display='none';
+  }
+}
+
+/* ══ GUEST SIGN IN → name dialog ══ */
+async function signInAsGuest() {
+  const btn = document.getElementById('guest-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="auth-spinner" style="width:20px;height:20px;border-width:2px;margin:0;border-top-color:var(--bg)"></div> Please wait…';
+
+  try {
+    const cred     = await firebase.auth().signInAnonymously();
+    _pendingFBUser = cred.user;
+
+    /* Show "What should I call you?" step */
+    document.getElementById('auth-step').style.display = 'none';
+    document.getElementById('name-step').style.display = 'block';
+  } catch(e) {
+    showErr('Guest sign-in failed. Please try again.');
+    btn.disabled = false;
+    btn.innerHTML = '<span class="ms sm">visibility</span> Continue as Guest';
+  }
+}
+
+/* ══ SAVE NAME (new sign-up, Google, OR guest) ══ */
+async function saveName() {
+  const nameInp = document.getElementById('display-name');
+  const name    = nameInp ? nameInp.value.trim() : '';
+
+  if (!name) {
+    document.getElementById('name-err').style.display = 'flex';
+    return;
+  }
+
+  const fbUser = _pendingFBUser || firebase.auth().currentUser;
+  if (!fbUser) { showLogin(); return; }
+
+  try {
+    await fbUser.updateProfile({ displayName: name });
+    await db.collection('users').doc(fbUser.uid).set({ name }, { merge: true });
+  } catch(e) {
+    /* Offline — carry on anyway */
+  }
+
+  _pendingFBUser = null;
+  showApp(fbUser.uid, name);
+}
+
+/* ══ FORGOT PASSWORD ══ */
+async function forgotPassword() {
+  const email = document.getElementById('uname').value.trim();
+  if (!email) { showErr('Enter your email address above first.'); return; }
+  try {
+    await firebase.auth().sendPasswordResetEmail(email);
+    toast('Password reset email sent!', 'ok', 4000);
+  } catch(e) {
+    showErr('Could not send reset email — check the address.');
+  }
+}
+
+/* ══ LOGOUT ══ */
+async function doLogout() {
+  try {
+    await firebase.auth().signOut();
+    sessions      = [];
+    hist          = [];
+    currSess      = null;
+    if (typeof wardPatients !== 'undefined') wardPatients = [];
+    await localforage.clear();
     closeM('sm');
-  }catch(e){
-    if(e.code==='auth/requires-recent-login'){toast('Please log out and sign in again before deleting.','warn',5000);}
-    else toast('Delete failed: '+e.message,'err');
+    toast('Signed out successfully.', 'ok');
+    /* onAuthStateChanged fires → showLogin() */
+  } catch(e) {
+    toast('Sign-out failed.', 'err');
   }
+}
+
+/* ══ DELETE ACCOUNT ══ */
+async function deleteAccount() {
+  if (!confirm('⚠️ Permanently delete your account and ALL data?\n\nThis cannot be undone.')) return;
+
+  const fbUser = firebase.auth().currentUser;
+  if (!fbUser) return;
+
+  try {
+    /* Delete subcollections */
+    const batch = db.batch();
+    const [sessSnap, wardSnap] = await Promise.all([
+      db.collection('users').doc(fbUser.uid).collection('sessions').get(),
+      db.collection('users').doc(fbUser.uid).collection('ward').get(),
+    ]);
+    sessSnap.forEach(d => batch.delete(d.ref));
+    wardSnap.forEach(d => batch.delete(d.ref));
+    batch.delete(db.collection('users').doc(fbUser.uid));
+    await batch.commit();
+  } catch(e) { /* continue even if Firestore fails */ }
+
+  try {
+    await localforage.clear();
+    await fbUser.delete();
+    toast('Account permanently deleted.', 'ok');
+  } catch(e) {
+    if (e.code === 'auth/requires-recent-login') {
+      toast('Please sign out and sign back in, then try again.', 'warn', 6000);
+    } else {
+      toast('Failed to delete account: ' + e.message, 'err');
+    }
+  }
+}
+
+/* ══ WARD / CHAT MODE TOGGLE ══ */
+let wardModeActive = false;
+
+function toggleAppMode() {
+  wardModeActive = !wardModeActive;
+  const view    = document.getElementById('cdss-view');
+  const overlay = document.getElementById('ward-overlay');
+  const icon    = document.getElementById('navIcon');
+
+  if (wardModeActive) {
+    view.classList.add('open');
+    overlay.classList.add('open');
+    icon.textContent = 'chat';
+    if (typeof renderWardList === 'function') renderWardList();
+  } else {
+    closeWardMode();
+  }
+}
+
+function closeWardMode() {
+  wardModeActive = false;
+  document.getElementById('cdss-view').classList.remove('open');
+  document.getElementById('ward-overlay').classList.remove('open');
+  document.getElementById('navIcon').textContent = 'local_hospital';
 }
