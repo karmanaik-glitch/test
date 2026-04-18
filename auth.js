@@ -1,5 +1,34 @@
 'use strict';
 
+/* ══ 1. FIREBASE INITIALIZATION (FIX FOR 'no-app' ERROR) ══ */
+// Replace these with your actual Firebase config values
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase FIRST
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.firestore();
+
+/* ══ GLOBAL VARIABLES ══ */
+let user = null;
+let uName = '';
+let _pendingFBUser = null;
+
+// Assuming these are declared elsewhere in your wider app context, 
+// but defining defaults here for safety.
+let sessions = [];
+let hist = [];
+let currSess = null;
+let wardPatients = [];
+
 /* ══ FIRESTORE WRITE DEBOUNCER ══ */
 const _fsQ = {};
 function fsWrite(fn, key) {
@@ -44,7 +73,8 @@ function showApp(uid, name) {
 }
 
 function showLogin() {
-  user = null; uName = '';
+  user = null; 
+  uName = '';
   document.getElementById('ap').style.display           = 'none';
   document.getElementById('auth-loading').style.display = 'none';
   document.getElementById('lp').style.display           = 'flex';
@@ -235,14 +265,21 @@ async function forgotPassword() {
   }
 }
 
-/* ══ LOGOUT ══ */
+/* ══ LOGOUT (UPDATED TO CLEAR GLOBALS) ══ */
 async function doLogout() {
   try {
     await firebase.auth().signOut();
-    sessions      = [];
-    hist          = [];
-    currSess      = null;
+    
+    // 1. Clear global state to prevent data leaking between logins
+    user = null;
+    uName = '';
+    _pendingFBUser = null;
+    sessions = [];
+    hist = [];
+    currSess = null;
     if (typeof wardPatients !== 'undefined') wardPatients = [];
+    
+    // 2. Clear storage and reset UI
     await localforage.clear();
     closeM('sm');
     toast('Signed out successfully.', 'ok');
