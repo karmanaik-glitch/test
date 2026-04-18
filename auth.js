@@ -24,7 +24,7 @@ const db = firebase.firestore();
   try {
     await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
   } catch(e) {
-    console.warn('setPersistence failed, falling back to default:', e);
+    console.warn('setPersistence failed:', e);
   }
 
   auth.onAuthStateChanged(async(fbUser)=>{
@@ -32,7 +32,7 @@ const db = firebase.firestore();
     
     if(fbUser){
       /* If the user has no display name (New Email Sign-up OR Guest), ask for it */
-      if(!fbUser.displayName){
+      if(!fbUser.displayName || fbUser.displayName.trim() === ''){
         _pendingFBUser=fbUser;
         loading_el.style.display='none';
         document.getElementById('lp').style.display='flex';
@@ -46,7 +46,13 @@ const db = firebase.firestore();
       loading_el.style.display='none';
       await enterApp(fbUser);
     } else {
+      /* 🚨 FIRES IF USER LOGS OUT OR CLEARS BROWSER SITE DATA 🚨 */
+      // 1. Wipe all sensitive data from active memory (variables exist in app.js)
+      user=null; uName=''; groqKey=''; hist=[]; sessions=[]; currSess=null; wardPatients=[];
+      
+      // 2. Hide the app and show the login screen safely
       loading_el.style.display='none';
+      document.getElementById('ap').style.display='none';
       document.getElementById('lp').style.display='flex';
       document.getElementById('auth-step').style.display='block';
       document.getElementById('name-step').style.display='none';
@@ -64,7 +70,7 @@ function _resetIdleTimer() {
   if (!auth.currentUser) return;
   _idleTimer = setTimeout(async () => {
     if (auth.currentUser) {
-      toast('Session expired due to inactivity. Please sign in again.', 'warn', 6000);
+      toast('Session expired due to inactivity.', 'warn', 6000);
       await doLogout();
     }
   }, IDLE_TIMEOUT_MS);
@@ -74,11 +80,10 @@ function _resetIdleTimer() {
   document.addEventListener(evt, _resetIdleTimer, { passive: true });
 });
 
-let _enteringApp = false; /* guard against double enterApp on profile update */
+let _enteringApp = false;
 
 async function fsWrite(fn, label='') {
   try { await fn(); } catch(e) {
-    console.error(`Firestore write failed (${label}):`, e);
     if(e.code === 'unavailable') toast('Offline — changes saved locally.', 'warn');
     else toast(`Save failed: ${label}`, 'err');
   }
@@ -106,28 +111,30 @@ function doLogin(){
   const pass=document.getElementById('ac').value.trim();
   if(!email){showErr('Please enter your email address.');return;}
   if(!pass){showErr('Please enter your password.');return;}
-  if(!email.includes('@')){showErr('Please enter a valid email address.');return;}
   setLoginLoading(true);
   auth.signInWithEmailAndPassword(email,pass).then(()=>{ Sounds.play('tick'); }).catch(e=>{
     setLoginLoading(false);
-    const msgs={'auth/user-not-found':'No account found with this email.','auth/wrong-password':'Incorrect password.','auth/invalid-email':'Invalid email address.','auth/too-many-requests':'Too many attempts. Please try again later.'};
+    const msgs={'auth/user-not-found':'No account found.','auth/wrong-password':'Incorrect password.'};
     showErr(msgs[e.code]||e.message);
   });
 }
 
-function doSignUp(){
+async function doSignUp(){
   const email=document.getElementById('uname').value.trim();
   const pass=document.getElementById('ac').value.trim();
-  if(!email){showErr('Please enter your email address.');return;}
-  if(!pass){showErr('Please enter a password.');return;}
-  if(!email.includes('@')){showErr('Please enter a valid email address.');return;}
-  if(pass.length<6){showErr('Password must be at least 6 characters.');return;}
+  if(!email || !pass || pass.length<6){showErr('Valid email and 6+ char password required.');return;}
+  
   setLoginLoading(true);
-  auth.createUserWithEmailAndPassword(email,pass).catch(e=>{
+  try {
+    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    _pendingFBUser = cred.user;
+    // Force transition immediately
+    document.getElementById('auth-step').style.display = 'none';
+    document.getElementById('name-step').style.display = 'block';
+  } catch(e) {
     setLoginLoading(false);
-    const msgs={'auth/email-already-in-use':'An account already exists with this email.','auth/invalid-email':'Invalid email address.','auth/weak-password':'Password is too weak.'};
-    showErr(msgs[e.code]||e.message);
-  });
+    showErr(e.message);
+  }
 }
 
 function signInWithGoogle(){
@@ -139,18 +146,24 @@ function signInWithGoogle(){
   });
 }
 
-function signInAsGuest(){
+async function signInAsGuest(){
   setLoginLoading(true);
-  auth.signInAnonymously().catch(e=>{
+  try {
+    const cred = await auth.signInAnonymously();
+    _pendingFBUser = cred.user;
+    // Force transition immediately so Guest always sees name dialog
+    document.getElementById('auth-step').style.display = 'none';
+    document.getElementById('name-step').style.display = 'block';
+  } catch(e) {
     setLoginLoading(false);
-    showErr('Guest sign-in failed: '+e.message);
-  });
+    showErr('Guest sign-in failed: ' + e.message);
+  }
 }
 
 function forgotPassword(){
   const email=document.getElementById('uname').value.trim();
-  if(!email||!email.includes('@')){showErr('Please enter your email address above first.');return;}
-  auth.sendPasswordResetEmail(email).then(()=>{toast('Password reset email sent! Check your inbox.','ok',5000);}).catch(e=>showErr(e.message));
+  if(!email){showErr('Please enter your email address above first.');return;}
+  auth.sendPasswordResetEmail(email).then(()=>{toast('Reset email sent!','ok',5000);}).catch(e=>showErr(e.message));
 }
 
 async function saveName(){
@@ -163,10 +176,8 @@ async function saveName(){
   if(!fbUser)return;
   
   try{
-    // Save to Firebase Auth profile
     await fbUser.updateProfile({displayName:name});
-    
-    // Save to Firestore database (Skip for temporary Guests)
+    // Save permanently for standard users, skip database bloat for guests
     if (!fbUser.isAnonymous) {
         await db.collection('users').doc(fbUser.uid).set({ name: name }, { merge: true });
     }
@@ -176,7 +187,6 @@ async function saveName(){
     await enterApp(fbUser);
   } catch(e) {
     nerr.style.display='flex';
-    document.getElementById('name-err').querySelector('span:last-child')&&(document.getElementById('name-err').lastChild.textContent=e.message);
   }
 }
 
@@ -184,41 +194,39 @@ async function enterApp(fbUser){
   if(_enteringApp) return;
   _enteringApp = true;
   try {
-  user=fbUser.uid;
-  uName=fbUser.displayName||(fbUser.email?fbUser.email.split('@')[0]:'Guest');
-  try{
-    const cfg=await db.collection('config').doc('keys').get();
-    if(cfg.exists)groqKey=cfg.data().groq||'';
-  }catch(e){
-    // Async localforage check for the Groq API key
-    const localKey = await localforage.getItem('pgroq');
-    groqKey = localKey || '';
-  }
+    user=fbUser.uid;
+    uName=fbUser.displayName||(fbUser.email?fbUser.email.split('@')[0]:'Guest');
+    try{
+      const cfg=await db.collection('config').doc('keys').get();
+      if(cfg.exists)groqKey=cfg.data().groq||'';
+    }catch(e){
+      const localKey = await localforage.getItem('pgroq');
+      groqKey = localKey || '';
+    }
 
-  document.getElementById('ap').style.display='flex';
-  document.getElementById('lp').style.display='none';
-  const init=uName.charAt(0).toUpperCase();
-  document.getElementById('hpc').textContent=init;
-  document.getElementById('sbpc').textContent=init;
-  document.getElementById('sbnm').textContent=uName;
-  const provider=fbUser.isAnonymous?'Guest Session':(fbUser.providerData[0]?.providerId==='google.com'?'Google Account':fbUser.email);
-  document.getElementById('sui').textContent=uName+' · '+provider;
-  _resetIdleTimer();
-  applyUI();
-  await loadSettingsFromFirestore();
-  if(!fbUser.isAnonymous){
-    await loadWardData();
-    await loadSessions();
-  }
-  await loadDemoUsage();
-  applyGuestUI(fbUser.isAnonymous);
-  _enteringApp = false;
-  newChat();
-  checkOnboarding();
+    document.getElementById('ap').style.display='flex';
+    document.getElementById('lp').style.display='none';
+    const init=uName.charAt(0).toUpperCase();
+    document.getElementById('hpc').textContent=init;
+    document.getElementById('sbpc').textContent=init;
+    document.getElementById('sbnm').textContent=uName;
+    const provider=fbUser.isAnonymous?'Guest Session':(fbUser.providerData[0]?.providerId==='google.com'?'Google Account':fbUser.email);
+    document.getElementById('sui').textContent=uName+' · '+provider;
+    _resetIdleTimer();
+    applyUI();
+    await loadSettingsFromFirestore();
+    if(!fbUser.isAnonymous){
+      await loadWardData();
+      await loadSessions();
+    }
+    await loadDemoUsage();
+    applyGuestUI(fbUser.isAnonymous);
+    _enteringApp = false;
+    newChat();
+    checkOnboarding();
   } catch(err) { _enteringApp = false; console.error('enterApp error:', err); }
 }
 
-/* Show/hide guest-specific UI elements in the settings panel */
 function applyGuestUI(isGuest) {
   const label  = document.getElementById('si-delete-label');
   const desc   = document.getElementById('si-delete-desc');
@@ -251,24 +259,28 @@ async function doLogout(){
   const _currentFBUser = auth.currentUser;
   const _uid = user;
   
-  // This explicitly deletes the guest account entirely from Firebase Auth
+  /* 1. Delete Guest Accounts on Logout */
   if(_currentFBUser && _currentFBUser.isAnonymous){
-    try { await _currentFBUser.delete(); } catch(e) { console.warn('Anon delete failed',e); }
-  } else {
-    await auth.signOut();
+    try { await _currentFBUser.delete(); } catch(e) { console.warn('Delete failed',e); }
   }
   
-  user=null;uName='';groqKey='';hist=[];sessions=[];currSess=null;wardPatients=[];
-  /* Clear cached PHI and API key from browser storage on every logout */
+  /* 2. ALWAYS sign out to sever the session */
+  try { await auth.signOut(); } catch(e) {}
+  
+  /* 3. Reset UI Forms so next user doesn't see old data */
+  const nameInp = document.getElementById('display-name');
+  const emailInp = document.getElementById('uname');
+  const passInp = document.getElementById('ac');
+  if (nameInp) nameInp.value = '';
+  if (emailInp) emailInp.value = '';
+  if (passInp) passInp.value = '';
+  
   if(_uid) {
     await localforage.removeItem('pharmai_ward_' + _uid);
     await localforage.removeItem('psess_' + _uid);
   }
   await localforage.removeItem('pgroq');
-  document.getElementById('ap').style.display='none';
-  document.getElementById('lp').style.display='flex';
-  document.getElementById('auth-step').style.display='block';
-  document.getElementById('name-step').style.display='none';
+  
   closeM('sm');
   hap(10);
 }
@@ -291,11 +303,6 @@ async function deleteAccount(){
     if(uid){ await localforage.removeItem('pharmai_ward_'+uid); await localforage.removeItem('psess_'+uid); }
     await localforage.removeItem('pgroq');
     toast('Account deleted.','info');
-    user=null;uName='';groqKey='';hist=[];sessions=[];currSess=null;wardPatients=[];wardPatients=[];
-    document.getElementById('ap').style.display='none';
-    document.getElementById('lp').style.display='flex';
-    document.getElementById('auth-step').style.display='block';
-    document.getElementById('name-step').style.display='none';
     closeM('sm');
   }catch(e){
     if(e.code==='auth/requires-recent-login'){toast('Please log out and sign in again before deleting.','warn',5000);}
