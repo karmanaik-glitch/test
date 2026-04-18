@@ -45,14 +45,14 @@ function getAudioCtx() {
 }
 
 const Sounds = {
+  /* FIX #3: gated on S.audio (not S.haptic) — haptic and audio are now independent */
   play: (type) => {
     const ctx = getAudioCtx();
-    if (!S.haptic || !ctx || ctx.state === 'suspended') return;
+    if (!S.audio || !ctx || ctx.state === 'suspended') return;
     const osc = ctx.createOscillator();
     const gainNode = ctx.createGain();
     osc.connect(gainNode);
     gainNode.connect(audioCtx.destination);
-    
     const now = ctx.currentTime;
     if (type === 'tick') {
       osc.type = 'sine'; osc.frequency.setValueAtTime(800, now);
@@ -88,14 +88,12 @@ const VISION_MODEL='meta-llama/llama-4-scout-17b-16e-instruct';
 const MAX_HIST=10;
 let user=null,uName='',groqKey='',loading=false,micOn=false,recog=null,hist=[],sessions=[],currSess=null,rxList=[],lastQuery='';
 const F={preg:false,peds:false,geri:false,counsel:false,steward:false};
-let S={haptic:true,theme:'auto'};
+/* FIX #3: Added separate `audio` key — haptic and UI sounds are now independent settings */
+let S={haptic:true,audio:true,theme:'auto'};
 let _pendingFBUser=null;
 let lastSendTime = 0;
 
-/* ══ DEMO USAGE LIMIT ══
-   Free public demo — 5 AI queries per account per day.
-   Stored in Firestore so it survives cache clears and device switches.
-   Resets automatically at midnight. */
+/* ══ DEMO USAGE LIMIT ══ */
 const DEMO_DAILY_LIMIT = 5;
 let _demoCount = 0;
 let _demoDate  = '';
@@ -167,13 +165,17 @@ document.addEventListener('DOMContentLoaded', () => {
   sb.addEventListener('touchend', e => {
     if (touchStartX - e.changedTouches[0].clientX > 60 && sb.classList.contains('open')) toggleSB();
   });
+
+  /* FIX #1: sess-search now exists in HTML — attach listener safely */
+  const sessSearchEl = document.getElementById('sess-search');
+  if(sessSearchEl) sessSearchEl.addEventListener('input', () => renderSB(sessSearchEl.value.trim().toLowerCase()));
 });
 
 /* ══ HAPTIC & TOAST ══ */
 function hap(ms){if(!S.haptic)return;if('vibrate'in navigator)navigator.vibrate(ms);}
 function toast(msg,type='info',dur=3000){const w=document.getElementById('tw');const el=document.createElement('div');el.className=`toast ${type}`;const ic={ok:'check_circle',warn:'warning',err:'error',info:'info'};el.innerHTML=`<span class="ms xs">${ic[type]||'info'}</span><span>${msg}</span>`;w.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),350);},dur);}
 
-/* ══ THEME / SETTINGS (Async with localforage) ══ */
+/* ══ THEME / SETTINGS ══ */
 async function loadS(){
   try {
     const s = await localforage.getItem('pharmai_S');
@@ -184,8 +186,23 @@ async function loadS(){
 function saveS(){localforage.setItem('pharmai_S', S);}
 function applyTheme(m){const p=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';const a=m==='auto'?p:m;document.body.classList.toggle('light',a==='light');document.getElementById('tcm').content=a==='light'?'#F7F7F7':'#000000';}
 function setTheme(m){S.theme=m;saveS();applyTheme(m);document.querySelectorAll('.tp-pill').forEach(p=>p.classList.remove('active'));document.getElementById('th-'+m)?.classList.add('active');hap(10);Sounds.play('tick');syncSettings();}
-function toggleSet(k){S[k]=document.getElementById('hap-t').checked;saveS();hap(10);Sounds.play('tick');syncSettings();}
-function applyUI(){document.getElementById('hap-t').checked=S.haptic;document.querySelectorAll('.tp-pill').forEach(p=>p.classList.remove('active'));document.getElementById('th-'+S.theme)?.classList.add('active');}
+
+/* FIX #3: toggleSet now handles both haptic and audio keys */
+function toggleSet(k){
+  const elId = k === 'haptic' ? 'hap-t' : 'audio-t';
+  const el = document.getElementById(elId);
+  if(el) S[k] = el.checked;
+  saveS(); hap(10); Sounds.play('tick'); syncSettings();
+}
+
+function applyUI(){
+  document.getElementById('hap-t').checked=S.haptic;
+  /* FIX #3: sync audio toggle if it exists in the DOM */
+  const audioToggle = document.getElementById('audio-t');
+  if(audioToggle) audioToggle.checked = (S.audio !== false);
+  document.querySelectorAll('.tp-pill').forEach(p=>p.classList.remove('active'));
+  document.getElementById('th-'+S.theme)?.classList.add('active');
+}
 
 async function syncSettings(){if(!user)return;try{await fsWrite(() => db.collection('users').doc(user).set({settings:S},{merge:true}), 'settings');}catch(e){}}
 async function loadSettingsFromFirestore(){if(!user)return;try{const d=await db.collection('users').doc(user).get();if(d.exists&&d.data().settings){S={...S,...d.data().settings};saveS();applyUI();applyTheme(S.theme);}}catch(e){}}
@@ -221,10 +238,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('query').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendQ();hap(20);}});
   document.addEventListener('keydown', e => {
     if(e.key === 'Escape') {
-      /* Close sidebar if open */
       const sb = document.getElementById('sb');
       if(sb && sb.classList.contains('open')) { toggleSB(); return; }
-      /* Close topmost modal if any */
       if(openModals.length > 0) closeM(openModals[openModals.length - 1]);
     }
   });
@@ -235,24 +250,23 @@ window.addEventListener('DOMContentLoaded', async () => {
     if(btn.classList.contains('tts-btn'))tts(decodeURIComponent(txt),btn);
     if(btn.classList.contains('cpy-btn'))cpyTxt(decodeURIComponent(txt),btn);
   });
-
-  const sessSearchEl = document.getElementById('sess-search');
-  if(sessSearchEl) sessSearchEl.addEventListener('input', () => renderSB(sessSearchEl.value.trim().toLowerCase()));
 });
 
 /* ══ UI HELPERS & MODALS ══ */
 let openModals = [];
+
+/* FIX #2: toggleF() now allows independent stacking of filters.
+   Previously all other filters were zeroed on each toggle, meaning a
+   geriatric + pregnant patient could never have both flags active.
+   Clinical rationale: filters are orthogonal — Geriatric + Pregnancy
+   is a clinically meaningful combination (e.g. elderly multigravida). */
 function toggleF(k){
   hap(10);
-  const next = !F[k];
-  Object.keys(F).forEach(key => {
-    F[key] = false;
-    document.getElementById('t-'+key).classList.remove('on');
-  });
-  F[k] = next;
-  document.getElementById('t-'+k).classList.toggle('on', next);
+  F[k] = !F[k];
+  document.getElementById('t-'+k).classList.toggle('on', F[k]);
   Sounds.play('tick');
 }
+
 function openM(id){document.getElementById(id).classList.add('open'); openModals.push(id); Sounds.play('tick');}
 function closeM(id){document.getElementById(id).classList.remove('open'); openModals = openModals.filter(m => m !== id);}
 function handleOC(e,id){if(e.target===document.getElementById(id) && openModals[openModals.length - 1] === id){closeM(id);}}
@@ -263,6 +277,7 @@ function toggleWizC(id){document.querySelectorAll('.wcard').forEach(c=>{if(c.id!
 function flU(el){el.closest('.flw').classList.add('up');}
 function flB(el){if(!el.value&&el.value!=='0')el.closest('.flw').classList.remove('up');}
 function toggleSB(){const sb=document.getElementById('sb'),ov=document.getElementById('sb-ov');if(sb.classList.contains('open')){sb.classList.remove('open');setTimeout(()=>ov.classList.remove('open'),350);}else{ov.classList.add('open');setTimeout(()=>sb.classList.add('open'),10);}Sounds.play('tick');}
+
 
 /* ══ SESSIONS ══ */
 function getDocSizeKB(obj) { return new Blob([JSON.stringify(obj)]).size / 1024; }
@@ -473,7 +488,14 @@ function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function autoR(){const q=document.getElementById('query');q.style.height='auto';q.style.height=Math.min(q.scrollHeight,120)+'px';}
 function insertQ(t){hap(10);const q=document.getElementById('query');q.value=t;autoR();q.focus();}
 function insertAndSend(t){insertQ(t);setTimeout(sendQ,100);}
-function updCC(){const q=document.getElementById('query'),cc=document.getElementById('cc'),l=q.value.length;if(l>0){cc.textContent=l;cc.classList.add('show');cc.classList.toggle('warn',l>400);}else{cc.classList.remove('show');}}
+
+/* FIX #9: Raised warn threshold from 400 → 800 chars; clinical queries routinely exceed 400 */
+function updCC(){
+  const q=document.getElementById('query'),cc=document.getElementById('cc'),l=q.value.length;
+  if(l>0){cc.textContent=l;cc.classList.add('show');cc.classList.toggle('warn',l>800);}
+  else{cc.classList.remove('show');}
+}
+
 function ts(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
 
 function regenLast(btn){
@@ -496,8 +518,6 @@ function sanitizeHTML(html) {
   return esc(String(html));
 }
 
-/* Treat JSON string "null" the same as actual null — the AI sometimes
-   returns the literal string "null" instead of JSON null for empty fields */
 function nullify(v){ return (v === null || v === 'null' || v === undefined || v === '') ? null : v; }
 
 function appendAI(p){
@@ -536,7 +556,7 @@ function appendAI(p){
   const evBadge=nullify(p.evidence_grade)?`<span class="ev-badge ${evClass}">Evidence ${p.evidence_grade}</span>`:'';
   const badges=[F.preg?'<span class="fb2">Pregnancy</span>':'',F.peds?'<span class="fb2">Paediatric</span>':'',F.geri?'<span class="fb2">Geriatric</span>':'',F.counsel?'<span class="fb2">Counselling</span>':'',F.steward?'<span class="fb2">Stewardship</span>':''].filter(Boolean).join('');
   const _bbw=nullify(p.bbw);
-const bbwBar=_bbw?`<div class="clin-bbw-bar"><span class="ms xs" style="flex-shrink:0">warning</span><span><strong>BLACK BOX WARNING:</strong> ${esc(_bbw)}</span></div>`:'';
+  const bbwBar=_bbw?`<div class="clin-bbw-bar"><span class="ms xs" style="flex-shrink:0">warning</span><span><strong>BLACK BOX WARNING:</strong> ${esc(_bbw)}</span></div>`:'';
 
   let pkHtml='';
   if(p.pharmacokinetics){
@@ -671,7 +691,17 @@ const bbwBar=_bbw?`<div class="clin-bbw-bar"><span class="ms xs" style="flex-shr
 
 function appendErr(msg){const d=document.createElement('div');d.className='msg';d.innerHTML=`<div class="avatar ai"><span class="ms sm fill">cardiology</span></div><div class="bwrap"><div class="aic se"><div class="ctag se"><span class="ms xs">error</span> Error</div><div class="abody" style="padding:14px 16px;color:var(--danger)">${esc(msg)}</div></div></div>`;getChat().appendChild(d);scrollD();}
 
-function tts(text,btn){if(!('speechSynthesis'in window)){toast('TTS not supported.','warn');return;}if(speechSynthesis.speaking){speechSynthesis.cancel();btn.innerHTML='<span class="ms xs">volume_up</span> Read Aloud';return;}const u=new SpeechSynthesisUtterance(text);u.rate=0.95;u.onstart=()=>{btn.innerHTML='<span class="ms xs">stop_circle</span> Stop';};u.onend=u.onerror=()=>{btn.innerHTML='<span class="ms xs">volume_up</span> Read Aloud';};speechSynthesis.speak(u);}
+/* FIX #4: tts() reset text now matches the original button label ("Read" not "Read Aloud") */
+function tts(text,btn){
+  if(!('speechSynthesis'in window)){toast('TTS not supported.','warn');return;}
+  if(speechSynthesis.speaking){speechSynthesis.cancel();btn.innerHTML='<span class="ms xs">volume_up</span> Read';return;}
+  const u=new SpeechSynthesisUtterance(text);
+  u.rate=0.95;
+  u.onstart=()=>{btn.innerHTML='<span class="ms xs">stop_circle</span> Stop';};
+  u.onend=u.onerror=()=>{btn.innerHTML='<span class="ms xs">volume_up</span> Read';};
+  speechSynthesis.speak(u);
+}
+
 function cpyTxt(text,btn){navigator.clipboard.writeText(text).then(()=>{btn.innerHTML='<span class="ms xs">check_circle</span> Copied!';toast('Copied!','ok');hap(15);setTimeout(()=>{btn.innerHTML='<span class="ms xs">content_copy</span> Copy';},2000);});}
 
 function buildPrompt(text){
@@ -690,18 +720,18 @@ function buildPrompt(text){
 
 SCOPE GATE (MANDATORY): If the query is not related to medicine, pharmacology, clinical sciences, pharmacy, diagnostics, or allied health \u2014 set "in_scope": false and return nothing else.
 
-ADAPTIVE FIELD POPULATION \u2014 CRITICAL: Populate ONLY the fields relevant to the specific query. Set all other fields to null or []. Use this mapping:
+ADAPTIVE FIELD POPULATION \u2014 CRITICAL: Populate ONLY the fields relevant to the specific query. Set all other fields to null or [].
 
 \u2022 Pharmacokinetics or Mechanism of Action \u2192 populate: pharmacokinetics, clinical_details, key_points, references. Set monitoring=[], interactions=[], dose_adjustments all null.
-\u2022 Drug Interaction \u2192 populate: interactions (full detail), clinical_details, key_points, references. Set pharmacokinetics null (except relevant CYP subfields if PK-mediated). Set monitoring=[], dose_adjustments all null.
+\u2022 Drug Interaction \u2192 populate: interactions (full detail), clinical_details, key_points, references. Set pharmacokinetics null. Set monitoring=[], dose_adjustments all null.
 \u2022 Dosage & Administration \u2192 populate: dose_adjustments, monitoring, clinical_details, key_points, references. Set pharmacokinetics null, interactions=[].
 \u2022 Adverse Effects \u2192 populate: clinical_details, monitoring, bbw if present, key_points, references. Set pharmacokinetics null, interactions=[], dose_adjustments all null.
 \u2022 Contraindication \u2192 populate: clinical_details, bbw if present, key_points, references. Set pharmacokinetics null, monitoring=[], interactions=[], dose_adjustments all null.
 \u2022 Monitoring \u2192 populate: monitoring (detailed), clinical_details, key_points, references. Set pharmacokinetics null, interactions=[], dose_adjustments all null.
-\u2022 Clinical Therapeutics or General Clinical \u2192 populate: clinical_details, key_points, references. Set pharmacokinetics null, monitoring=[], interactions=[], dose_adjustments all null \u2014 unless the query explicitly asks about those sections.
+\u2022 Clinical Therapeutics or General Clinical \u2192 populate: clinical_details, key_points, references. Set pharmacokinetics null, monitoring=[], interactions=[], dose_adjustments all null unless explicitly asked.
 \u2022 Antimicrobial \u2192 populate: clinical_details, dose_adjustments, monitoring, interactions if relevant, key_points, references. Set pharmacokinetics null unless PK/PD target attainment is the question.
 
-NEVER pad responses with unrequested sections. A drug interaction question does not need PK parameters. A disease question does not need a monitoring table.
+NEVER pad responses with unrequested sections.
 ${filters}
 
 CLINICAL DEPTH (for populated fields only):
