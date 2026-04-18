@@ -1,6 +1,6 @@
 'use strict';
 
-/* ══ 1. FIREBASE INITIALIZATION (FIX FOR 'no-app' ERROR) ══ */
+/* ══ 1. FIREBASE INITIALIZATION ══ */
 // Replace these with your actual Firebase config values
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
@@ -16,18 +16,6 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.firestore();
-
-/* ══ GLOBAL VARIABLES ══ */
-let user = null;
-let uName = '';
-let _pendingFBUser = null;
-
-// Assuming these are declared elsewhere in your wider app context, 
-// but defining defaults here for safety.
-let sessions = [];
-let hist = [];
-let currSess = null;
-let wardPatients = [];
 
 /* ══ FIRESTORE WRITE DEBOUNCER ══ */
 const _fsQ = {};
