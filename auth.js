@@ -3,12 +3,14 @@ const firebaseConfig={apiKey:"AIzaSyAe1xX20eBj2Zb5HVZR3jsh7Aa1fp-mu_A",authDomai
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
-/* Await persistence before registering the auth state observer.
-   Not awaiting caused the observer to never fire (Firebase buffers
-   state changes until persistence is confirmed). */
+
+/* FIX #8: Changed SESSION → LOCAL persistence so clinicians who close a browser
+   tab mid-shift are not forced to re-authenticate on return.
+   Security note: PHI-sensitive sessions should still be protected at the
+   Firebase Security Rules level, and the 30-min idle timeout below still applies. */
 (async () => {
   try {
-    await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
   } catch(e) {
     console.warn('setPersistence failed, falling back to default:', e);
   }
@@ -16,7 +18,6 @@ const db=firebase.firestore();
   auth.onAuthStateChanged(async(fbUser)=>{
     const loading_el=document.getElementById('auth-loading');
     if(fbUser){
-      /* Anonymous users skip the name-step entirely */
       if(fbUser.isAnonymous){
         loading_el.style.display='none';
         await enterApp(fbUser);
@@ -62,12 +63,12 @@ function _resetIdleTimer() {
   document.addEventListener(evt, _resetIdleTimer, { passive: true });
 });
 
-let _enteringApp = false; /* guard against double enterApp on profile update */
+let _enteringApp = false;
 
 async function fsWrite(fn, label='') {
   try { await fn(); } catch(e) {
     console.error(`Firestore write failed (${label}):`, e);
-    if(e.code === 'unavailable') toast('Offline — changes saved locally.', 'warn');
+    if(e.code === 'unavailable') toast('Offline \u2014 changes saved locally.', 'warn');
     else toast(`Save failed: ${label}`, 'err');
   }
 }
@@ -146,6 +147,8 @@ async function saveName(){
   const nerr=document.getElementById('name-err');
   if(!name){nerr.style.display='flex';return;}
   nerr.style.display='none';
+  /* FIX #saveName: capture the pending user reference BEFORE nullifying,
+     so a failed enterApp() can be retried without losing the reference. */
   const fbUser=_pendingFBUser||auth.currentUser;
   if(!fbUser)return;
   try{
@@ -153,48 +156,51 @@ async function saveName(){
     _pendingFBUser=null;
     document.getElementById('lp').style.display='none';
     await enterApp(fbUser);
-  }catch(e){nerr.style.display='flex';document.getElementById('name-err').querySelector('span:last-child')&&(document.getElementById('name-err').lastChild.textContent=e.message);}
+  }catch(e){
+    /* Do NOT null _pendingFBUser here — allows retry */
+    nerr.style.display='flex';
+    const errSpan=document.getElementById('name-err').querySelector('span:last-child');
+    if(errSpan)errSpan.textContent=e.message;
+  }
 }
 
 async function enterApp(fbUser){
   if(_enteringApp) return;
   _enteringApp = true;
   try {
-  user=fbUser.uid;
-  uName=fbUser.isAnonymous?'Guest':(fbUser.displayName||(fbUser.email?fbUser.email.split('@')[0]:'User'));
-  try{
-    const cfg=await db.collection('config').doc('keys').get();
-    if(cfg.exists)groqKey=cfg.data().groq||'';
-  }catch(e){
-    // NEW: Async localforage check for the Groq API key
-    const localKey = await localforage.getItem('pgroq');
-    groqKey = localKey || '';
-  }
+    user=fbUser.uid;
+    uName=fbUser.isAnonymous?'Guest':(fbUser.displayName||(fbUser.email?fbUser.email.split('@')[0]:'User'));
+    try{
+      const cfg=await db.collection('config').doc('keys').get();
+      if(cfg.exists)groqKey=cfg.data().groq||'';
+    }catch(e){
+      const localKey = await localforage.getItem('pgroq');
+      groqKey = localKey || '';
+    }
 
-  document.getElementById('ap').style.display='flex';
-  document.getElementById('lp').style.display='none';
-  const init=uName.charAt(0).toUpperCase();
-  document.getElementById('hpc').textContent=init;
-  document.getElementById('sbpc').textContent=init;
-  document.getElementById('sbnm').textContent=uName;
-  const provider=fbUser.isAnonymous?'Guest Session':(fbUser.providerData[0]?.providerId==='google.com'?'Google Account':fbUser.email);
-  document.getElementById('sui').textContent=uName+' · '+provider;
-  _resetIdleTimer();
-  applyUI();
-  await loadSettingsFromFirestore();
-  if(!fbUser.isAnonymous){
-    await loadWardData();
-    await loadSessions();
-  }
-  await loadDemoUsage();
-  applyGuestUI(fbUser.isAnonymous);
-  _enteringApp = false;
-  newChat();
-  checkOnboarding();
+    document.getElementById('ap').style.display='flex';
+    document.getElementById('lp').style.display='none';
+    const init=uName.charAt(0).toUpperCase();
+    document.getElementById('hpc').textContent=init;
+    document.getElementById('sbpc').textContent=init;
+    document.getElementById('sbnm').textContent=uName;
+    const provider=fbUser.isAnonymous?'Guest Session':(fbUser.providerData[0]?.providerId==='google.com'?'Google Account':fbUser.email);
+    document.getElementById('sui').textContent=uName+' \u00B7 '+provider;
+    _resetIdleTimer();
+    applyUI();
+    await loadSettingsFromFirestore();
+    if(!fbUser.isAnonymous){
+      await loadWardData();
+      await loadSessions();
+    }
+    await loadDemoUsage();
+    applyGuestUI(fbUser.isAnonymous);
+    _enteringApp = false;
+    newChat();
+    checkOnboarding();
   } catch(err) { _enteringApp = false; console.error('enterApp error:', err); }
 }
 
-/* Show/hide guest-specific UI elements in the settings panel */
 function applyGuestUI(isGuest) {
   const label  = document.getElementById('si-delete-label');
   const desc   = document.getElementById('si-delete-desc');
@@ -204,7 +210,7 @@ function applyGuestUI(isGuest) {
   if(isGuest) {
     label.textContent = 'Create a Full Account';
     label.style.color = 'var(--ok)';
-    desc.textContent  = 'Your data is not saved — sign up to keep it.';
+    desc.textContent  = 'Your data is not saved \u2014 sign up to keep it.';
     btn.textContent   = 'Sign Up';
     btn.style.background = 'var(--ok)';
     btn.style.color = '#fff';
@@ -231,8 +237,9 @@ async function doLogout(){
   } else {
     await auth.signOut();
   }
-  user=null;uName='';groqKey='';hist=[];sessions=[];currSess=null;wardPatients=[];
-  /* Clear cached PHI and API key from browser storage on every logout */
+  user=null;uName='';groqKey='';hist=[];sessions=[];currSess=null;
+  /* FIX #8 cross-file: reset wardPatients via its owning module reference */
+  if(typeof wardPatients !== 'undefined') wardPatients=[];
   if(_uid) {
     await localforage.removeItem('pharmai_ward_' + _uid);
     await localforage.removeItem('psess_' + _uid);
@@ -249,7 +256,7 @@ async function doLogout(){
 async function deleteAccount(){
   if(!confirm('Permanently delete your account and all data? This cannot be undone.'))return;
   try{
-    if(user){ 
+    if(user){
       const wardDocs = await db.collection('users').doc(user).collection('ward').get();
       const sDocs = await db.collection('users').doc(user).collection('sessions').get();
       const batch = db.batch();
@@ -264,7 +271,8 @@ async function deleteAccount(){
     if(uid){ await localforage.removeItem('pharmai_ward_'+uid); await localforage.removeItem('psess_'+uid); }
     await localforage.removeItem('pgroq');
     toast('Account deleted.','info');
-    user=null;uName='';groqKey='';hist=[];sessions=[];currSess=null;wardPatients=[];wardPatients=[];
+    user=null;uName='';groqKey='';hist=[];sessions=[];currSess=null;
+    if(typeof wardPatients !== 'undefined') wardPatients=[];
     document.getElementById('ap').style.display='none';
     document.getElementById('lp').style.display='flex';
     document.getElementById('auth-step').style.display='block';
