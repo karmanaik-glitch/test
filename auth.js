@@ -29,13 +29,9 @@ const db = firebase.firestore();
 
   auth.onAuthStateChanged(async(fbUser)=>{
     const loading_el=document.getElementById('auth-loading');
+    
     if(fbUser){
-      /* Anonymous users skip the name-step entirely */
-      if(fbUser.isAnonymous){
-        loading_el.style.display='none';
-        await enterApp(fbUser);
-        return;
-      }
+      /* If the user has no display name (New Email Sign-up OR Guest), ask for it */
       if(!fbUser.displayName){
         _pendingFBUser=fbUser;
         loading_el.style.display='none';
@@ -45,6 +41,8 @@ const db = firebase.firestore();
         setTimeout(()=>document.getElementById('display-name').focus(),300);
         return;
       }
+      
+      /* Returning users with a saved name skip the dialog */
       loading_el.style.display='none';
       await enterApp(fbUser);
     } else {
@@ -160,14 +158,26 @@ async function saveName(){
   const nerr=document.getElementById('name-err');
   if(!name){nerr.style.display='flex';return;}
   nerr.style.display='none';
+  
   const fbUser=_pendingFBUser||auth.currentUser;
   if(!fbUser)return;
+  
   try{
+    // Save to Firebase Auth profile
     await fbUser.updateProfile({displayName:name});
+    
+    // Save to Firestore database (Skip for temporary Guests)
+    if (!fbUser.isAnonymous) {
+        await db.collection('users').doc(fbUser.uid).set({ name: name }, { merge: true });
+    }
+    
     _pendingFBUser=null;
     document.getElementById('lp').style.display='none';
     await enterApp(fbUser);
-  }catch(e){nerr.style.display='flex';document.getElementById('name-err').querySelector('span:last-child')&&(document.getElementById('name-err').lastChild.textContent=e.message);}
+  } catch(e) {
+    nerr.style.display='flex';
+    document.getElementById('name-err').querySelector('span:last-child')&&(document.getElementById('name-err').lastChild.textContent=e.message);
+  }
 }
 
 async function enterApp(fbUser){
@@ -175,7 +185,7 @@ async function enterApp(fbUser){
   _enteringApp = true;
   try {
   user=fbUser.uid;
-  uName=fbUser.isAnonymous?'Guest':(fbUser.displayName||(fbUser.email?fbUser.email.split('@')[0]:'User'));
+  uName=fbUser.displayName||(fbUser.email?fbUser.email.split('@')[0]:'Guest');
   try{
     const cfg=await db.collection('config').doc('keys').get();
     if(cfg.exists)groqKey=cfg.data().groq||'';
@@ -240,11 +250,14 @@ async function doLogout(){
   clearTimeout(_idleTimer);
   const _currentFBUser = auth.currentUser;
   const _uid = user;
+  
+  // This explicitly deletes the guest account entirely from Firebase Auth
   if(_currentFBUser && _currentFBUser.isAnonymous){
     try { await _currentFBUser.delete(); } catch(e) { console.warn('Anon delete failed',e); }
   } else {
     await auth.signOut();
   }
+  
   user=null;uName='';groqKey='';hist=[];sessions=[];currSess=null;wardPatients=[];
   /* Clear cached PHI and API key from browser storage on every logout */
   if(_uid) {
