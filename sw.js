@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pharmai-cache-v4';
+const CACHE_NAME = 'pharmai-cache-v5';
 
 const urlsToCache = [
   './',
